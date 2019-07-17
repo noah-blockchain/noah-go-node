@@ -1,0 +1,20 @@
+# Created by .ignore support plugin (hsz.mobi)
+go-node/LICENSE
+go-node/Makefile
+go-node/core/appdb/
+go-node/core/check/
+go-node/core/dao/
+go-node/core/developers/developers.go
+go-node/core/rewards/
+go-node/core/state/state_candidate.go
+go-node/core/state/state_candidate_test.go
+go-node/core/state/state_coin.go
+go-node/core/state/state_frozen_fund.go
+go-node/core/state/state_object.go
+go-node/core/state/state_validator.go
+go-node/core/state/statedb.go
+go-node/core/state/statedb_test.go
+go-node/core/transaction/
+go-node/core/types/
+go-node/core/validators/
+Would skip repository go-node/

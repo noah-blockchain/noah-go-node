@@ -1,0 +1,572 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="69e4701f-3a82-47f6-90bf-71cdf22aeeec" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go-node/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/go-node/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/.circleci/config.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/.github/ISSUE_TEMPLATE/bug_report.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/CHANGELOG.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/CODE_OF_CONDUCT.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/DOCKER/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/DOCKER/Dockerfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/DOCKER/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/DOCKER/build.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/DOCKER/push.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/Gopkg.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/Gopkg.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/LICENSE" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/PULL_REQUEST_TEMPLATE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/address.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/addresses.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/api.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/block.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/candidate.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/candidates.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/coin_info.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/estimate_coin_buy.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/estimate_coin_sell.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/estimate_coin_sell_all.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/estimate_tx_commission.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/events.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/genesis.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/maxgas.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/min_gas_price.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/missed_blocks.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/net_info.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/send_transaction.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/status.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/transaction.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/transactions.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/unconfirmed_txs.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/api/validators.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/cmd/export/main.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/cmd/make_genesis/data.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/cmd/make_genesis/main.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/cmd/minter/cmd/a_cmd-packr.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/cmd/minter/cmd/node.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/cmd/minter/cmd/root.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/cmd/minter/cmd/show_node_id.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/cmd/minter/cmd/show_validator.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/cmd/minter/cmd/version.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/cmd/minter/main.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/cmd/utils/flags.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/config/config.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/config/toml.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/appdb/appdb.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/check/check.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/code/code.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/commissions/commissions.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/dao/dao.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/dao/dao_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/developers/developers.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/developers/developers_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/minter/minter.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/minter/minter_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/rewards/rewards.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/rewards/rewards_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/state/state_candidate.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/state/state_candidate_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/state/state_coin.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/state/state_frozen_fund.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/state/state_object.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/state/state_validator.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/state/statedb.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/state/statedb_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/state/tree.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/buy_coin.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/buy_coin_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/create_coin.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/create_coin_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/create_multisig.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/create_multisig_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/declare_candidacy.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/declare_candidacy_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/decoder.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/delegate.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/delegate_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/edit_candidate.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/edit_candidate_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/executor.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/executor_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/multisend.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/multisend_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/redeem_check.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/redeem_check_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/sell_all_coin.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/sell_all_coin_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/sell_coin.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/sell_coin_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/send.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/send_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/switch_candidate_status.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/switch_candidate_status_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/transaction.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/unbond.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/transaction/unbond_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/types/appstate.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/types/big.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/types/bitarray.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/types/bytes.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/types/bytes_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/types/constants.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/types/size.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/types/size_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/types/types.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/types/types_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/validators/validators.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/core/validators/validators_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/LICENSE" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/bn256.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/bn256_fuzz.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/bn256_slow.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/LICENSE" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/bn256.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/bn256_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/constants.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/curve.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/example_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/gfp.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/gfp12.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/gfp2.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/gfp6.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/gfp_amd64.s" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/gfp_arm64.s" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/gfp_decl.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/gfp_generic.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/gfp_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/lattice.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/lattice_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/main_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/mul_amd64.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/mul_arm64.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/mul_bmi2_amd64.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/optate.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/cloudflare/twist.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/constants.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/curve.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/gfp12.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/gfp2.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/gfp6.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/google/bn256.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/google/bn256_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/google/constants.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/google/curve.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/google/example_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/google/gfp12.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/google/gfp2.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/google/gfp6.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/google/main_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/google/optate.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/google/twist.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/optate.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/bn256/twist.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/crypto.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/crypto_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/ecies/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/ecies/LICENSE" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/ecies/README" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/ecies/ecies.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/ecies/ecies_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/ecies/params.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/LICENSE" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/curve.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/ext.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/.travis.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/COPYING" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/Makefile.am" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/TODO" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/autogen.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/build-aux/m4/ax_jni_include_dir.m4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/build-aux/m4/ax_prog_cc_for_build.m4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/build-aux/m4/bitcoin_secp.m4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/configure.ac" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/contrib/lax_der_parsing.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/contrib/lax_der_parsing.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/contrib/lax_der_privatekey_parsing.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/contrib/lax_der_privatekey_parsing.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/include/secp256k1.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/include/secp256k1_ecdh.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/include/secp256k1_recovery.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/libsecp256k1.pc.in" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/obj/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/sage/group_prover.sage" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/sage/secp256k1.sage" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/sage/weierstrass_prover.sage" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/asm/field_10x26_arm.s" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/basic-config.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/bench.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/bench_ecdh.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/bench_internal.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/bench_recover.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/bench_schnorr_verify.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/bench_sign.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/bench_verify.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/ecdsa.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/ecdsa_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/eckey.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/eckey_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/ecmult.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/ecmult_const.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/ecmult_const_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/ecmult_gen.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/ecmult_gen_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/ecmult_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/field.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/field_10x26.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/field_10x26_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/field_5x52.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/field_5x52_asm_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/field_5x52_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/field_5x52_int128_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/field_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/gen_context.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/group.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/group_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/hash.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/hash_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/java/org/bitcoin/NativeSecp256k1.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/java/org/bitcoin/NativeSecp256k1Test.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/java/org/bitcoin/NativeSecp256k1Util.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/java/org/bitcoin/Secp256k1Context.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/java/org_bitcoin_NativeSecp256k1.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/java/org_bitcoin_NativeSecp256k1.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/java/org_bitcoin_Secp256k1Context.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/java/org_bitcoin_Secp256k1Context.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/modules/ecdh/Makefile.am.include" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/modules/ecdh/main_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/modules/ecdh/tests_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/modules/recovery/Makefile.am.include" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/modules/recovery/main_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/modules/recovery/tests_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/num.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/num_gmp.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/num_gmp_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/num_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/scalar.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/scalar_4x64.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/scalar_4x64_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/scalar_8x32.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/scalar_8x32_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/scalar_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/scalar_low.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/scalar_low_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/secp256k1.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/testrand.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/testrand_impl.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/tests.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/tests_exhaustive.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/libsecp256k1/src/util.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/panic_cb.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/secp256.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/secp256k1/secp256_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/sha3/LICENSE" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/sha3/PATENTS" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/sha3/doc.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/sha3/hashes.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/sha3/keccakf.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/sha3/keccakf_amd64.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/sha3/keccakf_amd64.s" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/sha3/register.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/sha3/sha3.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/sha3/shake.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/sha3/xor.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/sha3/xor_unaligned.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/signature_cgo.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/signature_nocgo.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/crypto/signature_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/docker-compose.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/eventsdb/events/coin_liquidation.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/eventsdb/events/reward.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/eventsdb/events/slash.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/eventsdb/events/unbond.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/eventsdb/events/wire.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/eventsdb/eventsdb.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/formula/formula.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/formula/formula_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/gui/a_gui-packr.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/gui/gui.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/gui/html/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/helpers/helpers.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/hexutil/hexutil.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/hexutil/json.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/log/log.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/mainnet/minter-mainnet-1/genesis.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/math/big.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/math/exp.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/math/log.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/math/math.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/math/misc.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/math/pow.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/minter-logo.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/minterd.service" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rlp/decode.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rlp/decode_tail_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rlp/decode_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rlp/doc.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rlp/encode.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rlp/encode_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rlp/encoder_example_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rlp/raw.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rlp/raw_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rlp/typecache.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rpc/lib/doc.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rpc/lib/rpc_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rpc/lib/server/handlers.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rpc/lib/server/handlers_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rpc/lib/server/http_params.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rpc/lib/server/http_server.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rpc/lib/server/http_server_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rpc/lib/server/parse_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rpc/lib/types/types.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rpc/lib/types/types_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/rpc/test/helpers.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/scripts/DOCKER/Dockerfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/scripts/dist.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/scripts/get_tools.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/testnet/minter-test-network-35/genesis.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/testnet/minter-test-network-36/genesis.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/testnet/minter-test-network-37/genesis.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/testnet/minter-test-network-38/genesis.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/testnet/minter-test-network-39/genesis.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/testnet/minter-test-network-40/genesis.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/upgrades/blocks.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/version/version.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/minter-go-node/version/version_test.go" beforeDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/go-node/scripts/DOCKER/Dockerfile">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="270">
+              <caret line="18" column="27" selection-start-line="18" selection-start-column="27" selection-end-line="18" selection-end-column="27" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/go-node/rpc/lib/server/handlers.go">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/go-node/core/validators/validators.go">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/go-node/core/minter/minter.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="285">
+              <caret line="44" column="38" selection-start-line="44" selection-start-column="38" selection-end-line="44" selection-end-column="38" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/go-node/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state>
+              <caret column="7" selection-start-column="7" selection-end-column="7" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="105">
+              <caret line="7" selection-start-line="7" selection-end-line="7" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="GOROOT" path="/usr/local/go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GoDepProject">
+    <integration-enabled>true</integration-enabled>
+  </component>
+  <component name="GoLibraries">
+    <option name="urls">
+      <list>
+        <option value="file://$PROJECT_DIR$/go-node" />
+      </list>
+    </option>
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/go-node/minter-logo.svg" />
+        <option value="$PROJECT_DIR$/go-node/scripts/DOCKER/Dockerfile" />
+        <option value="$PROJECT_DIR$/go-node/.gitignore" />
+        <option value="$PROJECT_DIR$/.gitignore" />
+      </list>
+    </option>
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="hMZvrSET" />
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="67" />
+    <option name="y" value="27" />
+    <option name="width" value="1220" />
+    <option name="height" value="677" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="noah-blockchain" type="b2602c69:ProjectViewProjectNode" />
+              <item name="noah-blockchain" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="noah-blockchain" type="b2602c69:ProjectViewProjectNode" />
+              <item name="noah-blockchain" type="462c0819:PsiDirectoryNode" />
+              <item name="go-node" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="noah-blockchain" type="b2602c69:ProjectViewProjectNode" />
+              <item name="noah-blockchain" type="462c0819:PsiDirectoryNode" />
+              <item name="minter-go-node" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="add_unversioned_files" value="true" />
+    <property name="configurable.Global.GOPATH.is.expanded" value="true" />
+    <property name="configurable.Module.GOPATH.is.expanded" value="true" />
+    <property name="configurable.Project.GOPATH.is.expanded" value="true" />
+    <property name="go.gopath.indexing.explicitly.defined" value="true" />
+    <property name="go.import.settings.migrated" value="true" />
+    <property name="go.sdk.automatically.set" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/go-node" />
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="67" y="25" width="1853" height="1055" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.255119" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32937366" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Database Changes" order="8" />
+      <window_info anchor="bottom" id="Version Control" order="9" />
+      <window_info anchor="bottom" id="Terminal" order="10" weight="0.7715517" />
+      <window_info anchor="bottom" id="Event Log" order="11" side_tool="true" />
+      <window_info anchor="right" id="Cargo" />
+      <window_info anchor="right" id="make" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Database" order="3" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/go-node/src/block.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="13" column="24" selection-start-line="13" selection-start-column="24" selection-end-line="13" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/go-node/minter-logo.svg" />
+    <entry file="file://$PROJECT_DIR$/go-node/PULL_REQUEST_TEMPLATE.md" />
+    <entry file="file://$PROJECT_DIR$/go-node/CHANGELOG.md" />
+    <entry file="file://$PROJECT_DIR$/go-node/scripts/DOCKER/Dockerfile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="270">
+          <caret line="18" column="27" selection-start-line="18" selection-start-column="27" selection-end-line="18" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/go-node/rpc/lib/server/handlers.go">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/go-node/core/validators/validators.go">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/go-node/core/minter/minter.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="44" column="38" selection-start-line="44" selection-start-column="38" selection-end-line="44" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/go-node/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="7" selection-start-column="7" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" selection-start-line="7" selection-end-line="7" />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>

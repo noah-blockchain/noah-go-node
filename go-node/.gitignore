@@ -1,0 +1,8 @@
+config/
+cmd/
+rpc/
+rlp/
+.idea/
+.data
+build/
+vendor/
