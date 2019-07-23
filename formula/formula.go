@@ -1,8 +1,8 @@
 package formula
 
 import (
-	"github.com/PillarDevelopment/GO_CHAIN/core/types"
-	"github.com/PillarDevelopment/GO_CHAIN/math"
+	"github.com/PillarDevelopment/noax-go-node/core/types"
+	"github.com/PillarDevelopment/noax-go-node/math"
 	"math/big"
 )
 
