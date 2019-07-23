@@ -2,7 +2,7 @@ package noax
 
 import (
 	"bytes"
-	"github.com/PillarDevelopment/go-amino"
+	"github.com/tendermint/go-amino"
 	"github.com/PillarDevelopment/noax-go-node/cmd/utils"
 	"github.com/PillarDevelopment/noax-go-node/config"
 	"github.com/PillarDevelopment/noax-go-node/core/appdb"
