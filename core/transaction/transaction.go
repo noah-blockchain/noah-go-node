@@ -268,7 +268,7 @@ func RecoverPlain(sighash types.Hash, R, S, Vb *big.Int) (types.Address, error) 
 	copy(sig[64-len(s):64], s)
 	sig[64] = V
 
-	// recover the public key from the snature
+	// recover the public key from the signature
 	pub, err := crypto.Ecrecover(sighash[:], sig)
 	if err != nil {
 		return types.Address{}, err
