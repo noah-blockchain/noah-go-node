@@ -1,21 +1,22 @@
-package noax
+package noah
 
 import (
 	"bytes"
+	cryptoAmino "github.com/tendermint/crypto/encoding/amino"
 	"github.com/tendermint/go-amino"
-	"github.com/PillarDevelopment/noax-go-node/cmd/utils"
-	"github.com/PillarDevelopment/noax-go-node/config"
-	"github.com/PillarDevelopment/noax-go-node/core/appdb"
-	"github.com/PillarDevelopment/noax-go-node/core/rewards"
-	"github.com/PillarDevelopment/noax-go-node/core/state"
-	"github.com/PillarDevelopment/noax-go-node/core/transaction"
-	"github.com/PillarDevelopment/noax-go-node/core/types"
-	"github.com/PillarDevelopment/noax-go-node/core/validators"
-	"github.com/PillarDevelopment/noax-go-node/eventsdb"
-	"github.com/PillarDevelopment/noax-go-node/eventsdb/events"
-	"github.com/PillarDevelopment/noax-go-node/log"
-	"github.com/PillarDevelopment/noax-go-node/version"
-	"github.com/danil-lashin/tendermint/rpc/lib/types"
+	"github.com/noah-blockchain/noah-go-node/cmd/utils"
+	"github.com/noah-blockchain/noah-go-node/config"
+	"github.com/noah-blockchain/noah-go-node/core/appdb"
+	"github.com/noah-blockchain/noah-go-node/core/rewards"
+	"github.com/noah-blockchain/noah-go-node/core/state"
+	"github.com/noah-blockchain/noah-go-node/core/transaction"
+	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/core/validators"
+	"github.com/noah-blockchain/noah-go-node/eventsdb"
+	"github.com/noah-blockchain/noah-go-node/eventsdb/events"
+	"github.com/noah-blockchain/noah-go-node/log"
+	"github.com/noah-blockchain/noah-go-node/version"
+	"github.com/tendermint/rpc/lib/types"
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/encoding/amino"
@@ -42,7 +43,7 @@ var (
 	blockchain *Blockchain
 )
 
-// Main structure of NOAX Blockchain
+// Main structure of NOAH Blockchain
 type Blockchain struct {
 	abciTypes.BaseApplication
 
@@ -67,10 +68,10 @@ type Blockchain struct {
 	stopped uint32
 }
 
-// Creates NOAX Blockchain instance, should be only called once
-func NewNOAXBlockchain(cfg *config.Config) *Blockchain {
+// Creates NOAH Blockchain instance, should be only called once
+func NewNOAHBlockchain(cfg *config.Config) *Blockchain {
 	dbType := db.DBBackendType(cfg.DBBackend)
-	ldb := db.NewDB("state", dbType, utils.GetNOAXHome()+"/data")
+	ldb := db.NewDB("state", dbType, utils.GetNOAHHome()+"/data")
 
 	// Initiate Application DB. Used for persisting data like current block, validators, etc.
 	applicationDB := appdb.NewAppDB(cfg)
@@ -110,7 +111,7 @@ func (app *Blockchain) InitChain(req abciTypes.RequestInitChain) abciTypes.Respo
 
 	totalPower := big.NewInt(0)
 	for _, val := range genesisState.Validators {
-		totalPower.Add(totalPower, val.TotalBipStake)
+		totalPower.Add(totalPower, val.TotalNoahStake)
 	}
 
 	vals := make([]abciTypes.ValidatorUpdate, len(genesisState.Validators))
@@ -124,7 +125,7 @@ func (app *Blockchain) InitChain(req abciTypes.RequestInitChain) abciTypes.Respo
 
 		vals[i] = abciTypes.ValidatorUpdate{
 			PubKey: types2.TM2PB.PubKey(pkey),
-			Power: big.NewInt(0).Div(big.NewInt(0).Mul(val.TotalBipStake,
+			Power: big.NewInt(0).Div(big.NewInt(0).Mul(val.TotalNoahStake,
 				big.NewInt(100000000)), totalPower).Int64(),
 		}
 	}
@@ -243,7 +244,7 @@ func (app *Blockchain) EndBlock(req abciTypes.RequestEndBlock) abciTypes.Respons
 			continue
 		}
 
-		totalPower.Add(totalPower, val.TotalBipStake)
+		totalPower.Add(totalPower, val.TotalNoahStake)
 	}
 
 	if totalPower.Cmp(types.Big0) == 0 {
@@ -264,7 +265,7 @@ func (app *Blockchain) EndBlock(req abciTypes.RequestEndBlock) abciTypes.Respons
 		}
 
 		r := big.NewInt(0).Set(reward)
-		r.Mul(r, val.TotalBipStake)
+		r.Mul(r, val.TotalNoahStake)
 		r.Div(r, totalPower)
 
 		remainder.Sub(remainder, r)
@@ -296,7 +297,7 @@ func (app *Blockchain) EndBlock(req abciTypes.RequestEndBlock) abciTypes.Respons
 		// remove candidates with 0 total stake
 		var tempCandidates []state.Candidate
 		for _, candidate := range newCandidates {
-			if candidate.TotalBipStake.Cmp(big.NewInt(0)) != 1 {
+			if candidate.TotalNoahStake.Cmp(big.NewInt(0)) != 1 {
 				continue
 			}
 
@@ -313,11 +314,11 @@ func (app *Blockchain) EndBlock(req abciTypes.RequestEndBlock) abciTypes.Respons
 		// calculate total power
 		totalPower := big.NewInt(0)
 		for _, candidate := range newCandidates {
-			totalPower.Add(totalPower, candidate.TotalBipStake)
+			totalPower.Add(totalPower, candidate.TotalNoahStake)
 		}
 
 		for i := range newCandidates {
-			power := big.NewInt(0).Div(big.NewInt(0).Mul(newCandidates[i].TotalBipStake,
+			power := big.NewInt(0).Div(big.NewInt(0).Mul(newCandidates[i].TotalNoahStake,
 				big.NewInt(100000000)), totalPower).Int64()
 
 			if power == 0 {
@@ -366,7 +367,7 @@ func (app *Blockchain) EndBlock(req abciTypes.RequestEndBlock) abciTypes.Respons
 	}
 }
 
-// Return application info. Used for synchronization between Tendermint and NOAX
+// Return application info. Used for synchronization between Tendermint and NOAH
 func (app *Blockchain) Info(req abciTypes.RequestInfo) (resInfo abciTypes.ResponseInfo) {
 	return abciTypes.ResponseInfo{
 		Version:          version.Version,
@@ -418,7 +419,7 @@ func (app *Blockchain) CheckTx(req abciTypes.RequestCheckTx) abciTypes.ResponseC
 
 // Commit the state and return the application Merkle root hash
 func (app *Blockchain) Commit() abciTypes.ResponseCommit {
-	// Committing NOAX Blockchain state
+	// Committing NOAH Blockchain state
 	hash, _, err := app.stateDeliver.Commit()
 	if err != nil {
 		panic(err)
@@ -458,7 +459,7 @@ func (app *Blockchain) SetOption(req abciTypes.RequestSetOption) abciTypes.Respo
 	return abciTypes.ResponseSetOption{}
 }
 
-// Gracefully stopping NOAX Blockchain instance
+// Gracefully stopping NOAH Blockchain instance
 func (app *Blockchain) Stop() {
 	atomic.StoreUint32(&app.stopped, 1)
 	app.wg.Wait()
@@ -467,7 +468,7 @@ func (app *Blockchain) Stop() {
 	app.stateDB.Close()
 }
 
-// Get immutable state of NOAX Blockchain
+// Get immutable state of NOAH Blockchain
 func (app *Blockchain) CurrentState() *state.StateDB {
 	app.lock.RLock()
 	defer app.lock.RUnlock()
@@ -475,7 +476,7 @@ func (app *Blockchain) CurrentState() *state.StateDB {
 	return state.NewForCheckFromDeliver(app.stateCheck)
 }
 
-// Get immutable state of NOAX Blockchain for given height
+// Get immutable state of NOAH Blockchain for given height
 func (app *Blockchain) GetStateForHeight(height uint64) (*state.StateDB, error) {
 	app.lock.RLock()
 	defer app.lock.RUnlock()
@@ -488,12 +489,12 @@ func (app *Blockchain) GetStateForHeight(height uint64) (*state.StateDB, error) 
 	return s, nil
 }
 
-// Get current height of NOAX Blockchain
+// Get current height of NOAH Blockchain
 func (app *Blockchain) Height() uint64 {
 	return atomic.LoadUint64(&app.height)
 }
 
-// Get last committed height of NOAX Blockchain
+// Get last committed height of NOAH Blockchain
 func (app *Blockchain) LastCommittedHeight() uint64 {
 	return atomic.LoadUint64(&app.lastCommittedHeight)
 }

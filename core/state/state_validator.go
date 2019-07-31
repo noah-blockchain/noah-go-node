@@ -4,8 +4,8 @@ import (
 	"io"
 
 	"fmt"
-	"github.com/PillarDevelopment/noax-go-node/core/types"
-	"github.com/PillarDevelopment/noax-go-node/rlp"
+	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/rlp"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"math/big"
 )
@@ -26,7 +26,7 @@ func (c *stateValidators) Data() Validators {
 
 type Validator struct {
 	RewardAddress types.Address
-	TotalBipStake *big.Int
+	TotalNoahStake *big.Int
 	PubKey        types.Pubkey
 	Commission    uint
 	AccumReward   *big.Int

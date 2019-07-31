@@ -2,7 +2,7 @@ package api
 
 import (
 	"fmt"
-	"github.com/PillarDevelopment/noax-go-node/version"
+	"github.com/noah-blockchain/noah-go-node/version"
 	"github.com/tendermint/tendermint/rpc/core/types"
 	"time"
 )

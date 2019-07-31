@@ -14,8 +14,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	amino "github.com/tendermint/go-amino"
-	rs "github.com/PillarDevelopment/GO_CHAIN/rpc/lib/server"
-	types "github.com/PillarDevelopment/GO_CHAIN/rpc/lib/types"
+	rs "github.com/noah-blockchain/noah-go-node/rpc/lib/server"
+	types "github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 	"github.com/tendermint/tendermint/libs/log"
 )
 

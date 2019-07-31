@@ -4,12 +4,12 @@ import (
 	"crypto/ecdsa"
 	"errors"
 	"fmt"
-	"github.com/PillarDevelopment/noax-go-node/core/commissions"
-	"github.com/PillarDevelopment/noax-go-node/core/state"
-	"github.com/PillarDevelopment/noax-go-node/core/types"
-	"github.com/PillarDevelopment/noax-go-node/crypto"
-	"github.com/PillarDevelopment/noax-go-node/crypto/sha3"
-	"github.com/PillarDevelopment/noax-go-node/rlp"
+	"github.com/noah-blockchain/noah-go-node/core/commissions"
+	"github.com/noah-blockchain/noah-go-node/core/state"
+	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/crypto"
+	"github.com/noah-blockchain/noah-go-node/crypto/sha3"
+	"github.com/noah-blockchain/noah-go-node/rlp"
 	"math/big"
 )
 
@@ -38,7 +38,7 @@ const (
 
 var (
 	ErrInvalidSig = errors.New("invalid transaction v, r, s values")
-	MaxCoinSupply = big.NewInt(0).Exp(big.NewInt(10), big.NewInt(15+18), nil) // 1,000,000,000,000,000 noaxs // todo
+	MaxCoinSupply = big.NewInt(0).Exp(big.NewInt(10), big.NewInt(15+18), nil) // 1,000,000,000,000,000 noahs // todo
 )
 
 type Transaction struct {

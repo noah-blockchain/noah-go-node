@@ -1,10 +1,10 @@
 package transaction
 
 import (
-	"github.com/PillarDevelopment/noax-go-node/core/types"
-	"github.com/PillarDevelopment/noax-go-node/crypto"
-	"github.com/PillarDevelopment/noax-go-node/helpers"
-	"github.com/PillarDevelopment/noax-go-node/rlp"
+	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/crypto"
+	"github.com/noah-blockchain/noah-go-node/helpers"
+	"github.com/noah-blockchain/noah-go-node/rlp"
 	"math/big"
 	"sync"
 	"testing"
@@ -17,9 +17,9 @@ func TestSendTx(t *testing.T) {
 	addr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.BipToPip(big.NewInt(1000000)))
+	cState.AddBalance(addr, coin, helpers.NoahToQnoah(big.NewInt(1000000)))
 
-	value := helpers.BipToPip(big.NewInt(10))
+	value := helpers.NoahToQnoah(big.NewInt(10))
 	to := types.Address([20]byte{1})
 
 	data := SendData{

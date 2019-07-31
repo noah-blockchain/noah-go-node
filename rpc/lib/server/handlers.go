@@ -19,7 +19,7 @@ import (
 	"github.com/pkg/errors"
 
 	amino "github.com/tendermint/go-amino"
-	types "github.com/PillarDevelopment/GO_CHAIN/rpc/lib/types"
+	types "github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
 )
@@ -62,7 +62,7 @@ func NewWSRPCFunc(f interface{}, args string) *RPCFunc {
 func newRPCFunc(f interface{}, args string, ws bool) *RPCFunc {
 	var argNames []string
 	if args != "" {
-		argNames = strings.Split(args, ",")
+		argNames = strings.Splitpi(args, ",")
 	}
 	return &RPCFunc{
 		f:        reflect.ValueOf(f),

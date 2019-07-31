@@ -14,7 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/net/netutil"
 
-	types "github.com/PillarDevelopment/GO_CHAIN/rpc/lib/types"
+	types "github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 	"github.com/tendermint/tendermint/libs/log"
 )
 

@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/PillarDevelopment/noax-go-node/eventsdb"
-	"github.com/PillarDevelopment/noax-go-node/eventsdb/events"
+	"github.com/noah-blockchain/noah-go-node/eventsdb"
+	"github.com/noah-blockchain/noah-go-node/eventsdb/events"
 )
 
 type EventsResponse struct {

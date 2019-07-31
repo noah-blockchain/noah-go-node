@@ -1,11 +1,11 @@
 package transaction
 
 import (
-	"github.com/PillarDevelopment/noax-go-node/core/state"
-	"github.com/PillarDevelopment/noax-go-node/core/types"
-	"github.com/PillarDevelopment/noax-go-node/crypto"
-	"github.com/PillarDevelopment/noax-go-node/helpers"
-	"github.com/PillarDevelopment/noax-go-node/rlp"
+	"github.com/noah-blockchain/noah-go-node/core/state"
+	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/crypto"
+	"github.com/noah-blockchain/noah-go-node/helpers"
+	"github.com/noah-blockchain/noah-go-node/rlp"
 	"math/big"
 	"math/rand"
 	"sync"
@@ -18,12 +18,12 @@ func TestSwitchCandidateStatusTx(t *testing.T) {
 	privateKey, _ := crypto.GenerateKey()
 	addr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	coin := types.GetBaseCoin()
-	cState.AddBalance(addr, coin, helpers.BipToPip(big.NewInt(1000000)))
+	cState.AddBalance(addr, coin, helpers.NoahToQnoah(big.NewInt(1000000)))
 
 	pubkey := make([]byte, 32)
 	rand.Read(pubkey)
 
-	cState.CreateCandidate(addr, addr, pubkey, 10, 0, types.GetBaseCoin(), helpers.BipToPip(big.NewInt(1)))
+	cState.CreateCandidate(addr, addr, pubkey, 10, 0, types.GetBaseCoin(), helpers.NoahToQnoah(big.NewInt(1)))
 
 	data := SetCandidateOnData{
 		PubKey: pubkey,

@@ -3,8 +3,8 @@ package state
 import (
 	"bytes"
 	"encoding/hex"
-	"github.com/PillarDevelopment/noax-go-node/core/types"
-	"github.com/PillarDevelopment/noax-go-node/helpers"
+	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/helpers"
 	"github.com/tendermint/tendermint/libs/db"
 	"math/big"
 	"testing"
@@ -22,14 +22,14 @@ func getState() *StateDB {
 func TestStateDB_AddBalance(t *testing.T) {
 	state := getState()
 
-	address := types.HexToAddress("Nx02003587993aba5276925c058ba082d209e61cbb") // todo
+	address := types.HexToAddress("NOAHx02003587993aba5276925c058ba082d209e61cbb") // todo
 
 	balance := state.GetBalance(address, types.GetBaseCoin())
 	if balance.Cmp(types.Big0) != 0 {
 		t.Errorf("Balance of %s should be 0, got %s", address.String(), balance)
 	}
 
-	newBalance := helpers.NoaxToPip(big.NewInt(10))
+	newBalance := helpers.NoahToQnoah(big.NewInt(10))
 	state.AddBalance(address, types.GetBaseCoin(), newBalance)
 
 	balance = state.GetBalance(address, types.GetBaseCoin())
@@ -41,9 +41,9 @@ func TestStateDB_AddBalance(t *testing.T) {
 func TestStateDB_SubBalance(t *testing.T) {
 	state := getState()
 
-	address := types.HexToAddress("Nx02003587993aba5276925c058ba082d209e61cbb") // todo
+	address := types.HexToAddress("NOAHx02003587993aba5276925c058ba082d209e61cbb") // todo
 
-	initialBalance := helpers.NoaxToPip(big.NewInt(10))
+	initialBalance := helpers.NoahToQnoah(big.NewInt(10))
 	state.SetBalance(address, types.GetBaseCoin(), initialBalance)
 
 	balance := state.GetBalance(address, types.GetBaseCoin())
@@ -51,7 +51,7 @@ func TestStateDB_SubBalance(t *testing.T) {
 		t.Errorf("Balance of %s should be %s, got %s", address.String(), initialBalance, balance)
 	}
 
-	amount := helpers.NoaxToPip(big.NewInt(10))
+	amount := helpers.NoahToQnoah(big.NewInt(10))
 	state.SubBalance(address, types.GetBaseCoin(), amount)
 
 	balance = state.GetBalance(address, types.GetBaseCoin())
@@ -64,7 +64,7 @@ func TestStateDB_SubBalance(t *testing.T) {
 func TestStateDB_SetNonce(t *testing.T) {
 	state := getState()
 
-	address := types.HexToAddress("Nx02003587993aba5276925c058ba082d209e61cbb") // todo
+	address := types.HexToAddress("NOAHx02003587993aba5276925c058ba082d209e61cbb") // todo
 
 	nonce := state.GetNonce(address)
 	if nonce != 0 {
@@ -112,7 +112,7 @@ func TestStateDB_GetBalances(t *testing.T) {
 	state := getState()
 
 	address := types.HexToAddress("Nx02003587993aba5276925c058ba082d209e61cbb") // todo
-	newBalance := helpers.NoaxToPip(big.NewInt(10))
+	newBalance := helpers.NoahToQnoah(big.NewInt(10))
 	state.AddBalance(address, types.GetBaseCoin(), newBalance)
 
 	expect := Balances{

@@ -1,7 +1,7 @@
 package rewards
 
 import (
-	"github.com/PillarDevelopment/noax-go-node/helpers"
+	"github.com/noah-blockchain/noah-go-node/helpers"
 	"math/big"
 	"testing"
 )
@@ -15,15 +15,15 @@ func TestGetRewardForBlock(t *testing.T) {
 	data := []Results{
 		{
 			Block:  1,
-			Result: helpers.BipToPip(big.NewInt(333)),
+			Result: helpers.NoahToQnoah(big.NewInt(333)),
 		},
 		{
 			Block:  43702611, // todo
-			Result: helpers.BipToPip(big.NewInt(68)),
+			Result: helpers.NoahToQnoah(big.NewInt(68)),
 		},
 		{
 			Block:  36600000, // todo
-			Result: helpers.BipToPip(big.NewInt(150)),
+			Result: helpers.NoahToQnoah(big.NewInt(150)),
 		},
 	}
 
@@ -38,7 +38,7 @@ func TestGetRewardForBlock(t *testing.T) {
 
 func TestTotalRewardsCount(t *testing.T) {
 	total := big.NewInt(0)
-	target := helpers.BipToPip(big.NewInt(9800000000))
+	target := helpers.NoahToQnoah(big.NewInt(9800000000))
 
 	for i := uint64(1); i <= 43703000; i++ {
 		total.Add(total, GetRewardForBlock(i))

@@ -2,11 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/MinterTeam/go-amino"
 	"github.com/tendermint/go-amino"
-	"github.com/PillarDevelopment/noax-go-node/cmd/utils"
-	"github.com/PillarDevelopment/noax-go-node/config"
-	"github.com/PillarDevelopment/noax-go-node/core/appdb"
-	"github.com/PillarDevelopment/noax-go-node/core/state"
+	"github.com/noah-blockchain/noah-go-node/cmd/utils"
+	"github.com/noah-blockchain/noah-go-node/config"
+	"github.com/noah-blockchain/noah-go-node/core/appdb"
+	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/db"
 	"github.com/tendermint/tendermint/types"
@@ -14,12 +15,12 @@ import (
 )
 
 func main() {
-	err := common.EnsureDir(utils.GetNoaxHome()+"/config", 0777)
+	err := common.EnsureDir(utils.GetNoahHome()+"/config", 0777)
 	if err != nil {
 		panic(err)
 	}
 
-	ldb, err := db.NewGoLevelDB("state", utils.GetNoaxHome()+"/data")
+	ldb, err := db.NewGoLevelDB("state", utils.GetNoahHome()+"/data")
 	if err != nil {
 		panic(err)
 	}
@@ -43,7 +44,7 @@ func main() {
 	// Compose Genesis
 	genesis := types.GenesisDoc{
 		GenesisTime: time.Date(2019, time.April, 2, 17, 0, 0, 0, time.UTC),
-		ChainID:     "noax-test-network-35",
+		ChainID:     "noah-test-network-35",
 		ConsensusParams: &types.ConsensusParams{
 			Block: types.BlockParams{
 				MaxBytes:   10000000,

@@ -1,11 +1,11 @@
 package transaction
 
 import (
-	"github.com/PillarDevelopment/noax-go-node/core/state"
-	"github.com/PillarDevelopment/noax-go-node/core/types"
-	"github.com/PillarDevelopment/noax-go-node/crypto"
-	"github.com/PillarDevelopment/noax-go-node/helpers"
-	"github.com/PillarDevelopment/noax-go-node/rlp"
+	"github.com/noah-blockchain/noah-go-node/core/state"
+	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/crypto"
+	"github.com/noah-blockchain/noah-go-node/helpers"
+	"github.com/noah-blockchain/noah-go-node/rlp"
 	"math/big"
 	"math/rand"
 	"sync"
@@ -17,7 +17,7 @@ func createTestCandidate(stateDB *state.StateDB) []byte {
 	pubkey := make([]byte, 32)
 	rand.Read(pubkey)
 
-	stateDB.CreateCandidate(address, address, pubkey, 10, 0, types.GetBaseCoin(), helpers.NoaxToPip(big.NewInt(1))) // todo
+	stateDB.CreateCandidate(address, address, pubkey, 10, 0, types.GetBaseCoin(), helpers.NoahToQnoah(big.NewInt(1))) // todo
 
 	return pubkey
 }
@@ -32,9 +32,9 @@ func TestDelegateTx(t *testing.T) {
 
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.NoaxToPip(big.NewInt(1000000))) // todo
+	cState.AddBalance(addr, coin, helpers.NoahToQnoah(big.NewInt(1000000))) // todo
 
-	value := helpers.NoaxToPip(big.NewInt(100)) // todo
+	value := helpers.NoahToQnoah(big.NewInt(100)) // todo
 
 	data := DelegateData{
 		PubKey: pubkey,

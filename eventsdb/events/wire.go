@@ -5,13 +5,13 @@ import "github.com/tendermint/go-amino"
 func RegisterAminoEvents(codec *amino.Codec) {
 	codec.RegisterInterface((*Event)(nil), nil)
 	codec.RegisterConcrete(RewardEvent{},
-		"noax/RewardEvent", nil)
+		"noah/RewardEvent", nil)
 	codec.RegisterConcrete(SlashEvent{},
-		"noax/SlashEvent", nil)
+		"noah/SlashEvent", nil)
 	codec.RegisterConcrete(UnbondEvent{},
-		"noax/UnbondEvent", nil)
+		"noah/UnbondEvent", nil)
 	codec.RegisterConcrete(CoinLiquidationEvent{},
-		"noax/CoinLiquidationEvent", nil)
+		"noah/CoinLiquidationEvent", nil)
 }
 
 type Role byte

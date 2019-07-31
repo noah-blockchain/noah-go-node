@@ -6,9 +6,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/PillarDevelopment/noax-go-node/core/types"
-	"github.com/PillarDevelopment/noax-go-node/formula"
-	"github.com/PillarDevelopment/noax-go-node/rlp"
+	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/formula"
+	"github.com/noah-blockchain/noah-go-node/rlp"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"math/big"
 )
@@ -32,7 +32,7 @@ type Stake struct {
 	Owner    types.Address
 	Coin     types.CoinSymbol
 	Value    *big.Int
-	BipValue *big.Int
+	NoahValue *big.Int
 }
 
 func (s *Stake) MarshalJSON() ([]byte, error) {
@@ -40,16 +40,16 @@ func (s *Stake) MarshalJSON() ([]byte, error) {
 		Owner    types.Address    `json:"owner"`
 		Coin     types.CoinSymbol `json:"coin"`
 		Value    string           `json:"value"`
-		BipValue string           `json:"bip_value"`
+		NoahValue string           `json:"noah_value"`
 	}{
 		Owner:    s.Owner,
 		Coin:     s.Coin,
 		Value:    s.Value.String(),
-		BipValue: s.BipValue.String(),
+		NoahValue: s.NoahValue.String(),
 	})
 }
 
-func (s *Stake) CalcSimulatedBipValue(context *StateDB) *big.Int {
+func (s *Stake) CalcSimulatedNoahValue(context *StateDB) *big.Int {
 	if s.Coin.IsBaseCoin() {
 		return big.NewInt(0).Set(s.Value)
 	}
@@ -72,16 +72,16 @@ func (s *Stake) CalcSimulatedBipValue(context *StateDB) *big.Int {
 	}
 
 	coin := context.getStateCoin(s.Coin)
-	bipValue := formula.CalculateSaleReturn(coin.Volume(), coin.ReserveBalance(), coin.data.Crr, totalStaked)
+	noahValue := formula.CalculateSaleReturn(coin.Volume(), coin.ReserveBalance(), coin.data.Crr, totalStaked)
 
-	value := big.NewInt(0).Set(bipValue)
+	value := big.NewInt(0).Set(noahValue)
 	value.Mul(value, s.Value)
 	value.Div(value, totalStaked)
 
 	return value
 }
 
-func (s *Stake) CalcBipValue(context *StateDB) *big.Int {
+func (s *Stake) CalcNoahValue(context *StateDB) *big.Int {
 	if s.Coin.IsBaseCoin() {
 		return big.NewInt(0).Set(s.Value)
 	}
@@ -105,7 +105,7 @@ func (s *Stake) CalcBipValue(context *StateDB) *big.Int {
 		coin := context.getStateCoin(s.Coin)
 		context.stakeCache[s.Coin] = StakeCache{
 			TotalValue: totalStaked,
-			BipValue:   formula.CalculateSaleReturn(coin.Volume(), coin.ReserveBalance(), coin.data.Crr, totalStaked),
+			NoahValue:   formula.CalculateSaleReturn(coin.Volume(), coin.ReserveBalance(), coin.data.Crr, totalStaked),
 		}
 	}
 
@@ -115,7 +115,7 @@ func (s *Stake) CalcBipValue(context *StateDB) *big.Int {
 		return big.NewInt(0)
 	}
 
-	value := big.NewInt(0).Set(data.BipValue)
+	value := big.NewInt(0).Set(data.NoahValue)
 	value.Mul(value, s.Value)
 	value.Div(value, data.TotalValue)
 
@@ -125,7 +125,7 @@ func (s *Stake) CalcBipValue(context *StateDB) *big.Int {
 type Candidate struct {
 	RewardAddress  types.Address
 	OwnerAddress   types.Address
-	TotalBipStake  *big.Int
+	TotalNoahStake  *big.Int
 	PubKey         types.Pubkey
 	Commission     uint
 	Stakes         []Stake

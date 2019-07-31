@@ -21,7 +21,7 @@ func GetNoaxHome() string {
 		return home
 	}
 
-	return os.ExpandEnv(filepath.Join("$HOME", ".noax"))
+	return os.ExpandEnv(filepath.Join("$HOME", ".noah"))
 }
 
 func GetNoaxConfigPath() string {

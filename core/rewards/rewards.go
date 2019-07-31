@@ -1,8 +1,8 @@
 package rewards
 
 import (
-	"github.com/PillarDevelopment/noax-go-node/core/types"
-	"github.com/PillarDevelopment/noax-go-node/helpers"
+	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/helpers"
 	"math/big"
 )
 
@@ -21,17 +21,17 @@ func GetRewardForBlock(blockHeight uint64) *big.Int {
 	}
 
 	if blockHeight == lastBlock {
-		return helpers.BipToPip(big.NewInt(lastReward))
+		return helpers.NoahToQnoah(big.NewInt(lastReward))
 	}
 
 	reward := big.NewInt(firstReward)
 	reward.Sub(reward, big.NewInt(int64(blockHeight/200000)))
 
 	if reward.Cmp(types.Big0) < 1 {
-		return helpers.BipToPip(big.NewInt(1))
+		return helpers.NoahToQnoah(big.NewInt(1))
 	}
 
-	return helpers.BipToPip(reward)
+	return helpers.NoahToQnoah(reward)
 }
 
 func SetStartHeight(sHeight uint64) {

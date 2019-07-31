@@ -2,13 +2,13 @@ package api
 
 import (
 	"fmt"
-	"github.com/MinterTeam/go-amino"
-	"github.com/MinterTeam/minter-go-node/config"
-	"github.com/MinterTeam/minter-go-node/core/minter"
-	"github.com/MinterTeam/minter-go-node/core/state"
-	"github.com/MinterTeam/minter-go-node/eventsdb/events"
-	"github.com/MinterTeam/minter-go-node/log"
-	"github.com/MinterTeam/minter-go-node/rpc/lib/server"
+	"github.com/tendermint/go-amino"
+	"github.com/noah-blockchain/noah-go-node/config"
+	"github.com/noah-blockchain/noah-go-node/core/noah"
+	"github.com/noah-blockchain/noah-go-node/core/state"
+	"github.com/noah-blockchain/noah-go-node/eventsdb/events"
+	"github.com/noah-blockchain/noah-go-node/log"
+	"github.com/noah-blockchain/noah-go-node/rpc/lib/server"
 	"github.com/rs/cors"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
@@ -25,9 +25,9 @@ import (
 
 var (
 	cdc        = amino.NewCodec()
-	blockchain *minter.Blockchain
+	blockchain *noah.Blockchain
 	client     *rpc.Local
-	minterCfg  *config.Config
+	noahCfg  *config.Config
 )
 
 var Routes = map[string]*rpcserver.RPCFunc{
@@ -55,8 +55,8 @@ var Routes = map[string]*rpcserver.RPCFunc{
 	"missed_blocks":          rpcserver.NewRPCFunc(MissedBlocks, "pub_key,height"),
 }
 
-func RunAPI(b *minter.Blockchain, tmRPC *rpc.Local, cfg *config.Config) {
-	minterCfg = cfg
+func RunAPI(b *noah.Blockchain, tmRPC *rpc.Local, cfg *config.Config) {
+	noahCfg = cfg
 	RegisterCryptoAmino(cdc)
 	events.RegisterAminoEvents(cdc)
 	RegisterEvidenceMessages(cdc)

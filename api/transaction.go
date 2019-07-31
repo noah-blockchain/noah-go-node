@@ -2,8 +2,8 @@ package api
 
 import (
 	"fmt"
-	"github.com/PillarDevelopment/noax-go-node/core/transaction"
-	"github.com/PillarDevelopment/noax-go-node/rpc/lib/types"
+	"github.com/noah-blockchain/noah-go-node/core/transaction"
+	"github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 	"github.com/tendermint/tendermint/libs/common"
 )
 

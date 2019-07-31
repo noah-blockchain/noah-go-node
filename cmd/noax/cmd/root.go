@@ -11,7 +11,7 @@ import (
 var cfg *config.Config
 
 var RootCmd = &cobra.Command{
-	Use:   "noax",
+	Use:   "noah",
 	Short: "Noax Go Node",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		v := viper.New()

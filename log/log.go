@@ -1,7 +1,7 @@
 package log
 
 import (
-	"github.com/PillarDevelopment/noax-go-node/config"
+	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/tendermint/tendermint/libs/cli/flags"
 	"github.com/tendermint/tendermint/libs/log"
 	"io"

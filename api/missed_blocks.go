@@ -2,8 +2,8 @@ package api
 
 import (
 	"bytes"
-	"github.com/PillarDevelopment/noax-go-node/core/types"
-	"github.com/PillarDevelopment/noax-go-node/rpc/lib/types"
+	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 )
 
 type MissedBlocksResponse struct {

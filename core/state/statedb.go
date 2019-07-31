@@ -4,17 +4,17 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/tendermint/go-amino"
-	"github.com/PillarDevelopment/noax-go-node/cmd/utils"
-	"github.com/PillarDevelopment/noax-go-node/core/rewards"
-	"github.com/PillarDevelopment/noax-go-node/core/types"
-	"github.com/PillarDevelopment/noax-go-node/core/validators"
-	"github.com/PillarDevelopment/noax-go-node/eventsdb"
-	"github.com/PillarDevelopment/noax-go-node/eventsdb/events"
-	"github.com/PillarDevelopment/noax-go-node/formula"
-	"github.com/PillarDevelopment/noax-go-node/helpers"
-	"github.com/PillarDevelopment/noax-go-node/log"
-	"github.com/PillarDevelopment/noax-go-node/rlp"
-	"github.com/PillarDevelopment/noax-go-node/upgrades"
+	"github.com/noah-blockchain/noah-go-node/cmd/utils"
+	"github.com/noah-blockchain/noah-go-node/core/rewards"
+	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/core/validators"
+	"github.com/noah-blockchain/noah-go-node/eventsdb"
+	"github.com/noah-blockchain/noah-go-node/eventsdb/events"
+	"github.com/noah-blockchain/noah-go-node/formula"
+	"github.com/noah-blockchain/noah-go-node/helpers"
+	"github.com/noah-blockchain/noah-go-node/log"
+	"github.com/noah-blockchain/noah-go-node/rlp"
+	"github.com/noah-blockchain/noah-go-node/upgrades"
 	dbm "github.com/tendermint/tendermint/libs/db"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"math/big"
@@ -23,9 +23,9 @@ import (
 
 	"bytes"
 	"encoding/binary"
-	"github.com/PillarDevelopment/noax-go-node/core/check"
-	"github.com/PillarDevelopment/noax-go-node/core/dao"
-	"github.com/PillarDevelopment/noax-go-node/core/developers"
+	"github.com/noah-blockchain/noah-go-node/core/check"
+	"github.com/noah-blockchain/noah-go-node/core/dao"
+	"github.com/noah-blockchain/noah-go-node/core/developers"
 	"sort"
 )
 
@@ -79,7 +79,7 @@ type StateDB struct {
 
 type StakeCache struct {
 	TotalValue *big.Int
-	NoaxValue   *big.Int // todo
+	NoahValue   *big.Int // todo
 }
 
 func NewForCheck(height uint64, db dbm.DB) (*StateDB, error) {
@@ -645,7 +645,7 @@ func (s *StateDB) CreateValidator(
 
 	vals.data = append(vals.data, Validator{
 		RewardAddress: rewardAddress,
-		TotalNoaxStake: initialStake, // todo
+		TotalNoahStake: initialStake, // todo
 		PubKey:        pubkey,
 		Commission:    commission,
 		AccumReward:   big.NewInt(0),
@@ -682,14 +682,14 @@ func (s *StateDB) CreateCandidate(
 				Owner:    rewardAddress,
 				Coin:     coin,
 				Value:    initialStake,
-				NoaxValue: big.NewInt(0), // todo
+				NoahValue: big.NewInt(0), // todo
 			},
 		},
 		CreatedAtBlock: currentBlock,
 		Status:         CandidateStatusOffline,
 	}
 
-	candidate.Stakes[0].NoaxValue = candidate.Stakes[0].CalcNoaxValue(s) // todo
+	candidate.Stakes[0].NoahValue = candidate.Stakes[0].CalcNoahValue(s) // todo
 
 	candidates.data = append(candidates.data, candidate)
 
@@ -931,7 +931,7 @@ func (s *StateDB) GetCandidates(count int, block int64) []Candidate {
 	}
 
 	sort.SliceStable(activeCandidates, func(i, j int) bool {
-		return activeCandidates[i].TotalNoaxStake.Cmp(candidates[j].TotalNoaxStake) == -1 // todo
+		return activeCandidates[i].TotalNoahStake.Cmp(candidates[j].TotalNoahStake) == -1 // todo
 	})
 
 	if len(activeCandidates) < count {
@@ -939,7 +939,7 @@ func (s *StateDB) GetCandidates(count int, block int64) []Candidate {
 	}
 
 	sort.SliceStable(activeCandidates, func(i, j int) bool {
-		return activeCandidates[i].TotalNoaxStake.Cmp(activeCandidates[j].TotalNoaxStake) == 1
+		return activeCandidates[i].TotalNoahStake.Cmp(activeCandidates[j].TotalNoahStake) == 1
 	})
 
 	return activeCandidates[:count]
@@ -1017,14 +1017,14 @@ func (s *StateDB) PayRewards() {
 			for j := range candidate.Stakes {
 				stake := candidate.Stakes[j]
 
-				if stake.NoaxValue.Cmp(big.NewInt(0)) == 0 {
+				if stake.NoahValue.Cmp(big.NewInt(0)) == 0 {
 					continue
 				}
 
 				reward := big.NewInt(0).Set(totalReward)
-				reward.Mul(reward, stake.NoaxValue)
+				reward.Mul(reward, stake.NoahValue)
 
-				reward.Div(reward, validator.TotalNoaxStake)
+				reward.Div(reward, validator.TotalNoahStake)
 
 				if reward.Cmp(types.Big0) < 1 {
 					continue
@@ -1061,19 +1061,19 @@ func (s *StateDB) RecalculateTotalStakeValues() {
 	for i := range stateCandidates.data {
 		candidate := &stateCandidates.data[i]
 
-		TotalNoaxStake := big.NewInt(0)
+		TotalNoahStake := big.NewInt(0)
 
 		for j := range candidate.Stakes {
 			stake := &candidate.Stakes[j]
-			stake.NoaxValue = stake.CalcNoaxValue(s)
-			TotalNoaxStake.Add(TotalNoaxStake, stake.NoaxValue)
+			stake.NoahValue = stake.CalcNoahValue(s)
+			TotalNoahStake.Add(TotalNoahStake, stake.NoahValue)
 		}
 
-		candidate.TotalNoaxStake = TotalNoaxStake
+		candidate.TotalNoahStake = TotalNoahStake
 
 		for j := range vals.data {
 			if bytes.Equal(vals.data[j].PubKey, candidate.PubKey) {
-				vals.data[j].TotalNoaxStake = TotalNoaxStake
+				vals.data[j].TotalNoahStake = TotalNoahStake
 				break
 			}
 		}
@@ -1108,7 +1108,7 @@ func (s *StateDB) Delegate(sender types.Address, pubkey []byte, coin types.CoinS
 					Owner:    sender,
 					Coin:     coin,
 					Value:    value,
-					NoaxValue: big.NewInt(0),
+					NoahValue: big.NewInt(0),
 				})
 			}
 		}
@@ -1291,12 +1291,12 @@ func (s *StateDB) SetValidatorAbsent(address [20]byte) {
 						Owner:    stake.Owner,
 						Coin:     stake.Coin,
 						Value:    newValue,
-						NoaxValue: big.NewInt(0),
+						NoahValue: big.NewInt(0),
 					}
 					totalStake.Add(totalStake, newValue)
 				}
 
-				validator.TotalNoaxStake = totalStake
+				validator.TotalNoahStake = totalStake
 			}
 
 			s.setStateCandidates(candidates)
@@ -1362,7 +1362,7 @@ func (s *StateDB) PunishByzantineValidator(address [20]byte) {
 
 			candidate.Stakes = []Stake{}
 			candidate.Status = CandidateStatusOffline
-			validator.TotalNoaxStake = big.NewInt(0)
+			validator.TotalNoahStake = big.NewInt(0)
 			validator.toDrop = true
 
 			s.setStateCandidates(candidates)
@@ -1404,7 +1404,7 @@ func (s *StateDB) SetNewValidators(candidates []Candidate) {
 
 		newVals = append(newVals, Validator{
 			RewardAddress: candidate.RewardAddress,
-			TotalNoaxStake: candidate.TotalNoaxStake,
+			TotalNoahStake: candidate.TotalNoahStake,
 			PubKey:        candidate.PubKey,
 			Commission:    candidate.Commission,
 			AccumReward:   accumReward,
@@ -1481,16 +1481,16 @@ func (s *StateDB) MultisigAccountExists(address types.Address) bool {
 }
 
 func (s *StateDB) IsNewCandidateStakeSufficient(coinSymbol types.CoinSymbol, stake *big.Int) bool {
-	noaxValue := (&Stake{
+	noahValue := (&Stake{
 		Coin:     coinSymbol,
 		Value:    stake,
-		NoaxValue: big.NewInt(0),
-	}).CalcNoaxValue(s)
+		NoahValue: big.NewInt(0),
+	}).CalcNoahValue(s)
 
 	candidates := s.getStateCandidates()
 
 	for _, candidate := range candidates.data {
-		if candidate.TotalNoaxStake.Cmp(noaxValue) == -1 {
+		if candidate.TotalNoahStake.Cmp(noahValue) == -1 {
 			return true
 		}
 	}
@@ -1516,7 +1516,7 @@ func (s *StateDB) ClearCandidates() {
 	// Check for candidates count overflow and unbond smallest ones
 	if len(candidates.data) > maxCandidates {
 		sort.SliceStable(candidates.data, func(i, j int) bool {
-			return candidates.data[i].TotalNoaxStake.Cmp(candidates.data[j].TotalNoaxStake) == 1
+			return candidates.data[i].TotalNoahStake.Cmp(candidates.data[j].TotalNoahStake) == 1
 		})
 
 		dropped := candidates.data[maxCandidates:]
@@ -1542,7 +1542,7 @@ func (s *StateDB) ClearStakes() {
 		// Check for delegators count overflow and unbond smallest ones
 		if len(candidate.Stakes) > MaxDelegatorsPerCandidate {
 			sort.SliceStable(candidate.Stakes, func(t, d int) bool {
-				return candidates.data[i].Stakes[t].NoaxValue.Cmp(candidates.data[i].Stakes[d].NoaxValue) == 1
+				return candidates.data[i].Stakes[t].NoahValue.Cmp(candidates.data[i].Stakes[d].NoahValue) == 1
 			})
 
 			dropped := candidates.data[i].Stakes[MaxDelegatorsPerCandidate:]
@@ -1573,14 +1573,14 @@ func (s *StateDB) IsDelegatorStakeSufficient(sender types.Address, pubKey []byte
 	stake := Stake{
 		Coin:     coinSymbol,
 		Value:    value,
-		NoaxValue: big.NewInt(0),
+		NoahValue: big.NewInt(0),
 	}
 
-	noaxValue := big.NewInt(0)
+	noahValue := big.NewInt(0)
 	if s.Height() > upgrades.UpgradeBlock1 {
-		noaxValue = stake.CalcSimulatedNoaxValue(s)
+		noahValue = stake.CalcSimulatedNoahValue(s)
 	} else {
-		noaxValue = stake.CalcNoaxValue(s)
+		noahValue = stake.CalcNoahValue(s)
 	}
 
 	candidates := s.getStateCandidates()
@@ -1588,7 +1588,7 @@ func (s *StateDB) IsDelegatorStakeSufficient(sender types.Address, pubKey []byte
 	for _, candidate := range candidates.data {
 		if bytes.Equal(candidate.PubKey, pubKey) {
 			for _, stake := range candidate.Stakes[:MaxDelegatorsPerCandidate] {
-				if stake.NoaxValue.Cmp(noaxValue) == -1 {
+				if stake.NoahValue.Cmp(noahValue) == -1 {
 					return true
 				}
 			}
@@ -1857,14 +1857,14 @@ func (s *StateDB) Export(currentHeight uint64) types.AppState {
 				Owner:    s.Owner,
 				Coin:     s.Coin,
 				Value:    s.Value,
-				NoaxValue: s.NoaxValue,
+				NoahValue: s.NoahValue,
 			})
 		}
 
 		appState.Candidates = append(appState.Candidates, types.Candidate{
 			RewardAddress:  candidate.RewardAddress,
 			OwnerAddress:   candidate.OwnerAddress,
-			TotalNoaxStake:  candidate.TotalNoaxStake,
+			TotalNoahStake:  candidate.TotalNoahStake,
 			PubKey:         candidate.PubKey,
 			Commission:     candidate.Commission,
 			Stakes:         stakes,
@@ -1877,7 +1877,7 @@ func (s *StateDB) Export(currentHeight uint64) types.AppState {
 	for _, val := range vals.data {
 		appState.Validators = append(appState.Validators, types.Validator{
 			RewardAddress: val.RewardAddress,
-			TotalNoaxStake: val.TotalNoaxStake,
+			TotalNoahStake: val.TotalNoahStake,
 			PubKey:        val.PubKey,
 			Commission:    val.Commission,
 			AccumReward:   val.AccumReward,
@@ -1923,7 +1923,7 @@ func (s *StateDB) Import(appState types.AppState) {
 	for _, v := range appState.Validators {
 		vals.data = append(vals.data, Validator{
 			RewardAddress: v.RewardAddress,
-			TotalNoaxStake: v.TotalNoaxStake,
+			TotalNoahStake: v.TotalNoahStake,
 			PubKey:        v.PubKey,
 			Commission:    v.Commission,
 			AccumReward:   v.AccumReward,
@@ -1941,13 +1941,13 @@ func (s *StateDB) Import(appState types.AppState) {
 				Owner:    stake.Owner,
 				Coin:     stake.Coin,
 				Value:    stake.Value,
-				NoaxValue: stake.NoaxValue,
+				NoahValue: stake.NoahValue,
 			}
 		}
 		cands.data = append(cands.data, Candidate{
 			RewardAddress:  c.RewardAddress,
 			OwnerAddress:   c.OwnerAddress,
-			TotalNoaxStake:  c.TotalNoaxStake,
+			TotalNoahStake:  c.TotalNoahStake,
 			PubKey:         c.PubKey,
 			Commission:     c.Commission,
 			Stakes:         stakes,
@@ -1976,7 +1976,7 @@ func (s *StateDB) CheckForInvariants() error {
 		return nil
 	}
 
-	genesisFile := utils.GetNoaxHome() + "/config/genesis.json"
+	genesisFile := utils.GetNoahHome() + "/config/genesis.json"
 	genesis, err := tmTypes.GenesisDocFromFile(genesisFile)
 	if err != nil {
 		panic(err)
@@ -2111,7 +2111,7 @@ func (s *StateDB) CheckForInvariants() error {
 		e := fmt.Errorf("smth wrong with total base coins in blockchain. Expected total supply to be %s, got %s",
 			predictedBasecoinVolume, totalBasecoinVolume)
 
-		if delta.Cmp(helpers.NoaxToPip(big.NewInt(1000))) == 1 {
+		if delta.Cmp(helpers.NoahToQnoah(big.NewInt(1000))) == 1 {
 			println(fmt.Sprintf("CRITICAL INVARIANTS FAILURE (H:%d): %s", height, e))
 			os.Exit(1)
 		}

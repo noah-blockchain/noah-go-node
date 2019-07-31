@@ -1,7 +1,7 @@
 package commissions
 
 // all commissions are divided by 10^15
-// actual commission is SendTx * 10^15 = 10 000 000 000 000 000 XAON = 0,01 NOAX //todo
+// actual commission is SendTx * 10^15 = 10 000 000 000 000 000 QNOAH = 0,01 NOAH //todo
 const (
 	SendTx                int64 = 10
 	CreateMultisig        int64 = 100

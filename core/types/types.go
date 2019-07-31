@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/PillarDevelopment/noax-go-node/hexutil"
+	"github.com/noah-blockchain/noah-go-node/hexutil"
 	"math/big"
 	"math/rand"
 	"reflect"
@@ -189,7 +189,7 @@ func BigToAddress(b *big.Int) Address  { return BytesToAddress(b.Bytes()) }
 func HexToAddress(s string) Address    { return BytesToAddress(FromHex(s, "Mx")) }
 
 // IsHexAddress verifies whether a string can represent a valid hex-encoded
-// Noax address or not.
+// Noah address or not.
 func IsHexAddress(s string) bool {
 	if hasHexPrefix(s, "Mx") {
 		s = s[2:]

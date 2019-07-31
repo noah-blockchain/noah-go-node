@@ -5,14 +5,14 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"github.com/tendermint/go-amino"
-	"github.com/PillarDevelopment/noax-go-node/core/noax"
-	"github.com/PillarDevelopment/noax-go-node/core/noax"
+	"github.com/noah-blockchain/noah-go-node/core/noax"
+	"github.com/noah-blockchain/noah-go-node/core/noax"
 	"github.com/tendermint/go-amino"
-	"github.com/PillarDevelopment/noax-go-node/core/dao"
-	"github.com/PillarDevelopment/noax-go-node/core/noax"
-	"github.com/PillarDevelopment/noax-go-node/core/state"
-	"github.com/PillarDevelopment/noax-go-node/core/types"
-	"github.com/PillarDevelopment/noax-go-node/helpers"
+	"github.com/noah-blockchain/noah-go-node/core/dao"
+	"github.com/noah-blockchain/noah-go-node/core/noax"
+	"github.com/noah-blockchain/noah-go-node/core/state"
+	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/helpers"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"math"
 	"math/big"
@@ -162,7 +162,7 @@ func main() {
 	}
 
 	appHash := [32]byte{}
-	networkId := "noax-mainnet-1"
+	networkId := "noah-mainnet-1"
 
 	// Compose Genesis
 	genesis := tmTypes.GenesisDoc{

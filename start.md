@@ -2,14 +2,14 @@
 
 You'll need golang installed https://golang.org/doc/install and the required environment variables set
 
-Clone NOAX source code to your machine
+Clone NOAH source code to your machine
 
 ```
-mkdir -p $GOPATH/src/github.com/noax
+mkdir -p $GOPATH/src/github.com/noah-blockchain
 
-cd $GOPATH/src/github.com/noax
+cd $GOPATH/src/github.com/noah-blockchain
 
-git clone https://bitbucket.org/amm-core-devteam/noah-blockchain.git
+git clone https://github.com/noah-blockchain/noah-go-node.git
 
 cd noah-blockchain
 ```
@@ -33,12 +33,12 @@ make build
 
 to put the binary in ./build.
 
-The latest NOAX-node version is now installed.
+The latest NOAH-node version is now installed.
 
-Run NOAX
+Run NOAH
 
 ```
-noax
+noah
 ```
 
 Then open http://localhost:3000/ in local browser to see node's GUI.

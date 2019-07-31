@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"github.com/Pillardevelopment/noax-go-node/cmd/utils"
+	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	tmConfig "github.com/tendermint/tendermint/config"
 	"os"
 	"path/filepath"
@@ -28,7 +28,7 @@ const (
 
 var (
 	NetworkId        string
-	DefaultNetworkId = "noax-mainnet-1"
+	DefaultNetworkId = "noah-mainnet-1"
 
 	defaultConfigFilePath   = filepath.Join(defaultConfigDir, defaultConfigFileName)
 	defaultGenesisJSONPath  = filepath.Join(defaultConfigDir, defaultGenesisJSONName)
@@ -41,9 +41,9 @@ func DefaultConfig() *Config {
 	cfg := defaultConfig()
 
 	cfg.P2P.Seeds = "25104d4b173d1047e9d1a70cdefde9e30707beb1@84.201.143.192:26656," +
-		"1e1c6149451d2a7c1072523e49cab658080d9bd2@noax-nodes-1.mainnet.btcsecure.io:26656," +
+		"1e1c6149451d2a7c1072523e49cab658080d9bd2@noah-nodes-1.mainnet.btcsecure.io:26656," +
 		"667b26ffa9f844719a9cd73f96a49252f8bfd7df@node-1.minterdex.com:26656," +
-		"c098df48319b81a7535b9784873d0f143f8b72f5@noax-node-1.rundax.com:26656"
+		"c098df48319b81a7535b9784873d0f143f8b72f5@noah-node-1.rundax.com:26656"
 
 	cfg.TxIndex = &tmConfig.TxIndexConfig{
 		Indexer:      "kv",

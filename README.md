@@ -1,16 +1,16 @@
-#NOAX-blockchain prototype(MVP)
+#NOAH-blockchain go-node
 
-###[dev-branch](https://bitbucket.org/amm-core-devteam/noah-blockchain/src/dev/)
-Ветка содержит наиболее актуальную версию разработки
+###[dev-branch](https://github.com/noah-blockchain/noah-go-node/tree/dev)
+The branch contains the most current version
 
-####[alpha-branch](https://bitbucket.org/amm-core-devteam/noah-blockchain/src/alpha/)
-Ветка содержит версию для тестирования в закрытой среде тестеров
+####[alpha-branch](https://github.com/noah-blockchain/noah-go-node/tree/alpha)
+The branch contains a version for alpha-testing
 
-####[beta-branch](https://bitbucket.org/amm-core-devteam/noah-blockchain/src/beta/)
-Ветка содержит версию дяля публичного тестирования сообществом
+####[beta-branch](https://github.com/noah-blockchain/noah-go-node/tree/beta)
+The branch contains a version for beta-testing
 
-####[testnet-branch](https://bitbucket.org/amm-core-devteam/noah-blockchain/src/testnet/)
-Ветка содержит TESTNET Implementation
+####[testnet-branch](https://github.com/noah-blockchain/noah-go-node/tree/testnet)
+Implementation for test network
 
-####[master-branch](https://bitbucket.org/amm-core-devteam/noah-blockchain/src/master/)
-Версия содержит рубличный релиз 1.0 и выше
+####[master-branch](https://github.com/noah-blockchain/noah-go-node/tree/master)
+Public release

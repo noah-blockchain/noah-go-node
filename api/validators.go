@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/PillarDevelopment/noax-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/core/types"
 )
 
 type ValidatorResponse struct {

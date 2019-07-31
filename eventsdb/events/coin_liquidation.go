@@ -2,7 +2,7 @@ package events
 
 import (
 	"encoding/json"
-	"github.com/PillarDevelopment/noax-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/core/types"
 )
 
 type CoinLiquidationEvent struct {

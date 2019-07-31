@@ -1,16 +1,16 @@
 package state
 
 import (
-	"github.com/PillarDevelopment/noax-go-node/crypto"
+	"github.com/noah-blockchain/noah-go-node/crypto"
 	"io"
 	"math/big"
 
-	"github.com/PillarDevelopment/noax-go-node/core/types"
-	"github.com/PillarDevelopment/noax-go-node/rlp"
+	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/rlp"
 	"sort"
 )
 
-// stateAccount represents an Noax account which is being modified.
+// stateAccount represents an Noah account which is being modified.
 //
 // The usage pattern is as follows:
 // First you need to obtain a state object.
@@ -84,7 +84,7 @@ func (b *Balances) DecodeRLP(s *rlp.Stream) error {
 	return nil
 }
 
-// Account is the Noax consensus representation of accounts.
+// Account is the Noah consensus representation of accounts.
 // These objects are stored in the main account trie.
 type Account struct {
 	Nonce        uint64

@@ -3,8 +3,8 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/PillarDevelopment/noax-go-node/core/transaction"
-	"github.com/PillarDevelopment/noax-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/core/transaction"
+	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/rpc/core/types"
 )

@@ -1,4 +1,4 @@
-package noax
+package noah
 
 import (
 	"context"
@@ -7,18 +7,18 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/PillarDevelopment/go-amino"
-	"github.com/PillarDevelopment/noax-go-node/cmd/utils"
-	"github.com/PillarDevelopment/noax-go-node/config"
-	"github.com/PillarDevelopment/noax-go-node/core/developers"
-	"github.com/PillarDevelopment/noax-go-node/core/state"
-	"github.com/PillarDevelopment/noax-go-node/core/transaction"
-	"github.com/PillarDevelopment/noax-go-node/core/types"
-	"github.com/PillarDevelopment/noax-go-node/crypto"
-	"github.com/PillarDevelopment/noax-go-node/eventsdb"
-	"github.com/PillarDevelopment/noax-go-node/helpers"
-	"github.com/PillarDevelopment/noax-go-node/log"
-	"github.com/PillarDevelopment/noax-go-node/rlp"
+	"github.com/tendermint/go-amino"
+	"github.com/noah-blockchain/noah-go-node/cmd/utils"
+	"github.com/noah-blockchain/noah-go-node/config"
+	"github.com/noah-blockchain/noah-go-node/core/developers"
+	"github.com/noah-blockchain/noah-go-node/core/state"
+	"github.com/noah-blockchain/noah-go-node/core/transaction"
+	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/crypto"
+	"github.com/noah-blockchain/noah-go-node/eventsdb"
+	"github.com/noah-blockchain/noah-go-node/helpers"
+	"github.com/noah-blockchain/noah-go-node/log"
+	"github.com/noah-blockchain/noah-go-node/rlp"
 	tmConfig "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/common"
 	log2 "github.com/tendermint/tendermint/libs/log"
@@ -52,18 +52,18 @@ func init() {
 }
 
 func initNode() {
-	utils.NoaxHome = os.ExpandEnv(filepath.Join("$HOME", ".noax_test"))
-	_ = os.RemoveAll(utils.NoaxHome)
+	utils.NoahHome = os.ExpandEnv(filepath.Join("$HOME", ".noah_test"))
+	_ = os.RemoveAll(utils.NoahHome)
 
-	if err := common.EnsureDir(utils.GetNoaxHome()+"/tmdata/blockstore.db", 0777); err != nil {
+	if err := common.EnsureDir(utils.GetNoahHome()+"/tmdata/blockstore.db", 0777); err != nil {
 		log.Error(err.Error())
 		os.Exit(1)
 	}
 
-	noaxCfg := config.GetConfig()
-	log.InitLog(noaxCfg)
-	eventsdb.InitDB(noaxCfg)
-	cfg = config.GetTmConfig(noaxCfg)
+	noahCfg := config.GetConfig()
+	log.InitLog(noahCfg)
+	eventsdb.InitDB(noahCfg)
+	cfg = config.GetTmConfig(noahCfg)
 	cfg.Consensus.TimeoutPropose = 0
 	cfg.Consensus.TimeoutPrecommit = 0
 	cfg.Consensus.TimeoutPrevote = 0
@@ -82,7 +82,7 @@ func initNode() {
 	b, _ := hex.DecodeString("825ca965c34ef1c8343e8e377959108370c23ba6194d858452b63432456403f9")
 	privateKey, _ = crypto.ToECDSA(b)
 
-	app = NewNoaxBlockchain(noaxCfg)
+	app = NewNoahBlockchain(noahCfg)
 	nodeKey, err := p2p.LoadOrGenNodeKey(cfg.NodeKeyFile())
 	if err != nil {
 		panic(err)
@@ -138,7 +138,7 @@ func TestSendTx(t *testing.T) {
 		time.Sleep(time.Millisecond)
 	}
 
-	value := helpers.BipToPip(big.NewInt(10))
+	value := helpers.NoahToQnoah(big.NewInt(10))
 	to := types.Address([20]byte{1})
 
 	data := transaction.SendData{
@@ -395,7 +395,7 @@ func getGenesis() (*types2.GenesisDoc, error) {
 				Balance: []types.Balance{
 					{
 						Coin:  types.GetBaseCoin(),
-						Value: helpers.BipToPip(big.NewInt(1000000)),
+						Value: helpers.NoahToQnoah(big.NewInt(1000000)),
 					},
 				},
 			},
@@ -410,7 +410,7 @@ func getGenesis() (*types2.GenesisDoc, error) {
 	}
 
 	genesisDoc := types2.GenesisDoc{
-		ChainID:     "noax-test-network",
+		ChainID:     "noah-test-network",
 		GenesisTime: time.Now(),
 		AppHash:     appHash[:],
 		AppState:    json.RawMessage(appStateJSON),
@@ -421,7 +421,7 @@ func getGenesis() (*types2.GenesisDoc, error) {
 		return nil, err
 	}
 
-	genesisFile := utils.GetNoaxHome() + "/config/genesis.json"
+	genesisFile := utils.GetNoahHome() + "/config/genesis.json"
 	if err := genesisDoc.SaveAs(genesisFile); err != nil {
 		panic(err)
 	}
@@ -442,7 +442,7 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 
 		validators[i] = types.Validator{
 			RewardAddress: addr,
-			TotalBipStake: stake,
+			TotalNoahStake: stake,
 			PubKey:        pkey,
 			Commission:    100,
 			AccumReward:   big.NewInt(0),
@@ -452,7 +452,7 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 		candidates[i] = types.Candidate{
 			RewardAddress: addr,
 			OwnerAddress:  addr,
-			TotalBipStake: big.NewInt(1),
+			TotalNoahStake: big.NewInt(1),
 			PubKey:        pkey,
 			Commission:    100,
 			Stakes: []types.Stake{
@@ -460,7 +460,7 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 					Owner:    addr,
 					Coin:     types.GetBaseCoin(),
 					Value:    stake,
-					BipValue: stake,
+					NoahValue: stake,
 				},
 			},
 			CreatedAtBlock: 1,

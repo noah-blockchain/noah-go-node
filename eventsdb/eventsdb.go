@@ -3,9 +3,9 @@ package eventsdb
 import (
 	"encoding/binary"
 	"github.com/tendermint/go-amino"
-	"github.com/PillarDevelopment/noax-go-node/cmd/utils"
-	"github.com/PillarDevelopment/noax-go-node/config"
-	e "github.com/PillarDevelopment/noax-go-node/eventsdb/events"
+	"github.com/noah-blockchain/noah-go-node/cmd/utils"
+	"github.com/noah-blockchain/noah-go-node/config"
+	e "github.com/noah-blockchain/noah-go-node/eventsdb/events"
 	"github.com/tendermint/tendermint/libs/db"
 	"sync"
 )
