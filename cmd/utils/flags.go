@@ -6,16 +6,16 @@ import (
 )
 
 var (
-	NoaxHome   string
-	NoaxConfig string
+	NoahHome   string
+	NoahConfig string
 )
 
-func GetNoaxHome() string {
-	if NoaxHome != "" {
-		return NoaxHome
+func GetNoahHome() string {
+	if NoahHome != "" {
+		return NoahHome
 	}
 
-	home := os.Getenv("NOAXHOME")
+	home := os.Getenv("NOAHHOME")
 
 	if home != "" {
 		return home
@@ -24,10 +24,10 @@ func GetNoaxHome() string {
 	return os.ExpandEnv(filepath.Join("$HOME", ".noah"))
 }
 
-func GetNoaxConfigPath() string {
-	if NoaxConfig != "" {
-		return NoaxConfig
+func GetNoahConfigPath() string {
+	if NoahConfig != "" {
+		return NoahConfig
 	}
 
-	return NoaxConfig() + "/config/config.toml"
+	return NoahConfig() + "/config/config.toml"
 }

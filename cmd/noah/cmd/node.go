@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/PillarDevelopment/noax-go-node/api"
-	"github.com/PillarDevelopment/noax-go-node/cmd/utils"
-	"github.com/PillarDevelopment/noax-go-node/config"
-	"github.com/PillarDevelopment/noax-go-node/core/noax"
-	"github.com/PillarDevelopment/noax-go-node/eventsdb"
-	"github.com/PillarDevelopment/noax-go-node/gui"
-	"github.com/PillarDevelopment/noax-go-node/log"
+	"github.com/noah-blockchain/noah-go-node/api"
+	"github.com/noah-blockchain/noah-go-node/cmd/utils"
+	"github.com/noah-blockchain/noah-go-node/config"
+	"github.com/noah-blockchain/noah-go-node/core/noah"
+	"github.com/noah-blockchain/noah-go-node/eventsdb"
+	"github.com/noah-blockchain/noah-go-node/gui"
+	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/gobuffalo/packr"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/abci/types"
@@ -26,7 +26,7 @@ import (
 
 var RunNode = &cobra.Command{
 	Use:   "node",
-	Short: "Run the Noax node",
+	Short: "Run the Noah node",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return runNode()
 	},
@@ -42,18 +42,18 @@ func runNode() error {
 
 	tmConfig := config.GetTmConfig(cfg)
 
-	if err := common.EnsureDir(utils.GetNoaxHome()+"/config", 0777); err != nil {
+	if err := common.EnsureDir(utils.GetNoahHome()+"/config", 0777); err != nil {
 		return err
 	}
 
-	if err := common.EnsureDir(utils.GetNoaxHome()+"/tmdata", 0777); err != nil {
+	if err := common.EnsureDir(utils.GetNoahHome()+"/tmdata", 0777); err != nil {
 		return err
 	}
 
 	// init events db
 	eventsdb.InitDB(cfg)
 
-	app := noax.NewNoaxBlockchain(cfg)
+	app := noah.NewNoahBlockchain(cfg)
 
 	// update BlocksTimeDelta in case it was corrupted
 	updateBlocksTimeDelta(app, tmConfig)
@@ -106,7 +106,7 @@ func recheckMempool(node *tmNode.Node, config *config.Config) {
 	}
 }
 
-func updateBlocksTimeDelta(app *noax.Blockchain, config *tmCfg.Config) {
+func updateBlocksTimeDelta(app *noah.Blockchain, config *tmCfg.Config) {
 	blockStoreDB, err := tmNode.DefaultDBProvider(&tmNode.DBContext{ID: "blockstore", Config: config})
 	if err != nil {
 		panic(err)
@@ -156,7 +156,7 @@ func startTendermintNode(app types.Application, cfg *tmCfg.Config) *tmNode.Node 
 }
 
 func getGenesis() (doc *tmTypes.GenesisDoc, e error) {
-	genesisFile := utils.GetNoaxHome() + "/config/genesis.json"
+	genesisFile := utils.GetNoahHome() + "/config/genesis.json"
 
 	if !common.FileExists(genesisFile) {
 		box := packr.NewBox("../../../mainnet/")

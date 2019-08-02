@@ -14,6 +14,11 @@ git clone https://github.com/noah-blockchain/noah-go-node.git
 cd noah-blockchain
 ```
 
+Install Dep [dependency management tool for Go](https://github.com/golang/dep)
+```
+curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+```
+
 Get Tools & Dependencies
 ```
 make get_tools

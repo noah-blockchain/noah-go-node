@@ -2,7 +2,6 @@ package transaction
 
 import (
 	"bytes"
-	"github.com/MinterTeam/go-amino"
 	"github.com/tendermint/go-amino"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/code"

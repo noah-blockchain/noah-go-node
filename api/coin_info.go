@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/noah-blockchain/noah-go-node/core/types"
-	"github.com/noah-blockchain/noahh-go-node/rpc/lib/types"
+	"github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 	"math/big"
 )
 

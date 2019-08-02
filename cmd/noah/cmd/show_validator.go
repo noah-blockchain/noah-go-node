@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/PillarDevelopment/noax-go-node/log"
+	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto/encoding/amino"

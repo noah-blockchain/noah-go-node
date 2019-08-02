@@ -5,11 +5,11 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"github.com/tendermint/go-amino"
-	"github.com/noah-blockchain/noah-go-node/core/noax"
-	"github.com/noah-blockchain/noah-go-node/core/noax"
+	"github.com/noah-blockchain/noah-go-node/core/noah"
+	"github.com/noah-blockchain/noah-go-node/core/noah"
 	"github.com/tendermint/go-amino"
 	"github.com/noah-blockchain/noah-go-node/core/dao"
-	"github.com/noah-blockchain/noah-go-node/core/noax"
+	"github.com/noah-blockchain/noah-go-node/core/noah"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/helpers"
@@ -65,7 +65,7 @@ func main() {
 
 		balMainFloat, _ := strconv.ParseFloat(balMain, 64)
 		balMainInt := big.NewInt(0).Mul(big.NewInt(int64(math.Round(balMainFloat))), p)
-		if balMainInt.Cmp(helpers.NoaxToPip(big.NewInt(100000))) != -1 || role == "pool_admin" { // todo
+		if balMainInt.Cmp(helpers.NoahToQnoah(big.NewInt(100000))) != -1 || role == "pool_admin" { // todo
 			firstBalances[address].Add(firstBalances[address], balMainInt)
 		} else {
 			secondBalances[address].Add(secondBalances[address], balMainInt)
@@ -149,11 +149,11 @@ func main() {
 	validators, candidates := makeValidatorsAndCandidates(validatorsPubKeys, big.NewInt(1))
 
 	jsonBytes, err := cdc.MarshalJSONIndent(types.AppState{
-		Note:         "Noax, the Internet of Money (IoM)\nNoax Initial Price – $0.32\nSo Long, and Thanks for All the Fish!", // todo
+		Note:         "Noah, the Internet of Money (IoM)\nNoah Initial Price – $0.32\nSo Long, and Thanks for All the Fish!", // todo
 		Validators:   validators,
 		Candidates:   candidates,
 		Accounts:     bals,
-		MaxGas:       noax.DefaultMaxGas,
+		MaxGas:       noah.DefaultMaxGas,
 		TotalSlashed: big.NewInt(0),
 		FrozenFunds:  frozenFunds,
 	}, "", "	")
@@ -170,8 +170,8 @@ func main() {
 		ChainID:     networkId,
 		ConsensusParams: &tmTypes.ConsensusParams{
 			Block: tmTypes.BlockParams{
-				MaxBytes:   noax.BlockMaxBytes,
-				MaxGas:     noax.DefaultMaxGas,
+				MaxBytes:   noah.BlockMaxBytes,
+				MaxGas:     noah.DefaultMaxGas,
 				TimeIotaMs: 1000,
 			},
 			Evidence: tmTypes.EvidenceParams{
@@ -208,7 +208,7 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 
 		validators[i] = types.Validator{
 			RewardAddress: addr,
-			TotalNoaxStake: stake,
+			TotalNoahStake: stake,
 			PubKey:        pkey,
 			Commission:    100,
 			AccumReward:   big.NewInt(0),
@@ -218,7 +218,7 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 		candidates[i] = types.Candidate{
 			RewardAddress: addr,
 			OwnerAddress:  addr,
-			TotalNoaxStake: big.NewInt(1),
+			TotalNoahStake: big.NewInt(1),
 			PubKey:        pkey,
 			Commission:    100,
 			Stakes: []types.Stake{
@@ -226,7 +226,7 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 					Owner:    addr,
 					Coin:     types.GetBaseCoin(),
 					Value:    stake,
-					NoaxValue: stake,
+					NoahValue: stake,
 				},
 			},
 			CreatedAtBlock: 1,
@@ -256,7 +256,7 @@ func makeBalances(balances map[string]*big.Int, balances2 map[string]*big.Int, b
 	}
 
 	totalBalances.Add(totalBalances, big.NewInt(4))                                                            // first validators' stakes
-	balances[dao.Address.String()] = big.NewInt(0).Sub(helpers.NoaxToPip(big.NewInt(200000000)), totalBalances) // DAO account
+	balances[dao.Address.String()] = big.NewInt(0).Sub(helpers.NoahToQnoah(big.NewInt(200000000)), totalBalances) // DAO account
 
 	var result []types.Account
 	for address, balance := range balances {
