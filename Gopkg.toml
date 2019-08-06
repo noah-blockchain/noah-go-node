@@ -15,7 +15,7 @@
   version = "^1.6.0"
 
 [[constraint]]
-  name = "github.com/tendermint/iavl"
+  name = "github.com/danil-lashin/iavl"
   revision = "cad5bb134c2d7533f45108731ae7505198aee8c6"
 
 [[constraint]]
