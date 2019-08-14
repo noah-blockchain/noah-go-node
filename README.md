@@ -7,17 +7,25 @@
 
 #NOAH-blockchain go-node
 
-###[dev-branch](https://github.com/noah-blockchain/noah-go-node/tree/dev)
+### [dev-branch](https://github.com/noah-blockchain/noah-go-node/tree/dev)
 The branch contains the most current version
 
-####[alpha-branch](https://github.com/noah-blockchain/noah-go-node/tree/alpha)
+#### [alpha-branch](https://github.com/noah-blockchain/noah-go-node/tree/alpha)
 The branch contains a version for alpha-testing
 
-####[beta-branch](https://github.com/noah-blockchain/noah-go-node/tree/beta)
+#### [beta-branch](https://github.com/noah-blockchain/noah-go-node/tree/beta)
 The branch contains a version for beta-testing
 
-####[testnet-branch](https://github.com/noah-blockchain/noah-go-node/tree/testnet)
+#### [testnet-branch](https://github.com/noah-blockchain/noah-go-node/tree/testnet)
 Implementation for test network
 
-####[master-branch](https://github.com/noah-blockchain/noah-go-node/tree/master)
+#### [master-branch](https://github.com/noah-blockchain/noah-go-node/tree/master)
 Public release
+
+## Sub-modules
+
+####[Remote cluster using terraform and ansible](https://github.com/tendermint/tendermint/blob/master/docs/networks/terraform-and-ansible.md)
+
+####[Amino](https://github.com/tendermint/go-amino)
+
+####[IAVL+ Tree](https://github.com/tendermint/iavl)

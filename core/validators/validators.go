@@ -4,7 +4,7 @@ var startHeight uint64 = 0
 
 func GetValidatorsCountForBlock(block uint64) int {
 	block += startHeight
-	count := 16 + (block/518400)*4
+	count := 16 + (block/518400)*4 // todo production = 518400*4, testNet =
 
 	if count > 256 {
 		return 256
