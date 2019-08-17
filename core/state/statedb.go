@@ -2111,7 +2111,7 @@ func (s *StateDB) CheckForInvariants() error {
 		e := fmt.Errorf("smth wrong with total base coins in blockchain. Expected total supply to be %s, got %s",
 			predictedBasecoinVolume, totalBasecoinVolume)
 
-		if delta.Cmp(helpers.NoahToQnoah(big.NewInt(1000))) == 1 {
+		if delta.Cmp(helpers.NoahToPip(big.NewInt(1000))) == 1 {
 			println(fmt.Sprintf("CRITICAL INVARIANTS FAILURE (H:%d): %s", height, e))
 			os.Exit(1)
 		}

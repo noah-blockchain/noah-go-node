@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"testing"
 
-	amino "github.com/tendermint/go-amino"
 	"github.com/stretchr/testify/assert"
+	"github.com/tendermint/go-amino"
 	cmn "github.com/tendermint/tendermint/libs/common"
 )
 

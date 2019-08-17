@@ -4,15 +4,12 @@ import (
 	"encoding/base64"
 	"encoding/csv"
 	"encoding/json"
-	"github.com/tendermint/go-amino"
-	"github.com/noah-blockchain/noah-go-node/core/noah"
-	"github.com/noah-blockchain/noah-go-node/core/noah"
-	"github.com/tendermint/go-amino"
 	"github.com/noah-blockchain/noah-go-node/core/dao"
 	"github.com/noah-blockchain/noah-go-node/core/noah"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/helpers"
+	"github.com/tendermint/go-amino"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"math"
 	"math/big"
@@ -207,25 +204,25 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 		}
 
 		validators[i] = types.Validator{
-			RewardAddress: addr,
+			RewardAddress:  addr,
 			TotalNoahStake: stake,
-			PubKey:        pkey,
-			Commission:    100,
-			AccumReward:   big.NewInt(0),
-			AbsentTimes:   types.NewBitArray(24),
+			PubKey:         pkey,
+			Commission:     100,
+			AccumReward:    big.NewInt(0),
+			AbsentTimes:    types.NewBitArray(24),
 		}
 
 		candidates[i] = types.Candidate{
-			RewardAddress: addr,
-			OwnerAddress:  addr,
+			RewardAddress:  addr,
+			OwnerAddress:   addr,
 			TotalNoahStake: big.NewInt(1),
-			PubKey:        pkey,
-			Commission:    100,
+			PubKey:         pkey,
+			Commission:     100,
 			Stakes: []types.Stake{
 				{
-					Owner:    addr,
-					Coin:     types.GetBaseCoin(),
-					Value:    stake,
+					Owner:     addr,
+					Coin:      types.GetBaseCoin(),
+					Value:     stake,
 					NoahValue: stake,
 				},
 			},
@@ -255,7 +252,7 @@ func makeBalances(balances map[string]*big.Int, balances2 map[string]*big.Int, b
 		totalBalances.Add(totalBalances, val)
 	}
 
-	totalBalances.Add(totalBalances, big.NewInt(4))                                                            // first validators' stakes
+	totalBalances.Add(totalBalances, big.NewInt(4))                                                               // first validators' stakes
 	balances[dao.Address.String()] = big.NewInt(0).Sub(helpers.NoahToQnoah(big.NewInt(200000000)), totalBalances) // DAO account
 
 	var result []types.Account

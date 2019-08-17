@@ -3,56 +3,26 @@ module github.com/noah-blockchain/noah-go-node
 go 1.12.7
 
 require (
-	github.com/tendermint/go-amino v0.14.1-m
-	github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973
+	github.com/MinterTeam/go-amino v0.14.1 // indirect
+	github.com/MinterTeam/minter-go-node v1.0.4 // indirect
+	github.com/PillarDevelopment/GO_CHAIN v0.0.0-20190723162504-6a6b7aa34fdc
 	github.com/btcsuite/btcd v0.0.0-20190115013929-ed77733ec07d
-	github.com/danil-lashin/iavl v0.0.0-20190716130021-cad5bb134c2d
-	github.com/danil-lashin/tendermint v0.27.0
-	github.com/davecgh/go-spew v1.1.1
-	github.com/etcd-io/bbolt v1.3.2
-	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-kit/kit v0.6.0
-	github.com/go-logfmt/logfmt v0.3.0
-	github.com/go-stack/stack v1.8.0
 	github.com/gobuffalo/packr v1.11.1
-	github.com/gogo/protobuf v1.2.1
-	github.com/golang/protobuf v1.3.1
-	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db
 	github.com/gorilla/websocket v1.2.0
-	github.com/hashicorp/hcl v1.0.0
-	github.com/inconshreveable/mousetrap v1.0.0
-	github.com/jmhodges/levigo v1.0.0
-	github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515
-	github.com/kr/pretty v0.1.0
-	github.com/kr/text v0.1.0
-	github.com/magiconair/properties v1.8.0
-	github.com/matttproud/golang_protobuf_extensions v1.0.1
-	github.com/mitchellh/mapstructure v1.1.2
-	github.com/pelletier/go-toml v1.2.0
-	github.com/pkg/errors v0.8.0
-	github.com/pmezard/go-difflib v1.0.0
-	github.com/prometheus/client_golang v0.9.1
-	github.com/prometheus/client_model v0.0.0-20180712105110-5c3871d89910
-	github.com/prometheus/common v0.0.0-20181113130724-41aa239b4cce
-	github.com/prometheus/procfs v0.0.0-20181005140218-185b4288413d
-	github.com/rcrowley/go-metrics v0.0.0-20180503174638-e2704e165165
+	github.com/kr/pretty v0.1.0 // indirect
+	github.com/pkg/errors v0.8.1
+	github.com/prometheus/common v0.0.0-20181113130724-41aa239b4cce // indirect
 	github.com/rs/cors v1.6.0
-	github.com/spf13/afero v1.1.2
-	github.com/spf13/cast v1.3.0
 	github.com/spf13/cobra v0.0.3
-	github.com/spf13/jwalterweatherman v1.0.0
-	github.com/spf13/pflag v1.0.3
 	github.com/spf13/viper v1.2.1
-	github.com/stretchr/testify v1.2.2
-	github.com/syndtr/goleveldb v0.0.0-20181105012736-f9080354173f
-	github.com/tendermint/go-amino v0.14.1
+	github.com/stretchr/testify v1.3.0
+	github.com/tendermint/go-amino v0.15.0
+	github.com/tendermint/iavl v0.12.4
 	github.com/tendermint/tendermint v0.32.1
-	golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9
-	golang.org/x/net v0.0.0-20180710023853-292b43bbf7cb
-	golang.org/x/sys v0.0.0-20181107165924-66b7b1311ac8
-	golang.org/x/text v0.3.0
-	google.golang.org/genproto v0.0.0-20181109154231-b5d43981345b
-	google.golang.org/grpc v1.13.0
+	golang.org/x/crypto v0.0.0-20190313024323-a1f597ede03a
+	golang.org/x/net v0.0.0-20190628185345-da137c7871d7
+	golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a
+	google.golang.org/genproto v0.0.0-20181109154231-b5d43981345b // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
-	gopkg.in/yaml.v2 v2.2.1
 )
