@@ -1,9 +1,10 @@
 package state
 
 import (
+	"sync"
+
 	"github.com/tendermint/iavl"
 	dbm "github.com/tendermint/tendermint/libs/db"
-	"sync"
 )
 
 type Tree interface {
@@ -23,7 +24,7 @@ type Tree interface {
 
 func NewMutableTree(db dbm.DB) *MutableTree {
 	return &MutableTree{
-		tree: iavl.NewMutableTree(db, 1024),
+		tree: iavl.NewMutableTree(db, 1024), // todo
 	}
 }
 
@@ -122,7 +123,7 @@ func (t *MutableTree) DeleteVersion(version int64) error {
 
 func NewImmutableTree(db dbm.DB) *ImmutableTree {
 	return &ImmutableTree{
-		tree: iavl.NewImmutableTree(db, 1024),
+		tree: iavl.NewImmutableTree(db, 1024), // todo
 	}
 }
 

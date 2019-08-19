@@ -92,8 +92,8 @@ func GetConfig() *Config {
 
 	cfg.P2P.AddrBook = "config/addrbook-" + NetworkId + ".json"
 
-	cfg.SetRoot(utils.GetMinterHome())
-	EnsureRoot(utils.GetMinterHome())
+	cfg.SetRoot(utils.GetNoahHome())
+	EnsureRoot(utils.GetNoahHome())
 
 	return cfg
 }

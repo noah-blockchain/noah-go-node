@@ -1,16 +1,16 @@
 package state
 
 import (
-	"io"
-
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"math/big"
+
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/noah-blockchain/noah-go-node/rlp"
 	"github.com/tendermint/tendermint/crypto/ed25519"
-	"math/big"
 )
 
 const (
@@ -29,22 +29,22 @@ type stateCandidates struct {
 type Candidates []Candidate
 
 type Stake struct {
-	Owner    types.Address
-	Coin     types.CoinSymbol
-	Value    *big.Int
+	Owner     types.Address
+	Coin      types.CoinSymbol
+	Value     *big.Int
 	NoahValue *big.Int
 }
 
 func (s *Stake) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		Owner    types.Address    `json:"owner"`
-		Coin     types.CoinSymbol `json:"coin"`
-		Value    string           `json:"value"`
+		Owner     types.Address    `json:"owner"`
+		Coin      types.CoinSymbol `json:"coin"`
+		Value     string           `json:"value"`
 		NoahValue string           `json:"noah_value"`
 	}{
-		Owner:    s.Owner,
-		Coin:     s.Coin,
-		Value:    s.Value.String(),
+		Owner:     s.Owner,
+		Coin:      s.Coin,
+		Value:     s.Value.String(),
 		NoahValue: s.NoahValue.String(),
 	})
 }
@@ -105,7 +105,7 @@ func (s *Stake) CalcNoahValue(context *StateDB) *big.Int {
 		coin := context.getStateCoin(s.Coin)
 		context.stakeCache[s.Coin] = StakeCache{
 			TotalValue: totalStaked,
-			NoahValue:   formula.CalculateSaleReturn(coin.Volume(), coin.ReserveBalance(), coin.data.Crr, totalStaked),
+			NoahValue:  formula.CalculateSaleReturn(coin.Volume(), coin.ReserveBalance(), coin.data.Crr, totalStaked),
 		}
 	}
 
@@ -125,7 +125,7 @@ func (s *Stake) CalcNoahValue(context *StateDB) *big.Int {
 type Candidate struct {
 	RewardAddress  types.Address
 	OwnerAddress   types.Address
-	TotalNoahStake  *big.Int
+	TotalNoahStake *big.Int
 	PubKey         types.Pubkey
 	Commission     uint
 	Stakes         []Stake

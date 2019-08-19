@@ -3,13 +3,14 @@ package transaction
 import (
 	"encoding/hex"
 	"fmt"
+	"math/big"
+
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/tendermint/tendermint/libs/common"
-	"math/big"
 )
 
 type CreateMultisigData struct {

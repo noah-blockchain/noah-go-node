@@ -205,7 +205,7 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 
 		validators[i] = types.Validator{
 			RewardAddress:  addr,
-			TotalNoahStake: stake,
+			TotalNoahStake: stake, // todo
 			PubKey:         pkey,
 			Commission:     100,
 			AccumReward:    big.NewInt(0),
@@ -215,7 +215,7 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 		candidates[i] = types.Candidate{
 			RewardAddress:  addr,
 			OwnerAddress:   addr,
-			TotalNoahStake: big.NewInt(1),
+			TotalNoahStake: big.NewInt(1), // todo
 			PubKey:         pkey,
 			Commission:     100,
 			Stakes: []types.Stake{
@@ -223,7 +223,7 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 					Owner:     addr,
 					Coin:      types.GetBaseCoin(),
 					Value:     stake,
-					NoahValue: stake,
+					NoahValue: stake, // todo
 				},
 			},
 			CreatedAtBlock: 1,
@@ -253,7 +253,7 @@ func makeBalances(balances map[string]*big.Int, balances2 map[string]*big.Int, b
 	}
 
 	totalBalances.Add(totalBalances, big.NewInt(4))                                                               // first validators' stakes
-	balances[dao.Address.String()] = big.NewInt(0).Sub(helpers.NoahToQnoah(big.NewInt(200000000)), totalBalances) // DAO account
+	balances[dao.Address.String()] = big.NewInt(0).Sub(helpers.NoahToQnoah(big.NewInt(200000000)), totalBalances) // todo DAO account
 
 	var result []types.Account
 	for address, balance := range balances {

@@ -3,21 +3,22 @@ package transaction
 import (
 	"encoding/hex"
 	"fmt"
+	"math/big"
+	"regexp"
+
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/noah-blockchain/noah-go-node/helpers"
 	"github.com/tendermint/tendermint/libs/common"
-	"math/big"
-	"regexp"
 )
 
 const maxCoinNameBytes = 64
 const allowedCoinSymbols = "^[A-Z0-9]{3,10}$"
 
 var (
-	minCoinSupply  = helpers.NoahToQnoah(big.NewInt(1)) // todo
+	minCoinSupply  = helpers.NoahToQnoah(big.NewInt(1))    // todo
 	minCoinReserve = helpers.NoahToQnoah(big.NewInt(1000)) // todo
 )
 
@@ -67,13 +68,13 @@ func (data CreateCoinData) BasicCheck(tx *Transaction, context *state.StateDB) *
 	if data.InitialAmount.Cmp(minCoinSupply) == -1 || data.InitialAmount.Cmp(MaxCoinSupply) == 1 {
 		return &Response{
 			Code: code.WrongCoinSupply,
-			Log:  fmt.Sprintf("Coin supply should be between %s and %s", minCoinSupply.String(), MaxCoinSupply.String())}
+			Log:  fmt.Sprintf("Coin supply should be between %s and %s", minCoinSupply.String(), MaxCoinSupply.String())} // todo
 	}
 
 	if data.InitialReserve.Cmp(minCoinReserve) == -1 {
 		return &Response{
 			Code: code.WrongCoinSupply,
-			Log:  fmt.Sprintf("Coin reserve should be greater than or equal to %s", minCoinReserve.String())}
+			Log:  fmt.Sprintf("Coin reserve should be greater than or equal to %s", minCoinReserve.String())} // todo
 	}
 
 	return nil

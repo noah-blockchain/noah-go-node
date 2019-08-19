@@ -3,7 +3,6 @@ package state
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/tendermint/go-amino"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/core/rewards"
 	"github.com/noah-blockchain/noah-go-node/core/types"
@@ -15,6 +14,7 @@ import (
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/rlp"
 	"github.com/noah-blockchain/noah-go-node/upgrades"
+	"github.com/tendermint/go-amino"
 	dbm "github.com/tendermint/tendermint/libs/db"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"math/big"
@@ -79,7 +79,7 @@ type StateDB struct {
 
 type StakeCache struct {
 	TotalValue *big.Int
-	NoahValue   *big.Int // todo
+	NoahValue  *big.Int // todo
 }
 
 func NewForCheck(height uint64, db dbm.DB) (*StateDB, error) {
@@ -644,12 +644,12 @@ func (s *StateDB) CreateValidator(
 	}
 
 	vals.data = append(vals.data, Validator{
-		RewardAddress: rewardAddress,
+		RewardAddress:  rewardAddress,
 		TotalNoahStake: initialStake, // todo
-		PubKey:        pubkey,
-		Commission:    commission,
-		AccumReward:   big.NewInt(0),
-		AbsentTimes:   types.NewBitArray(ValidatorMaxAbsentWindow),
+		PubKey:         pubkey,
+		Commission:     commission,
+		AccumReward:    big.NewInt(0),
+		AbsentTimes:    types.NewBitArray(ValidatorMaxAbsentWindow),
 	})
 
 	s.MarkStateValidatorsDirty()
@@ -679,9 +679,9 @@ func (s *StateDB) CreateCandidate(
 		Commission:    commission,
 		Stakes: []Stake{
 			{
-				Owner:    rewardAddress,
-				Coin:     coin,
-				Value:    initialStake,
+				Owner:     rewardAddress,
+				Coin:      coin,
+				Value:     initialStake,
 				NoahValue: big.NewInt(0), // todo
 			},
 		},
@@ -1105,9 +1105,9 @@ func (s *StateDB) Delegate(sender types.Address, pubkey []byte, coin types.CoinS
 
 			if !exists {
 				candidate.Stakes = append(candidate.Stakes, Stake{
-					Owner:    sender,
-					Coin:     coin,
-					Value:    value,
+					Owner:     sender,
+					Coin:      coin,
+					Value:     value,
 					NoahValue: big.NewInt(0),
 				})
 			}
@@ -1288,9 +1288,9 @@ func (s *StateDB) SetValidatorAbsent(address [20]byte) {
 					})
 
 					candidate.Stakes[j] = Stake{
-						Owner:    stake.Owner,
-						Coin:     stake.Coin,
-						Value:    newValue,
+						Owner:     stake.Owner,
+						Coin:      stake.Coin,
+						Value:     newValue,
 						NoahValue: big.NewInt(0),
 					}
 					totalStake.Add(totalStake, newValue)
@@ -1403,12 +1403,12 @@ func (s *StateDB) SetNewValidators(candidates []Candidate) {
 		}
 
 		newVals = append(newVals, Validator{
-			RewardAddress: candidate.RewardAddress,
+			RewardAddress:  candidate.RewardAddress,
 			TotalNoahStake: candidate.TotalNoahStake,
-			PubKey:        candidate.PubKey,
-			Commission:    candidate.Commission,
-			AccumReward:   accumReward,
-			AbsentTimes:   absentTimes,
+			PubKey:         candidate.PubKey,
+			Commission:     candidate.Commission,
+			AccumReward:    accumReward,
+			AbsentTimes:    absentTimes,
 		})
 	}
 
@@ -1482,8 +1482,8 @@ func (s *StateDB) MultisigAccountExists(address types.Address) bool {
 
 func (s *StateDB) IsNewCandidateStakeSufficient(coinSymbol types.CoinSymbol, stake *big.Int) bool {
 	noahValue := (&Stake{
-		Coin:     coinSymbol,
-		Value:    stake,
+		Coin:      coinSymbol,
+		Value:     stake,
 		NoahValue: big.NewInt(0),
 	}).CalcNoahValue(s)
 
@@ -1571,8 +1571,8 @@ func (s *StateDB) IsDelegatorStakeSufficient(sender types.Address, pubKey []byte
 	}
 
 	stake := Stake{
-		Coin:     coinSymbol,
-		Value:    value,
+		Coin:      coinSymbol,
+		Value:     value,
 		NoahValue: big.NewInt(0),
 	}
 
@@ -1854,17 +1854,17 @@ func (s *StateDB) Export(currentHeight uint64) types.AppState {
 		var stakes []types.Stake
 		for _, s := range candidate.Stakes {
 			stakes = append(stakes, types.Stake{
-				Owner:    s.Owner,
-				Coin:     s.Coin,
-				Value:    s.Value,
-				NoahValue: s.NoahValue,
+				Owner:     s.Owner,
+				Coin:      s.Coin,
+				Value:     s.Value,
+				NoahValue: s.NoahValue, // todo
 			})
 		}
 
 		appState.Candidates = append(appState.Candidates, types.Candidate{
 			RewardAddress:  candidate.RewardAddress,
 			OwnerAddress:   candidate.OwnerAddress,
-			TotalNoahStake:  candidate.TotalNoahStake,
+			TotalNoahStake: candidate.TotalNoahStake, // todo
 			PubKey:         candidate.PubKey,
 			Commission:     candidate.Commission,
 			Stakes:         stakes,
@@ -1876,12 +1876,12 @@ func (s *StateDB) Export(currentHeight uint64) types.AppState {
 	vals := s.getStateValidators()
 	for _, val := range vals.data {
 		appState.Validators = append(appState.Validators, types.Validator{
-			RewardAddress: val.RewardAddress,
-			TotalNoahStake: val.TotalNoahStake,
-			PubKey:        val.PubKey,
-			Commission:    val.Commission,
-			AccumReward:   val.AccumReward,
-			AbsentTimes:   val.AbsentTimes,
+			RewardAddress:  val.RewardAddress,
+			TotalNoahStake: val.TotalNoahStake, // todo
+			PubKey:         val.PubKey,
+			Commission:     val.Commission,
+			AccumReward:    val.AccumReward,
+			AbsentTimes:    val.AbsentTimes,
 		})
 	}
 
@@ -1922,12 +1922,12 @@ func (s *StateDB) Import(appState types.AppState) {
 	vals := &stateValidators{}
 	for _, v := range appState.Validators {
 		vals.data = append(vals.data, Validator{
-			RewardAddress: v.RewardAddress,
-			TotalNoahStake: v.TotalNoahStake,
-			PubKey:        v.PubKey,
-			Commission:    v.Commission,
-			AccumReward:   v.AccumReward,
-			AbsentTimes:   v.AbsentTimes,
+			RewardAddress:  v.RewardAddress,
+			TotalNoahStake: v.TotalNoahStake, // todo
+			PubKey:         v.PubKey,
+			Commission:     v.Commission,
+			AccumReward:    v.AccumReward,
+			AbsentTimes:    v.AbsentTimes,
 		})
 	}
 	s.SetStateValidators(vals)
@@ -1938,16 +1938,16 @@ func (s *StateDB) Import(appState types.AppState) {
 		stakes := make([]Stake, len(c.Stakes))
 		for i, stake := range c.Stakes {
 			stakes[i] = Stake{
-				Owner:    stake.Owner,
-				Coin:     stake.Coin,
-				Value:    stake.Value,
-				NoahValue: stake.NoahValue,
+				Owner:     stake.Owner,
+				Coin:      stake.Coin,
+				Value:     stake.Value,
+				NoahValue: stake.NoahValue, // todo
 			}
 		}
 		cands.data = append(cands.data, Candidate{
 			RewardAddress:  c.RewardAddress,
 			OwnerAddress:   c.OwnerAddress,
-			TotalNoahStake:  c.TotalNoahStake,
+			TotalNoahStake: c.TotalNoahStake, // todo
 			PubKey:         c.PubKey,
 			Commission:     c.Commission,
 			Stakes:         stakes,

@@ -15,7 +15,7 @@ func GetNoahHome() string {
 		return NoahHome
 	}
 
-	home := os.Getenv("NOAHHOME")
+	home := os.Getenv("NOAH_HOME")
 
 	if home != "" {
 		return home

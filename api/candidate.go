@@ -29,7 +29,7 @@ func makeResponseCandidate(c state.Candidate, includeStakes bool) CandidateRespo
 	candidate := CandidateResponse{
 		RewardAddress:  c.RewardAddress,
 		OwnerAddress:   c.OwnerAddress,
-		TotalStake:     c.TotalBipStake,
+		TotalStake:     c.TotalBipStake, // todo
 		PubKey:         c.PubKey,
 		Commission:     c.Commission,
 		CreatedAtBlock: c.CreatedAtBlock,
@@ -43,7 +43,7 @@ func makeResponseCandidate(c state.Candidate, includeStakes bool) CandidateRespo
 				Owner:    stake.Owner,
 				Coin:     stake.Coin,
 				Value:    stake.Value.String(),
-				BipValue: stake.BipValue.String(),
+				BipValue: stake.BipValue.String(), // todo
 			}
 		}
 	}
