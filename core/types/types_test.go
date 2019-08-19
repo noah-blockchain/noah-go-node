@@ -138,7 +138,7 @@ func TestAppState(t *testing.T) {
 		Validators: []Validator{
 			{
 				RewardAddress: testAddr,
-				TotalBipStake: big.NewInt(1),
+				TotalNoahStake: big.NewInt(1),
 				PubKey:        pubkey,
 				Commission:    1,
 				AccumReward:   big.NewInt(1),
@@ -149,7 +149,7 @@ func TestAppState(t *testing.T) {
 			{
 				RewardAddress: testAddr,
 				OwnerAddress:  testAddr,
-				TotalBipStake: big.NewInt(1),
+				TotalNoahStake: big.NewInt(1),
 				PubKey:        pubkey,
 				Commission:    1,
 				Stakes: []Stake{
@@ -157,7 +157,7 @@ func TestAppState(t *testing.T) {
 						Owner:    testAddr,
 						Coin:     GetBaseCoin(),
 						Value:    big.NewInt(1),
-						BipValue: big.NewInt(1),
+						NoahValue: big.NewInt(1),
 					},
 				},
 				CreatedAtBlock: 1,

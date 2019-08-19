@@ -19,9 +19,9 @@ func TestUnbondTx(t *testing.T) {
 	addr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.BipToPip(big.NewInt(1000000)))
+	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
-	value := helpers.BipToPip(big.NewInt(100))
+	value := helpers.NoahToQNoah(big.NewInt(100))
 	cState.Delegate(addr, pubkey, coin, value)
 
 	data := UnbondData{

@@ -8,10 +8,10 @@ import (
 )
 
 type Stake struct {
-	Owner    types.Address    `json:"owner"`
-	Coin     types.CoinSymbol `json:"coin"`
-	Value    string           `json:"value"`
-	BipValue string           `json:"bip_value"`
+	Owner     types.Address    `json:"owner"`
+	Coin      types.CoinSymbol `json:"coin"`
+	Value     string           `json:"value"`
+	NoahValue string           `json:"noah_value"`
 }
 
 type CandidateResponse struct {
@@ -29,7 +29,7 @@ func makeResponseCandidate(c state.Candidate, includeStakes bool) CandidateRespo
 	candidate := CandidateResponse{
 		RewardAddress:  c.RewardAddress,
 		OwnerAddress:   c.OwnerAddress,
-		TotalStake:     c.TotalBipStake, // todo
+		TotalStake:     c.TotalNoahStake,
 		PubKey:         c.PubKey,
 		Commission:     c.Commission,
 		CreatedAtBlock: c.CreatedAtBlock,
@@ -40,10 +40,10 @@ func makeResponseCandidate(c state.Candidate, includeStakes bool) CandidateRespo
 		candidate.Stakes = make([]Stake, len(c.Stakes))
 		for i, stake := range c.Stakes {
 			candidate.Stakes[i] = Stake{
-				Owner:    stake.Owner,
-				Coin:     stake.Coin,
-				Value:    stake.Value.String(),
-				BipValue: stake.BipValue.String(), // todo
+				Owner:     stake.Owner,
+				Coin:      stake.Coin,
+				Value:     stake.Value.String(),
+				NoahValue: stake.NoahValue.String(),
 			}
 		}
 	}

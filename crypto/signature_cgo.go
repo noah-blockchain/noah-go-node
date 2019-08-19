@@ -22,8 +22,8 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"fmt"
-	"github.com/PillarDevelopment/GO_CHAIN/crypto/secp256k1"
-	"github.com/PillarDevelopment/GO_CHAIN/math"
+	"github.com/noah-blockchain/noah-go-node/crypto/secp256k1"
+	"github.com/noah-blockchain/noah-go-node/math"
 )
 
 // Ecrecover returns the uncompressed public key that created the given signature.

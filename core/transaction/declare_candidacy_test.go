@@ -19,7 +19,7 @@ func TestDeclareCandidacyTx(t *testing.T) {
 
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.BipToPip(big.NewInt(1000000)))
+	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	pkey, _ := crypto.GenerateKey()
 	publicKey := crypto.FromECDSAPub(&pkey.PublicKey)[:32]
@@ -31,7 +31,7 @@ func TestDeclareCandidacyTx(t *testing.T) {
 		PubKey:     publicKey,
 		Commission: commission,
 		Coin:       coin,
-		Stake:      helpers.BipToPip(big.NewInt(100)),
+		Stake:      helpers.NoahToQNoah(big.NewInt(100)),
 	}
 
 	encodedData, err := rlp.EncodeToBytes(data)
@@ -86,7 +86,7 @@ func TestDeclareCandidacyTx(t *testing.T) {
 		t.Fatalf("Reward address is not correct")
 	}
 
-	if candidate.TotalBipStake != nil && candidate.TotalBipStake.Cmp(types.Big0) != 0 {
+	if candidate.TotalNoahStake != nil && candidate.TotalNoahStake.Cmp(types.Big0) != 0 {
 		t.Fatalf("Total stake is not correct")
 	}
 

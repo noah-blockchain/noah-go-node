@@ -26,8 +26,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/PillarDevelopment/GO_CHAIN/core/types"
-	"github.com/PillarDevelopment/GO_CHAIN/hexutil"
+	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/hexutil"
 )
 
 var testAddrHex = "970e8128ab834e8eac17ab8e3812f010678cf791"

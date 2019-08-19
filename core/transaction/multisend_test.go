@@ -17,9 +17,9 @@ func TestMultisendTx(t *testing.T) {
 	addr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.BipToPip(big.NewInt(1000000)))
+	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
-	value := helpers.BipToPip(big.NewInt(10))
+	value := helpers.NoahToQNoah(big.NewInt(10))
 	to := types.Address([20]byte{1})
 
 	data := MultisendData{

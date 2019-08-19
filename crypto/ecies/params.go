@@ -42,7 +42,7 @@ import (
 	"fmt"
 	"hash"
 
-	ethcrypto "github.com/PillarDevelopment/GO_CHAIN/crypto"
+	ethcrypto "github.com/noah-blockchain/noah-go-node/crypto"
 )
 
 var (
