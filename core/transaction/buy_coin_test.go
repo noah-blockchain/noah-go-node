@@ -43,8 +43,8 @@ func getTestCoinSymbol() types.CoinSymbol {
 }
 
 func createTestCoin(stateDB *state.StateDB) {
-	volume := helpers.NoahToQnoah(big.NewInt(100)) // todo
-	reserve := helpers.NoahToQnoah(big.NewInt(100)) // todo
+	volume := helpers.NoahToQNoah(big.NewInt(100))
+	reserve := helpers.NoahToQNoah(big.NewInt(100))
 
 	stateDB.CreateCoin(getTestCoinSymbol(), "TEST COIN", volume, 10, reserve)
 }
@@ -58,9 +58,9 @@ func TestBuyCoinTx(t *testing.T) {
 	addr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.NoahToQnoah(big.NewInt(1000000)))
+	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
-	toBuy := helpers.NoahToQnoah(big.NewInt(10)) // todo
+	toBuy := helpers.NoahToQNoah(big.NewInt(10))
 	maxValToSell, _ := big.NewInt(0).SetString("159374246010000000000", 10)
 	data := BuyCoinData{
 		CoinToBuy:          getTestCoinSymbol(),
@@ -122,9 +122,9 @@ func TestBuyCoinTxInsufficientFunds(t *testing.T) {
 	addr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.NoahToQnoah(big.NewInt(1))) // todo
+	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1)))
 
-	toBuy := helpers.NoahToQnoah(big.NewInt(10)) // todo
+	toBuy := helpers.NoahToQNoah(big.NewInt(10))
 	maxValToSell, _ := big.NewInt(0).SetString("159374246010000000000", 10)
 	data := BuyCoinData{
 		CoinToBuy:          getTestCoinSymbol(),
@@ -353,7 +353,7 @@ func TestBuyCoinTxNotGasCoin(t *testing.T) {
 	privateKey, _ := crypto.GenerateKey()
 	addr := crypto.PubkeyToAddress(privateKey.PublicKey)
 
-	cState.AddBalance(addr, getTestCoinSymbol(), helpers.NoahToQnoah(big.NewInt(1000))) // todo
+	cState.AddBalance(addr, getTestCoinSymbol(), helpers.NoahToQNoah(big.NewInt(1000)))
 
 	data := BuyCoinData{
 		CoinToBuy:          types.GetBaseCoin(),

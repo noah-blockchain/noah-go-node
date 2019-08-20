@@ -239,7 +239,7 @@ func TestMultiSigTx(t *testing.T) {
 	coin := types.GetBaseCoin()
 
 	msigAddress := cState.CreateMultisig([]uint{1}, []types.Address{addr}, 1)
-	cState.AddBalance(msigAddress, coin, helpers.NoahToQnoah(big.NewInt(1000000)))
+	cState.AddBalance(msigAddress, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	txData := SendData{
 		Coin:  types.GetBaseCoin(),
@@ -287,7 +287,7 @@ func TestMultiSigDoubleSignTx(t *testing.T) {
 	coin := types.GetBaseCoin()
 
 	msigAddress := cState.CreateMultisig([]uint{1, 1}, []types.Address{addr, {}}, 2)
-	cState.AddBalance(msigAddress, coin, helpers.NoahToQnoah(big.NewInt(1000000)))
+	cState.AddBalance(msigAddress, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	txData := SendData{
 		Coin:  types.GetBaseCoin(),
@@ -339,7 +339,7 @@ func TestMultiSigTooManySignsTx(t *testing.T) {
 	coin := types.GetBaseCoin()
 
 	msigAddress := cState.CreateMultisig([]uint{1, 1}, []types.Address{addr, {}}, 2)
-	cState.AddBalance(msigAddress, coin, helpers.NoahToQnoah(big.NewInt(1000000)))
+	cState.AddBalance(msigAddress, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	txData := SendData{
 		Coin:  types.GetBaseCoin(),
@@ -394,7 +394,7 @@ func TestMultiSigNotEnoughTx(t *testing.T) {
 	coin := types.GetBaseCoin()
 
 	msigAddress := cState.CreateMultisig([]uint{1}, []types.Address{addr}, 2)
-	cState.AddBalance(msigAddress, coin, helpers.NoahToQnoah(big.NewInt(1000000)))
+	cState.AddBalance(msigAddress, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	txData := SendData{
 		Coin:  types.GetBaseCoin(),
@@ -442,7 +442,7 @@ func TestMultiSigIncorrectSignsTx(t *testing.T) {
 	coin := types.GetBaseCoin()
 
 	msigAddress := cState.CreateMultisig([]uint{1}, []types.Address{addr}, 1)
-	cState.AddBalance(msigAddress, coin, helpers.NoahToQnoah(big.NewInt(1000000)))
+	cState.AddBalance(msigAddress, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	txData := SendData{
 		Coin:  types.GetBaseCoin(),

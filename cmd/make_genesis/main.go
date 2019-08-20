@@ -205,7 +205,7 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 
 		validators[i] = types.Validator{
 			RewardAddress:  addr,
-			TotalNoahStake: stake, // todo
+			TotalNoahStake: stake,
 			PubKey:         pkey,
 			Commission:     100,
 			AccumReward:    big.NewInt(0),
@@ -215,7 +215,7 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 		candidates[i] = types.Candidate{
 			RewardAddress:  addr,
 			OwnerAddress:   addr,
-			TotalNoahStake: big.NewInt(1), // todo
+			TotalNoahStake: big.NewInt(1),
 			PubKey:         pkey,
 			Commission:     100,
 			Stakes: []types.Stake{
@@ -223,7 +223,7 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 					Owner:     addr,
 					Coin:      types.GetBaseCoin(),
 					Value:     stake,
-					NoahValue: stake, // todo
+					NoahValue: stake,
 				},
 			},
 			CreatedAtBlock: 1,

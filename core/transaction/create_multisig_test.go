@@ -26,7 +26,7 @@ func TestCreateMultisigTx(t *testing.T) {
 
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.NoahToQnoah(big.NewInt(1000000)))
+	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	addresses := []types.Address{
 		addr,

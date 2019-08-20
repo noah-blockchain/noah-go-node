@@ -79,7 +79,7 @@ type StateDB struct {
 
 type StakeCache struct {
 	TotalValue *big.Int
-	NoahValue  *big.Int // todo
+	NoahValue  *big.Int
 }
 
 func NewForCheck(height uint64, db dbm.DB) (*StateDB, error) {
@@ -645,7 +645,7 @@ func (s *StateDB) CreateValidator(
 
 	vals.data = append(vals.data, Validator{
 		RewardAddress:  rewardAddress,
-		TotalNoahStake: initialStake, // todo
+		TotalNoahStake: initialStake,
 		PubKey:         pubkey,
 		Commission:     commission,
 		AccumReward:    big.NewInt(0),
@@ -682,14 +682,14 @@ func (s *StateDB) CreateCandidate(
 				Owner:     rewardAddress,
 				Coin:      coin,
 				Value:     initialStake,
-				NoahValue: big.NewInt(0), // todo
+				NoahValue: big.NewInt(0),
 			},
 		},
 		CreatedAtBlock: currentBlock,
 		Status:         CandidateStatusOffline,
 	}
 
-	candidate.Stakes[0].NoahValue = candidate.Stakes[0].CalcNoahValue(s) // todo
+	candidate.Stakes[0].NoahValue = candidate.Stakes[0].CalcNoahValue(s)
 
 	candidates.data = append(candidates.data, candidate)
 
@@ -931,7 +931,7 @@ func (s *StateDB) GetCandidates(count int, block int64) []Candidate {
 	}
 
 	sort.SliceStable(activeCandidates, func(i, j int) bool {
-		return activeCandidates[i].TotalNoahStake.Cmp(candidates[j].TotalNoahStake) == -1 // todo
+		return activeCandidates[i].TotalNoahStake.Cmp(candidates[j].TotalNoahStake) == -1
 	})
 
 	if len(activeCandidates) < count {
@@ -1857,14 +1857,14 @@ func (s *StateDB) Export(currentHeight uint64) types.AppState {
 				Owner:     s.Owner,
 				Coin:      s.Coin,
 				Value:     s.Value,
-				NoahValue: s.NoahValue, // todo
+				NoahValue: s.NoahValue,
 			})
 		}
 
 		appState.Candidates = append(appState.Candidates, types.Candidate{
 			RewardAddress:  candidate.RewardAddress,
 			OwnerAddress:   candidate.OwnerAddress,
-			TotalNoahStake: candidate.TotalNoahStake, // todo
+			TotalNoahStake: candidate.TotalNoahStake,
 			PubKey:         candidate.PubKey,
 			Commission:     candidate.Commission,
 			Stakes:         stakes,
@@ -1877,7 +1877,7 @@ func (s *StateDB) Export(currentHeight uint64) types.AppState {
 	for _, val := range vals.data {
 		appState.Validators = append(appState.Validators, types.Validator{
 			RewardAddress:  val.RewardAddress,
-			TotalNoahStake: val.TotalNoahStake, // todo
+			TotalNoahStake: val.TotalNoahStake,
 			PubKey:         val.PubKey,
 			Commission:     val.Commission,
 			AccumReward:    val.AccumReward,
@@ -1923,7 +1923,7 @@ func (s *StateDB) Import(appState types.AppState) {
 	for _, v := range appState.Validators {
 		vals.data = append(vals.data, Validator{
 			RewardAddress:  v.RewardAddress,
-			TotalNoahStake: v.TotalNoahStake, // todo
+			TotalNoahStake: v.TotalNoahStake,
 			PubKey:         v.PubKey,
 			Commission:     v.Commission,
 			AccumReward:    v.AccumReward,
@@ -1941,13 +1941,13 @@ func (s *StateDB) Import(appState types.AppState) {
 				Owner:     stake.Owner,
 				Coin:      stake.Coin,
 				Value:     stake.Value,
-				NoahValue: stake.NoahValue, // todo
+				NoahValue: stake.NoahValue,
 			}
 		}
 		cands.data = append(cands.data, Candidate{
 			RewardAddress:  c.RewardAddress,
 			OwnerAddress:   c.OwnerAddress,
-			TotalNoahStake: c.TotalNoahStake, // todo
+			TotalNoahStake: c.TotalNoahStake,
 			PubKey:         c.PubKey,
 			Commission:     c.Commission,
 			Stakes:         stakes,
@@ -2111,7 +2111,7 @@ func (s *StateDB) CheckForInvariants() error {
 		e := fmt.Errorf("smth wrong with total base coins in blockchain. Expected total supply to be %s, got %s",
 			predictedBasecoinVolume, totalBasecoinVolume)
 
-		if delta.Cmp(helpers.NoahToPip(big.NewInt(1000))) == 1 {
+		if delta.Cmp(helpers.NoahToQNoah(big.NewInt(1000))) == 1 {
 			println(fmt.Sprintf("CRITICAL INVARIANTS FAILURE (H:%d): %s", height, e))
 			os.Exit(1)
 		}

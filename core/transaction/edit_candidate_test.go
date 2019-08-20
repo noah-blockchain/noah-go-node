@@ -17,13 +17,13 @@ func TestEditCandidateTx(t *testing.T) {
 	privateKey, _ := crypto.GenerateKey()
 	addr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	coin := types.GetBaseCoin()
-	cState.AddBalance(addr, coin, helpers.NoahToQnoah(big.NewInt(1000000)))
+	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	pubkey := make([]byte, 32)
 	rand.Read(pubkey)
 
-	cState.CreateCandidate(addr, addr, pubkey, 10, 0, types.GetBaseCoin(), helpers.NoahToQnoah(big.NewInt(1)))
-	cState.CreateValidator(addr, pubkey, 10, 0, types.GetBaseCoin(), helpers.NoahToQnoah(big.NewInt(1)))
+	cState.CreateCandidate(addr, addr, pubkey, 10, 0, types.GetBaseCoin(), helpers.NoahToQNoah(big.NewInt(1)))
+	cState.CreateValidator(addr, pubkey, 10, 0, types.GetBaseCoin(), helpers.NoahToQNoah(big.NewInt(1)))
 
 	newRewardAddress := types.Address{1}
 	newOwnerAddress := types.Address{2}

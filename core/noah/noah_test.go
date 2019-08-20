@@ -138,7 +138,7 @@ func TestSendTx(t *testing.T) {
 		time.Sleep(time.Millisecond)
 	}
 
-	value := helpers.NoahToQnoah(big.NewInt(10))
+	value := helpers.NoahToQNoah(big.NewInt(10))
 	to := types.Address([20]byte{1})
 
 	data := transaction.SendData{
@@ -395,7 +395,7 @@ func getGenesis() (*types2.GenesisDoc, error) {
 				Balance: []types.Balance{
 					{
 						Coin:  types.GetBaseCoin(),
-						Value: helpers.NoahToQnoah(big.NewInt(1000000)),
+						Value: helpers.NoahToQNoah(big.NewInt(1000000)),
 					},
 				},
 			},

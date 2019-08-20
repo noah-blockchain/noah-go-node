@@ -18,8 +18,8 @@ const maxCoinNameBytes = 64
 const allowedCoinSymbols = "^[A-Z0-9]{3,10}$"
 
 var (
-	minCoinSupply  = helpers.NoahToQnoah(big.NewInt(1))    // todo
-	minCoinReserve = helpers.NoahToQnoah(big.NewInt(1000)) // todo
+	minCoinSupply  = helpers.NoahToQNoah(big.NewInt(1))
+	minCoinReserve = helpers.NoahToQNoah(big.NewInt(1000))
 )
 
 type CreateCoinData struct {

@@ -17,7 +17,7 @@ func createTestCandidate(stateDB *state.StateDB) []byte {
 	pubkey := make([]byte, 32)
 	rand.Read(pubkey)
 
-	stateDB.CreateCandidate(address, address, pubkey, 10, 0, types.GetBaseCoin(), helpers.NoahToQnoah(big.NewInt(1))) // todo
+	stateDB.CreateCandidate(address, address, pubkey, 10, 0, types.GetBaseCoin(), helpers.NoahToQNoah(big.NewInt(1)))
 
 	return pubkey
 }
@@ -32,9 +32,9 @@ func TestDelegateTx(t *testing.T) {
 
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.NoahToQnoah(big.NewInt(1000000))) // todo
+	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
-	value := helpers.NoahToQnoah(big.NewInt(100)) // todo
+	value := helpers.NoahToQNoah(big.NewInt(100))
 
 	data := DelegateData{
 		PubKey: pubkey,

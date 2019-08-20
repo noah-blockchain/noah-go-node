@@ -19,7 +19,7 @@ func TestSellAllCoinTx(t *testing.T) {
 	addr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.NoahToPip(big.NewInt(1000000))) // todo
+	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000))) 
 
 	minValToBuy, _ := big.NewInt(0).SetString("151191152412701306252", 10)
 	data := SellAllCoinData{

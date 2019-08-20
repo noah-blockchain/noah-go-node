@@ -110,7 +110,7 @@ func (app *Blockchain) InitChain(req abciTypes.RequestInitChain) abciTypes.Respo
 
 	totalPower := big.NewInt(0)
 	for _, val := range genesisState.Validators {
-		totalPower.Add(totalPower, val.TotalNoahStake) // todo
+		totalPower.Add(totalPower, val.TotalNoahStake)
 	}
 
 	vals := make([]abciTypes.ValidatorUpdate, len(genesisState.Validators))
@@ -124,7 +124,7 @@ func (app *Blockchain) InitChain(req abciTypes.RequestInitChain) abciTypes.Respo
 
 		vals[i] = abciTypes.ValidatorUpdate{
 			PubKey: types2.TM2PB.PubKey(pkey),
-			Power: big.NewInt(0).Div(big.NewInt(0).Mul(val.TotalNoahStake, // todo
+			Power: big.NewInt(0).Div(big.NewInt(0).Mul(val.TotalNoahStake,
 				big.NewInt(100000000)), totalPower).Int64(),
 		}
 	}
