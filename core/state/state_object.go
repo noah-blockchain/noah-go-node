@@ -1,13 +1,13 @@
 package state
 
 import (
-	"github.com/noah-blockchain/noah-go-node/crypto"
 	"io"
 	"math/big"
+	"sort"
 
 	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/crypto"
 	"github.com/noah-blockchain/noah-go-node/rlp"
-	"sort"
 )
 
 // stateAccount represents an Noah account which is being modified.

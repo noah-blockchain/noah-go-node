@@ -4,10 +4,10 @@ import (
 	"math/big"
 )
 
-func BipToPip(bip *big.Int) *big.Int {
+func NoahToQNoah(noah *big.Int) *big.Int {
 	p := big.NewInt(10)
 	p.Exp(p, big.NewInt(18), nil)
-	p.Mul(p, bip)
+	p.Mul(p, noah)
 
 	return p
 }

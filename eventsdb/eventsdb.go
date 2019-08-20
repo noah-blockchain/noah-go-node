@@ -2,10 +2,10 @@ package eventsdb
 
 import (
 	"encoding/binary"
-	"github.com/tendermint/go-amino"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	e "github.com/noah-blockchain/noah-go-node/eventsdb/events"
+	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/db"
 	"sync"
 )
@@ -22,7 +22,7 @@ func InitDB(cfg *config.Config) {
 	if cfg.ValidatorMode {
 		edb = NOOPEventsDB{}
 	} else {
-		edb = NewEventsDB(db.NewDB("events", db.DBBackendType(cfg.DBBackend), utils.GetMinterHome()+"/data"))
+		edb = NewEventsDB(db.NewDB("events", db.DBBackendType(cfg.DBBackend), utils.GetNoahHome()+"/data"))
 	}
 }
 

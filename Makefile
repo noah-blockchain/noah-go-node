@@ -5,8 +5,8 @@ GOTOOLS = \
     github.com/gogo/protobuf/protoc-gen-gogo \
 	github.com/gobuffalo/packr/packr
 PACKAGES=$(shell go list ./... | grep -v '/vendor/')
-BUILD_TAGS?=minter
-BUILD_FLAGS=-ldflags "-s -w -X minter/version.GitCommit=`git rev-parse --short=8 HEAD`"
+BUILD_TAGS?=noah
+BUILD_FLAGS=-ldflags "-s -w -X noah/version.GitCommit=`git rev-parse --short=8 HEAD`"
 
 all: check build test install
 
@@ -16,13 +16,13 @@ check: check_tools ensure_deps
 ### Build
 
 build:
-	CGO_ENABLED=0 go build $(BUILD_FLAGS) -tags '$(BUILD_TAGS)' -o build/minter ./cmd/minter/
+	CGO_ENABLED=0 go build $(BUILD_FLAGS) -tags '$(BUILD_TAGS)' -o build/noah ./cmd/noah/
 
 build_c:
-	CGO_ENABLED=1 go build $(BUILD_FLAGS) -tags '$(BUILD_TAGS) gcc cleveldb' -o build/minter ./cmd/minter/
+	CGO_ENABLED=1 go build $(BUILD_FLAGS) -tags '$(BUILD_TAGS) gcc cleveldb' -o build/noah ./cmd/noah/
 
 install:
-	CGO_ENABLED=0 go install $(BUILD_FLAGS) -tags '$(BUILD_TAGS)' ./cmd/minter
+	CGO_ENABLED=0 go install $(BUILD_FLAGS) -tags '$(BUILD_TAGS)' ./cmd/noah
 
 
 ########################################
@@ -99,9 +99,9 @@ metalinter_all:
 ### Docker image
 
 build-docker:
-	cp build/minter DOCKER/minter
+	cp build/noah DOCKER/noah
 	cd DOCKER && make build
-	rm -f minter
+	rm -f noah
 
 push-docker:
 	cd DOCKER && make push
@@ -114,4 +114,4 @@ build-linux:
 	GOOS=linux GOARCH=amd64 $(MAKE) build
 
 build-compress:
-	upx build/minter
+	upx build/noah

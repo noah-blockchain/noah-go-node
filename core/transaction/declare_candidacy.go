@@ -3,6 +3,8 @@ package transaction
 import (
 	"encoding/hex"
 	"fmt"
+	"math/big"
+
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
 	"github.com/noah-blockchain/noah-go-node/core/state"
@@ -10,7 +12,6 @@ import (
 	"github.com/noah-blockchain/noah-go-node/core/validators"
 	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/tendermint/tendermint/libs/common"
-	"math/big"
 )
 
 const minCommission = 0

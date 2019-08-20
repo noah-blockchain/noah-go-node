@@ -2,8 +2,6 @@ package noah
 
 import (
 	"bytes"
-	cryptoAmino "github.com/tendermint/crypto/encoding/amino"
-	"github.com/tendermint/go-amino"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/appdb"
@@ -16,12 +14,13 @@ import (
 	"github.com/noah-blockchain/noah-go-node/eventsdb/events"
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/version"
-	"github.com/tendermint/tendermint/rpc/lib/types"
+	"github.com/tendermint/go-amino"
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/encoding/amino"
 	"github.com/tendermint/tendermint/libs/db"
 	tmNode "github.com/tendermint/tendermint/node"
+	"github.com/tendermint/tendermint/rpc/lib/types"
 	types2 "github.com/tendermint/tendermint/types"
 	"math/big"
 	"sync"
@@ -71,7 +70,7 @@ type Blockchain struct {
 // Creates NOAH Blockchain instance, should be only called once
 func NewNOAHBlockchain(cfg *config.Config) *Blockchain {
 	dbType := db.DBBackendType(cfg.DBBackend)
-	ldb := db.NewDB("state", dbType, utils.GetNOAHHome()+"/data")
+	ldb := db.NewDB("state", dbType, utils.GetNoahHome()+"/data")
 
 	// Initiate Application DB. Used for persisting data like current block, validators, etc.
 	applicationDB := appdb.NewAppDB(cfg)

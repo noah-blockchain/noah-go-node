@@ -15,7 +15,7 @@ func GetNoahHome() string {
 		return NoahHome
 	}
 
-	home := os.Getenv("NOAHHOME")
+	home := os.Getenv("NOAH_HOME")
 
 	if home != "" {
 		return home
@@ -29,5 +29,5 @@ func GetNoahConfigPath() string {
 		return NoahConfig
 	}
 
-	return NoahConfig() + "/config/config.toml"
+	return NoahConfig + "/config/config.toml"
 }

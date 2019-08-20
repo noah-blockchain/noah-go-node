@@ -1,14 +1,14 @@
 package state
 
 import (
+	"fmt"
+	"io"
+	"math/big"
+
+	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/noah-blockchain/noah-go-node/helpers"
-	"io"
-
-	"fmt"
-	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/rlp"
-	"math/big"
 )
 
 // stateCoin represents a coin which is being modified.
@@ -40,18 +40,18 @@ func (c *stateCoin) IsToDelete() bool {
 	}
 
 	// Delete coin if reserve is less than 100 noahs
-	if c.ReserveBalance().Cmp(helpers.NoahToPip(big.NewInt(100))) == -1 { // todo
+	if c.ReserveBalance().Cmp(helpers.NoahToQNoah(big.NewInt(100))) == -1 {
 		return true
 	}
 
 	// Delete coin if volume is less than 1 coin
-	if c.Volume().Cmp(helpers.NoahToPip(big.NewInt(1))) == -1 { // todo
+	if c.Volume().Cmp(helpers.NoahToQNoah(big.NewInt(1))) == -1 {
 		return true
 	}
 
 	// Delete coin if price of 1 coin is less than 0.0001 noah
-	price := formula.CalculateSaleReturn(c.Volume(), c.ReserveBalance(), c.Crr(), helpers.NoahToPip(big.NewInt(1))) // todo
-	minPrice := big.NewInt(100000000000000) // 0.0001 noah
+	price := formula.CalculateSaleReturn(c.Volume(), c.ReserveBalance(), c.Crr(), helpers.NoahToQNoah(big.NewInt(1)))
+	minPrice := big.NewInt(100000000000000)                                                                         // 0.0001 noah
 	if price.Cmp(minPrice) == -1 {
 		return true
 	}

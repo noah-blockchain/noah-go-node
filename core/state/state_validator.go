@@ -1,13 +1,13 @@
 package state
 
 import (
-	"io"
-
 	"fmt"
+	"io"
+	"math/big"
+
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/rlp"
 	"github.com/tendermint/tendermint/crypto/ed25519"
-	"math/big"
 )
 
 // stateValidators represents a validators which is being modified.
@@ -25,12 +25,12 @@ func (c *stateValidators) Data() Validators {
 }
 
 type Validator struct {
-	RewardAddress types.Address
+	RewardAddress  types.Address
 	TotalNoahStake *big.Int
-	PubKey        types.Pubkey
-	Commission    uint
-	AccumReward   *big.Int
-	AbsentTimes   *types.BitArray
+	PubKey         types.Pubkey
+	Commission     uint
+	AccumReward    *big.Int
+	AbsentTimes    *types.BitArray
 
 	tmAddress *[20]byte
 	toDrop    bool

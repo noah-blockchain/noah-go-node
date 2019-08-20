@@ -18,18 +18,18 @@ type AppState struct {
 }
 
 type Validator struct {
-	RewardAddress Address   `json:"reward_address"`
-	TotalNoaxStake *big.Int  `json:"total_noax_stake"` // todo
-	PubKey        Pubkey    `json:"pub_key"`
-	Commission    uint      `json:"commission"`
-	AccumReward   *big.Int  `json:"accum_reward"`
-	AbsentTimes   *BitArray `json:"absent_times"`
+	RewardAddress  Address   `json:"reward_address"`
+	TotalNoahStake *big.Int  `json:"total_noah_stake"`
+	PubKey         Pubkey    `json:"pub_key"`
+	Commission     uint      `json:"commission"`
+	AccumReward    *big.Int  `json:"accum_reward"`
+	AbsentTimes    *BitArray `json:"absent_times"`
 }
 
 type Candidate struct {
 	RewardAddress  Address  `json:"reward_address"`
 	OwnerAddress   Address  `json:"owner_address"`
-	TotalNoaxStake  *big.Int `json:"total_noax_stake"` // todo
+	TotalNoahStake *big.Int `json:"total_noah_stake"`
 	PubKey         Pubkey   `json:"pub_key"`
 	Commission     uint     `json:"commission"`
 	Stakes         []Stake  `json:"stakes"`
@@ -38,10 +38,10 @@ type Candidate struct {
 }
 
 type Stake struct {
-	Owner    Address    `json:"owner"`
-	Coin     CoinSymbol `json:"coin"`
-	Value    *big.Int   `json:"value"`
-	NoaxValue *big.Int   `json:"noax_value"` // todo
+	Owner     Address    `json:"owner"`
+	Coin      CoinSymbol `json:"coin"`
+	Value     *big.Int   `json:"value"`
+	NoahValue *big.Int   `json:"noah_value"`
 }
 
 type Coin struct {

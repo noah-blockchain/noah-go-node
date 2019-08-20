@@ -19,7 +19,7 @@ func TestRedeemCheckTx(t *testing.T) {
 
 	senderPrivateKey, _ := crypto.GenerateKey()
 	senderAddr := crypto.PubkeyToAddress(senderPrivateKey.PublicKey)
-	cState.AddBalance(senderAddr, coin, helpers.BipToPip(big.NewInt(1000000)))
+	cState.AddBalance(senderAddr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	receiverPrivateKey, _ := crypto.GenerateKey()
 	receiverAddr := crypto.PubkeyToAddress(receiverPrivateKey.PublicKey)
@@ -32,7 +32,7 @@ func TestRedeemCheckTx(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	checkValue := helpers.BipToPip(big.NewInt(10))
+	checkValue := helpers.NoahToQNoah(big.NewInt(10))
 
 	check := c.Check{
 		Nonce:    []byte{1, 2, 3},

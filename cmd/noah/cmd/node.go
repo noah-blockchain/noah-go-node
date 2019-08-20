@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/gobuffalo/packr"
 	"github.com/noah-blockchain/noah-go-node/api"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
@@ -9,7 +10,6 @@ import (
 	"github.com/noah-blockchain/noah-go-node/eventsdb"
 	"github.com/noah-blockchain/noah-go-node/gui"
 	"github.com/noah-blockchain/noah-go-node/log"
-	"github.com/gobuffalo/packr"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/abci/types"
 	bc "github.com/tendermint/tendermint/blockchain"
@@ -53,7 +53,7 @@ func runNode() error {
 	// init events db
 	eventsdb.InitDB(cfg)
 
-	app := noah.NewNoahBlockchain(cfg)
+	app := noah.NewNOAHBlockchain(cfg)
 
 	// update BlocksTimeDelta in case it was corrupted
 	updateBlocksTimeDelta(app, tmConfig)

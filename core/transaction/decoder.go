@@ -3,8 +3,9 @@ package transaction
 import (
 	"errors"
 	"fmt"
-	"github.com/noah-blockchain/noah-go-node/rlp"
 	"reflect"
+
+	"github.com/noah-blockchain/noah-go-node/rlp"
 )
 
 var TxDecoder = Decoder{
