@@ -51,7 +51,7 @@ func (c *stateCoin) IsToDelete() bool {
 
 	// Delete coin if price of 1 coin is less than 0.0001 noah
 	price := formula.CalculateSaleReturn(c.Volume(), c.ReserveBalance(), c.Crr(), helpers.NoahToQNoah(big.NewInt(1)))
-	minPrice := big.NewInt(100000000000000)                                                                         // 0.0001 noah
+	minPrice := big.NewInt(100000000000000) // 0.0001 noah
 	if price.Cmp(minPrice) == -1 {
 		return true
 	}

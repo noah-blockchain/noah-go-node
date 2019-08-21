@@ -1,6 +1,6 @@
 module github.com/noah-blockchain/noah-go-node
 
-go 1.12.7
+go 1.12
 
 require (
 	github.com/btcsuite/btcd v0.0.0-20190115013929-ed77733ec07d
@@ -17,6 +17,7 @@ require (
 	github.com/tendermint/go-amino v0.15.0
 	github.com/tendermint/iavl v0.12.4
 	github.com/tendermint/tendermint v0.32.1
+	github.com/tendermint/tm-db v0.1.1
 	golang.org/x/crypto v0.0.0-20190313024323-a1f597ede03a
 	golang.org/x/net v0.0.0-20190628185345-da137c7871d7
 	golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a

@@ -53,7 +53,7 @@ func runNode() error {
 	// init events db
 	eventsdb.InitDB(cfg)
 
-	app := noah.NewNOAHBlockchain(cfg)
+	app := noah.NewNoahBlockchain(cfg)
 
 	// update BlocksTimeDelta in case it was corrupted
 	updateBlocksTimeDelta(app, tmConfig)

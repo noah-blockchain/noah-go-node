@@ -9,6 +9,9 @@
 *.dll
 *.so
 *.dylib
+main
+config.toml
+build
 
 # Test binary, built with `go test -c`
 *.test

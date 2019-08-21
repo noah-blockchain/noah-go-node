@@ -44,18 +44,6 @@ update_tools:
 	@echo "--> Updating tools"
 	@go get -u $(GOTOOLS)
 
-#Run this from CI
-get_vendor_deps:
-	@rm -rf vendor/
-	@echo "--> Running dep"
-	@dep ensure -vendor-only
-
-#Run this locally.
-ensure_deps:
-	@rm -rf vendor/
-	@echo "--> Running dep"
-	@dep ensure
-
 ########################################
 ### Formatting, linting, and vetting
 
