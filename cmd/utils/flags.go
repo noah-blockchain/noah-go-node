@@ -29,5 +29,5 @@ func GetNoahConfigPath() string {
 		return NoahConfig
 	}
 
-	return NoahConfig + "config/config.toml"
+	return NoahConfig + "config/config.toml" // todo +/-
 }
