@@ -24,8 +24,8 @@ func TestStake_CalcSimulatedNoahValue(t *testing.T) {
 	s.CreateCoin(coin, "COIN", value, 30, reserve)
 
 	noahValue := (&Stake{
-		Coin:     coin,
-		Value:    helpers.NoahToQnoah(big.NewInt(52)),
+		Coin:      coin,
+		Value:     helpers.NoahToQnoah(big.NewInt(52)),
 		NoahValue: big.NewInt(0),
 	}).CalcSimulatedNoahValue(s)
 

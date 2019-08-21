@@ -29,3 +29,9 @@ Public release
 ####[Amino](https://github.com/tendermint/go-amino)
 
 ####[IAVL+ Tree](https://github.com/tendermint/iavl)
+
+## How to install node
+1) make build - create build. After this command compiled node will be in folder build.
+<br>Testing - ./build/noah version
+<br>Start node - ./build/noah node 
+

@@ -137,26 +137,26 @@ func TestAppState(t *testing.T) {
 	appState := AppState{
 		Validators: []Validator{
 			{
-				RewardAddress: testAddr,
+				RewardAddress:  testAddr,
 				TotalNoahStake: big.NewInt(1),
-				PubKey:        pubkey,
-				Commission:    1,
-				AccumReward:   big.NewInt(1),
-				AbsentTimes:   ba,
+				PubKey:         pubkey,
+				Commission:     1,
+				AccumReward:    big.NewInt(1),
+				AbsentTimes:    ba,
 			},
 		},
 		Candidates: []Candidate{
 			{
-				RewardAddress: testAddr,
-				OwnerAddress:  testAddr,
+				RewardAddress:  testAddr,
+				OwnerAddress:   testAddr,
 				TotalNoahStake: big.NewInt(1),
-				PubKey:        pubkey,
-				Commission:    1,
+				PubKey:         pubkey,
+				Commission:     1,
 				Stakes: []Stake{
 					{
-						Owner:    testAddr,
-						Coin:     GetBaseCoin(),
-						Value:    big.NewInt(1),
+						Owner:     testAddr,
+						Coin:      GetBaseCoin(),
+						Value:     big.NewInt(1),
 						NoahValue: big.NewInt(1),
 					},
 				},

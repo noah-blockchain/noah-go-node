@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"github.com/tendermint/iavl"
-	dbm "github.com/tendermint/tendermint/libs/db"
+	dbm "github.com/tendermint/tm-db"
 )
 
 type Tree interface {

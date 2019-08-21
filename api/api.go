@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"github.com/tendermint/go-amino"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/noah"
 	"github.com/noah-blockchain/noah-go-node/core/state"
@@ -10,6 +9,7 @@ import (
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/rpc/lib/server"
 	"github.com/rs/cors"
+	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/multisig"
@@ -27,7 +27,7 @@ var (
 	cdc        = amino.NewCodec()
 	blockchain *noah.Blockchain
 	client     *rpc.Local
-	noahCfg  *config.Config
+	noahCfg    *config.Config
 )
 
 var Routes = map[string]*rpcserver.RPCFunc{

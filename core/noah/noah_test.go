@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/tendermint/go-amino"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/developers"
@@ -19,6 +18,7 @@ import (
 	"github.com/noah-blockchain/noah-go-node/helpers"
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/rlp"
+	"github.com/tendermint/go-amino"
 	tmConfig "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/common"
 	log2 "github.com/tendermint/tendermint/libs/log"
@@ -441,25 +441,25 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 		}
 
 		validators[i] = types.Validator{
-			RewardAddress: addr,
+			RewardAddress:  addr,
 			TotalNoahStake: stake,
-			PubKey:        pkey,
-			Commission:    100,
-			AccumReward:   big.NewInt(0),
-			AbsentTimes:   types.NewBitArray(24),
+			PubKey:         pkey,
+			Commission:     100,
+			AccumReward:    big.NewInt(0),
+			AbsentTimes:    types.NewBitArray(24),
 		}
 
 		candidates[i] = types.Candidate{
-			RewardAddress: addr,
-			OwnerAddress:  addr,
+			RewardAddress:  addr,
+			OwnerAddress:   addr,
 			TotalNoahStake: big.NewInt(1),
-			PubKey:        pkey,
-			Commission:    100,
+			PubKey:         pkey,
+			Commission:     100,
 			Stakes: []types.Stake{
 				{
-					Owner:    addr,
-					Coin:     types.GetBaseCoin(),
-					Value:    stake,
+					Owner:     addr,
+					Coin:      types.GetBaseCoin(),
+					Value:     stake,
 					NoahValue: stake,
 				},
 			},

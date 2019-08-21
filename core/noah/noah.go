@@ -18,10 +18,10 @@ import (
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/encoding/amino"
-	"github.com/tendermint/tendermint/libs/db"
 	tmNode "github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/rpc/lib/types"
 	types2 "github.com/tendermint/tendermint/types"
+	"github.com/tendermint/tm-db"
 	"math/big"
 	"sync"
 	"sync/atomic"
@@ -67,8 +67,8 @@ type Blockchain struct {
 	stopped uint32
 }
 
-// Creates NOAH Blockchain instance, should be only called once
-func NewNOAHBlockchain(cfg *config.Config) *Blockchain {
+// Creates Noah Blockchain instance, should be only called once
+func NewNoahBlockchain(cfg *config.Config) *Blockchain {
 	dbType := db.DBBackendType(cfg.DBBackend)
 	ldb := db.NewDB("state", dbType, utils.GetNoahHome()+"/data")
 
