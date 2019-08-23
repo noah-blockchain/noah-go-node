@@ -4,6 +4,13 @@ import (
 	"encoding/base64"
 	"encoding/csv"
 	"encoding/json"
+	"math"
+	"math/big"
+	"os"
+	"sort"
+	"strconv"
+	"time"
+
 	"github.com/noah-blockchain/noah-go-node/core/dao"
 	"github.com/noah-blockchain/noah-go-node/core/noah"
 	"github.com/noah-blockchain/noah-go-node/core/state"
@@ -11,12 +18,6 @@ import (
 	"github.com/noah-blockchain/noah-go-node/helpers"
 	"github.com/tendermint/go-amino"
 	tmTypes "github.com/tendermint/tendermint/types"
-	"math"
-	"math/big"
-	"os"
-	"sort"
-	"strconv"
-	"time"
 )
 
 func main() {
@@ -62,7 +63,7 @@ func main() {
 
 		balMainFloat, _ := strconv.ParseFloat(balMain, 64)
 		balMainInt := big.NewInt(0).Mul(big.NewInt(int64(math.Round(balMainFloat))), p)
-		if balMainInt.Cmp(helpers.NoahToQnoah(big.NewInt(100000))) != -1 || role == "pool_admin" { // todo
+		if balMainInt.Cmp(helpers.NoahToQNoah(big.NewInt(100000))) != -1 || role == "pool_admin" { // todo
 			firstBalances[address].Add(firstBalances[address], balMainInt)
 		} else {
 			secondBalances[address].Add(secondBalances[address], balMainInt)
@@ -146,7 +147,7 @@ func main() {
 	validators, candidates := makeValidatorsAndCandidates(validatorsPubKeys, big.NewInt(1))
 
 	jsonBytes, err := cdc.MarshalJSONIndent(types.AppState{
-		Note:         "Noah, the Internet of Money (IoM)\nNoah Initial Price – $0.32\nSo Long, and Thanks for All the Fish!", // todo
+		Note:         "Noah, your key to the future, powered by crypto currency\nNoah Initial Price – $0.03\nThanks for All!", // todo
 		Validators:   validators,
 		Candidates:   candidates,
 		Accounts:     bals,
@@ -253,7 +254,7 @@ func makeBalances(balances map[string]*big.Int, balances2 map[string]*big.Int, b
 	}
 
 	totalBalances.Add(totalBalances, big.NewInt(4))                                                               // first validators' stakes
-	balances[dao.Address.String()] = big.NewInt(0).Sub(helpers.NoahToQnoah(big.NewInt(200000000)), totalBalances) // todo DAO account
+	balances[dao.Address.String()] = big.NewInt(0).Sub(helpers.NoahToQNoah(big.NewInt(200000000)), totalBalances) // todo DAO account
 
 	var result []types.Account
 	for address, balance := range balances {

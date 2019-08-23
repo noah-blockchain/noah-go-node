@@ -1,16 +1,8 @@
-GOTOOLS = \
-	github.com/mitchellh/gox \
-    github.com/golang/dep/cmd/dep \
-    github.com/alecthomas/gometalinter \
-    github.com/gogo/protobuf/protoc-gen-gogo \
-	github.com/gobuffalo/packr/packr
 PACKAGES=$(shell go list ./... | grep -v '/vendor/')
 BUILD_TAGS?=noah
-BUILD_FLAGS=-ldflags "-s -w -X noah/version.GitCommit=`git rev-parse --short=8 HEAD`"
+BUILD_FLAGS=-ldflags "-s -w -X noah/version.GitCommit=`git rev-parse --short=8 HEAD`" -mod=vendor
 
-all: check build test install
-
-check: check_tools ensure_deps
+all: build test install
 
 ########################################
 ### Build
@@ -31,18 +23,9 @@ install:
 test:
 	CGO_ENABLED=1 CGO_LDFLAGS="-lsnappy" go test --count 1 --tags "gcc cleveldb" ./...
 
-check_tools:
-	@# https://stackoverflow.com/a/25668869
-	@echo "Found tools: $(foreach tool,$(notdir $(GOTOOLS)),\
-        $(if $(shell which $(tool)),$(tool),$(error "No $(tool) in PATH")))"
-
-get_tools:
-	@echo "--> Installing tools"
-	./scripts/get_tools.sh
-
-update_tools:
-	@echo "--> Updating tools"
-	@go get -u $(GOTOOLS)
+create_vendor:
+	@echo "--> Installing vendor"
+	CGO_ENABLED=0 go mod vendor
 
 ########################################
 ### Formatting, linting, and vetting
