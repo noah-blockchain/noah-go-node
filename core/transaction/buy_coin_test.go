@@ -2,6 +2,10 @@ package transaction
 
 import (
 	"bytes"
+	"math/big"
+	"sync"
+	"testing"
+
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/state"
@@ -11,10 +15,7 @@ import (
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/rlp"
 	"github.com/tendermint/go-amino"
-	"github.com/tendermint/tendermint/libs/db"
-	"math/big"
-	"sync"
-	"testing"
+	"github.com/tendermint/tm-db"
 )
 
 var (

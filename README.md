@@ -31,7 +31,11 @@ Public release
 ####[IAVL+ Tree](https://github.com/tendermint/iavl)
 
 ## How to install node
-1) make build - create build. After this command compiled node will be in folder build.
-<br>Testing - ./build/noah version
-<br>Start node - ./build/noah node 
+Working folder for node - $HOME/noah
+1) Change config.toml.example to config.toml and push in $HOME/noah/config folder
+2) **make create_vendor** - for getting all dependencies
+3) **make build** - create build.
+
+<br>Testing - _./build/noah version_
+<br>Start node - _./build/noah node_ 
 
