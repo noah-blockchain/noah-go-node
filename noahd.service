@@ -1,9 +1,9 @@
 [Unit]
-Description=Noax Validator
+Description=Noah Validator
 After=network.target auditd.service
 
 [Service]
-ExecStart=/home/user/noax
+ExecStart=/home/user/noah
 Type=simple
 KillMode=process
 Restart=always
@@ -12,4 +12,4 @@ User=user
 
 [Install]
 WantedBy=multi-user.target
-Alias=noax.service
+Alias=noah.service

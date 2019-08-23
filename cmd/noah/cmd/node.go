@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/gobuffalo/packr"
 	"github.com/noah-blockchain/noah-go-node/api"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
@@ -12,7 +14,6 @@ import (
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/abci/types"
-	bc "github.com/tendermint/tendermint/blockchain"
 	tmCfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/common"
 	tmNode "github.com/tendermint/tendermint/node"
@@ -20,8 +21,8 @@ import (
 	"github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/proxy"
 	rpc "github.com/tendermint/tendermint/rpc/client"
+	bc "github.com/tendermint/tendermint/store"
 	tmTypes "github.com/tendermint/tendermint/types"
-	"time"
 )
 
 var RunNode = &cobra.Command{

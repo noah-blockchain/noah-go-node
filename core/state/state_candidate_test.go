@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/helpers"
-	"github.com/tendermint/tendermint/libs/db"
+	"github.com/tendermint/tm-db"
 	"math/big"
 	"testing"
 )
@@ -18,14 +18,14 @@ func TestStake_CalcSimulatedNoahValue(t *testing.T) {
 	createTestCandidate(s)
 
 	coin := types.StrToCoinSymbol("ABC")
-	value := helpers.NoahToPip(big.NewInt(100))
-	reserve := helpers.NoahToPip(big.NewInt(201))
+	value := helpers.NoahToQNoah(big.NewInt(100))
+	reserve := helpers.NoahToQNoah(big.NewInt(201))
 
 	s.CreateCoin(coin, "COIN", value, 30, reserve)
 
 	noahValue := (&Stake{
 		Coin:      coin,
-		Value:     helpers.NoahToQnoah(big.NewInt(52)),
+		Value:     helpers.NoahToQNoah(big.NewInt(52)),
 		NoahValue: big.NewInt(0),
 	}).CalcSimulatedNoahValue(s)
 

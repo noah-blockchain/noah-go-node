@@ -13,6 +13,8 @@ main
 config.toml
 build
 
+cmd/leveldb
+
 # Test binary, built with `go test -c`
 *.test
 
