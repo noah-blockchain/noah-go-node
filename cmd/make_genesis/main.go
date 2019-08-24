@@ -147,7 +147,7 @@ func main() {
 	validators, candidates := makeValidatorsAndCandidates(validatorsPubKeys, big.NewInt(1))
 
 	jsonBytes, err := cdc.MarshalJSONIndent(types.AppState{
-		Note:         "Noah, the Internet of Money (IoM)\nNoah Initial Price – $0.32\nSo Long, and Thanks for All the Fish!", // todo
+		Note:         "Noah, your key to the future, powered by crypto currency\nNoah Initial Price – $0.03\nThanks for All!", // todo
 		Validators:   validators,
 		Candidates:   candidates,
 		Accounts:     bals,

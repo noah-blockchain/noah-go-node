@@ -1,11 +1,10 @@
-<p align="center" style="text-align: center;">
-    <a href="https://github.com/noah-blockchain/noah-go-node/blob/master/LICENSE">
-        <img src="https://img.shields.io/packagist/l/doctrine/orm.svg" alt="License">
-    </a>
-    <img alt="undefined" src="https://img.shields.io/github/last-commit/noah-blockchain/noah-go-node.svg">
-</p>
+[![last commit](https://img.shields.io/github/last-commit/noah-blockchain/noah-go-node.svg)]()
+[![license](https://img.shields.io/packagist/l/doctrine/orm.svg)](https://github.com/noah-blockchain/noah-go-node/blob/master/LICENSE)
+[![version](https://img.shields.io/github/tag/noah-blockchain/noah-go-node.svg)](https://github.com/noah-blockchain/noah-go-node/releases/latest)
+[![Go version](https://img.shields.io/badge/go-1.12.0-blue.svg)](https://github.com/moovweb/gvm)
+[![](https://tokei.rs/b1/github/noah-blockchain/noah-go-node?category=lines)](https://github.com/noah-blockchain/noah-go-node)
 
-#NOAH-blockchain go-node
+# NOAH-blockchain go-node
 
 ### [dev-branch](https://github.com/noah-blockchain/noah-go-node/tree/dev)
 The branch contains the most current version
@@ -16,28 +15,51 @@ The branch contains a version for alpha-testing
 #### [beta-branch](https://github.com/noah-blockchain/noah-go-node/tree/beta)
 The branch contains a version for beta-testing
 
-#### [testnet-branch](https://github.com/noah-blockchain/noah-go-node/tree/testnet)
-Implementation for test network
-
 #### [master-branch](https://github.com/noah-blockchain/noah-go-node/tree/master)
 Public release
 
 ## Sub-modules
 
-####[Remote cluster using terraform and ansible](https://github.com/tendermint/tendermint/blob/master/docs/networks/terraform-and-ansible.md)
+#### [Remote cluster using terraform and ansible](https://github.com/tendermint/tendermint/blob/master/docs/networks/terraform-and-ansible.md)
 
-####[Amino](https://github.com/tendermint/go-amino)
+#### [Amino](https://github.com/tendermint/go-amino)
 
-####[IAVL+ Tree](https://github.com/tendermint/iavl)
+#### [IAVL+ Tree](https://github.com/tendermint/iavl)
 
-## How to install node
-Working folder for node - $HOME/noah
-1) Change config.toml.example to config.toml and push in $HOME/noah/config folder
-2) **make create_vendor** - for getting all dependencies
-3) **make build** - create build.
+##  Install and build  node
 
-<br>Testing - _./build/noah version_
-<br>Start node - _./build/noah node_ 
+###### 1. [Install LevelDB](https://github.com/google/leveldb) 
+
+###### 2. Download Noah
+Clone source code to your machine
+```
+mkdir -p $GOPATH/src/github.com/noah-blockchain
+cd $GOPATH/src/github.com/noah-blockchain
+git clone https://github.com/noah-blockchain/noah-go-node.git
+cd noah-go-node
+```
+Get Tools & Dependencies
+```
+go mod vendor
+```
+Compile
+
+```
+make build
+```
+After this command compiled node will be in folder build.
+
+###### 3. Run Noah Node
+make file config.toml
+```
+./config/config.toml
+```
+```
+noah version
+noah node 
+```
+###### 4. Use GUI
+Open http://localhost:3000/ in local browser to see node’s GUI.
 
 Node will be working with memdb.
 For using this db is necessary to fix file config.toml and change **db_backend = "memdb"**
