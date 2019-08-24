@@ -2,6 +2,7 @@ package noah
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/appdb"
@@ -465,6 +466,7 @@ func (app *Blockchain) Stop() {
 
 	app.appDB.Close()
 	app.stateDB.Close()
+	fmt.Println("Blockchain successful stopped")
 }
 
 // Get immutable state of NOAH Blockchain

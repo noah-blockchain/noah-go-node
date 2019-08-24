@@ -39,3 +39,5 @@ Working folder for node - $HOME/noah
 <br>Testing - _./build/noah version_
 <br>Start node - _./build/noah node_ 
 
+Node will be working with memdb.
+For using this db is necessary to fix file config.toml and change **db_backend = "memdb"**
