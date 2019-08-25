@@ -14,7 +14,7 @@ import (
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/rlp"
 	"github.com/noah-blockchain/noah-go-node/upgrades"
-	"github.com/tendermint/go-amino"
+	"github.com/MinterTeam/go-amino"
 	tmTypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 	"math/big"
@@ -1790,7 +1790,7 @@ func (s *StateDB) Export(currentHeight uint64) types.AppState {
 			for coin, value := range account.Balances().Data {
 				balance[i] = types.Balance{
 					Coin:  coin,
-					Value: value,
+					Value: &types.BigInt{Int: *value},
 				}
 				i++
 			}
@@ -1819,9 +1819,9 @@ func (s *StateDB) Export(currentHeight uint64) types.AppState {
 			appState.Coins = append(appState.Coins, types.Coin{
 				Name:           coin.Name(),
 				Symbol:         coin.Symbol(),
-				Volume:         coin.Volume(),
+				Volume:         &types.BigInt{Int: *coin.Volume()},
 				Crr:            coin.Crr(),
-				ReserveBalance: coin.ReserveBalance(),
+				ReserveBalance: &types.BigInt{Int: *coin.ReserveBalance()},
 			})
 		}
 
@@ -1841,7 +1841,7 @@ func (s *StateDB) Export(currentHeight uint64) types.AppState {
 					Address:      frozenFund.Address,
 					CandidateKey: frozenFund.CandidateKey,
 					Coin:         frozenFund.Coin,
-					Value:        frozenFund.Value,
+					Value:        &types.BigInt{Int: *frozenFund.Value},
 				})
 			}
 		}
@@ -1856,15 +1856,15 @@ func (s *StateDB) Export(currentHeight uint64) types.AppState {
 			stakes = append(stakes, types.Stake{
 				Owner:     s.Owner,
 				Coin:      s.Coin,
-				Value:     s.Value,
-				NoahValue: s.NoahValue,
+				Value:     &types.BigInt{Int: *s.Value},
+				NoahValue: &types.BigInt{Int: *s.NoahValue},
 			})
 		}
 
 		appState.Candidates = append(appState.Candidates, types.Candidate{
 			RewardAddress:  candidate.RewardAddress,
 			OwnerAddress:   candidate.OwnerAddress,
-			TotalNoahStake: candidate.TotalNoahStake,
+			TotalNoahStake: &types.BigInt{Int: *candidate.TotalNoahStake},
 			PubKey:         candidate.PubKey,
 			Commission:     candidate.Commission,
 			Stakes:         stakes,
@@ -1877,24 +1877,24 @@ func (s *StateDB) Export(currentHeight uint64) types.AppState {
 	for _, val := range vals.data {
 		appState.Validators = append(appState.Validators, types.Validator{
 			RewardAddress:  val.RewardAddress,
-			TotalNoahStake: val.TotalNoahStake,
+			TotalNoahStake: &types.BigInt{Int: *val.TotalNoahStake},
 			PubKey:         val.PubKey,
 			Commission:     val.Commission,
-			AccumReward:    val.AccumReward,
+			AccumReward:    &types.BigInt{Int: *val.AccumReward},
 			AbsentTimes:    val.AbsentTimes,
 		})
 	}
 
 	appState.MaxGas = s.GetMaxGas()
 	appState.StartHeight = s.height
-	appState.TotalSlashed = s.GetTotalSlashed()
+	appState.TotalSlashed = &types.BigInt{Int: *s.GetTotalSlashed()}
 
 	return appState
 }
 
 func (s *StateDB) Import(appState types.AppState) {
 	s.SetMaxGas(appState.MaxGas)
-	s.setTotalSlashed(appState.TotalSlashed)
+	s.setTotalSlashed(&appState.TotalSlashed.Int)
 
 	for _, a := range appState.Accounts {
 		account := s.GetOrNewStateObject(a.Address)
@@ -1908,7 +1908,7 @@ func (s *StateDB) Import(appState types.AppState) {
 		}
 
 		for _, b := range a.Balance {
-			account.SetBalance(b.Coin, b.Value)
+			account.SetBalance(b.Coin, &b.Value.Int)
 		}
 
 		s.setStateObject(account)
@@ -1916,17 +1916,17 @@ func (s *StateDB) Import(appState types.AppState) {
 	}
 
 	for _, c := range appState.Coins {
-		s.CreateCoin(c.Symbol, c.Name, c.Volume, c.Crr, c.ReserveBalance)
+		s.CreateCoin(c.Symbol, c.Name, &c.Volume.Int, c.Crr, &c.ReserveBalance.Int)
 	}
 
 	vals := &stateValidators{}
 	for _, v := range appState.Validators {
 		vals.data = append(vals.data, Validator{
 			RewardAddress:  v.RewardAddress,
-			TotalNoahStake: v.TotalNoahStake,
+			TotalNoahStake: &v.TotalNoahStake.Int,
 			PubKey:         v.PubKey,
 			Commission:     v.Commission,
-			AccumReward:    v.AccumReward,
+			AccumReward:    &v.AccumReward.Int,
 			AbsentTimes:    v.AbsentTimes,
 		})
 	}
@@ -1940,14 +1940,14 @@ func (s *StateDB) Import(appState types.AppState) {
 			stakes[i] = Stake{
 				Owner:     stake.Owner,
 				Coin:      stake.Coin,
-				Value:     stake.Value,
-				NoahValue: stake.NoahValue,
+				Value:     &stake.Value.Int,
+				NoahValue: &stake.NoahValue.Int,
 			}
 		}
 		cands.data = append(cands.data, Candidate{
 			RewardAddress:  c.RewardAddress,
 			OwnerAddress:   c.OwnerAddress,
-			TotalNoahStake: c.TotalNoahStake,
+			TotalNoahStake: &c.TotalNoahStake.Int,
 			PubKey:         c.PubKey,
 			Commission:     c.Commission,
 			Stakes:         stakes,
@@ -1965,7 +1965,7 @@ func (s *StateDB) Import(appState types.AppState) {
 
 	for _, ff := range appState.FrozenFunds {
 		frozenFunds := s.GetOrNewStateFrozenFunds(ff.Height)
-		frozenFunds.AddFund(ff.Address, ff.CandidateKey, ff.Coin, ff.Value)
+		frozenFunds.AddFund(ff.Address, ff.CandidateKey, ff.Coin, &ff.Value.Int)
 		s.setStateFrozenFunds(frozenFunds)
 	}
 }
@@ -1989,7 +1989,7 @@ func (s *StateDB) CheckForInvariants() error {
 	for _, account := range genesisState.Accounts {
 		for _, bal := range account.Balance {
 			if bal.Coin.IsBaseCoin() {
-				GenesisAlloc.Add(GenesisAlloc, bal.Value)
+				GenesisAlloc.Add(GenesisAlloc, &bal.Value.Int)
 			}
 		}
 	}
@@ -1997,18 +1997,18 @@ func (s *StateDB) CheckForInvariants() error {
 	for _, candidate := range genesisState.Candidates {
 		for _, stake := range candidate.Stakes {
 			if stake.Coin.IsBaseCoin() {
-				GenesisAlloc.Add(GenesisAlloc, stake.Value)
+				GenesisAlloc.Add(GenesisAlloc, &stake.Value.Int)
 			}
 		}
 	}
 
 	for _, coin := range genesisState.Coins {
-		GenesisAlloc.Add(GenesisAlloc, coin.ReserveBalance)
+		GenesisAlloc.Add(GenesisAlloc, &coin.ReserveBalance.Int)
 	}
 
 	for _, ff := range genesisState.FrozenFunds {
 		if ff.Coin.IsBaseCoin() {
-			GenesisAlloc.Add(GenesisAlloc, ff.Value)
+			GenesisAlloc.Add(GenesisAlloc, &ff.Value.Int)
 		}
 	}
 

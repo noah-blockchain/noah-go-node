@@ -15,7 +15,7 @@ import (
 
 	rs "github.com/noah-blockchain/noah-go-node/rpc/lib/server"
 	types "github.com/noah-blockchain/noah-go-node/rpc/lib/types"
-	amino "github.com/tendermint/go-amino"
+	amino "github.com/MinterTeam/go-amino"
 	"github.com/tendermint/tendermint/libs/log"
 )
 

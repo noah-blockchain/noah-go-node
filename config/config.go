@@ -108,6 +108,7 @@ type Config struct {
 	P2P             *tmConfig.P2PConfig             `mapstructure:"p2p"`
 	Mempool         *tmConfig.MempoolConfig         `mapstructure:"mempool"`
 	Consensus       *tmConfig.ConsensusConfig       `mapstructure:"consensus"`
+	FastSyncSection *tmConfig.FastSyncConfig        `mapstructure:"fastsync"`
 	TxIndex         *tmConfig.TxIndexConfig         `mapstructure:"tx_index"`
 	Instrumentation *tmConfig.InstrumentationConfig `mapstructure:"instrumentation"`
 }
@@ -120,6 +121,7 @@ func defaultConfig() *Config {
 		P2P:             tmConfig.DefaultP2PConfig(),
 		Mempool:         tmConfig.DefaultMempoolConfig(),
 		Consensus:       tmConfig.DefaultConsensusConfig(),
+		FastSyncSection: tmConfig.DefaultFastSyncConfig(),
 		TxIndex:         tmConfig.DefaultTxIndexConfig(),
 		Instrumentation: tmConfig.DefaultInstrumentationConfig(),
 	}
@@ -159,6 +161,7 @@ func GetTmConfig(cfg *Config) *tmConfig.Config {
 		P2P:             cfg.P2P,
 		Mempool:         cfg.Mempool,
 		Consensus:       cfg.Consensus,
+		FastSync:        cfg.FastSyncSection,
 		TxIndex:         cfg.TxIndex,
 		Instrumentation: cfg.Instrumentation,
 	}

@@ -19,7 +19,7 @@ package types
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/tendermint/go-amino"
+	"github.com/MinterTeam/go-amino"
 	"math/big"
 	"strings"
 	"testing"

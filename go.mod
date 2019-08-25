@@ -3,6 +3,7 @@ module github.com/noah-blockchain/noah-go-node
 go 1.12
 
 require (
+	github.com/MinterTeam/go-amino v0.14.1
 	github.com/btcsuite/btcd v0.0.0-20190115013929-ed77733ec07d
 	github.com/go-kit/kit v0.6.0
 	github.com/gobuffalo/packr v1.11.1
@@ -14,7 +15,6 @@ require (
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/viper v1.2.1
 	github.com/stretchr/testify v1.3.0
-	github.com/syndtr/goleveldb v1.0.1-0.20190318030020-c3a204f8e965
 	github.com/tendermint/go-amino v0.15.0
 	github.com/tendermint/iavl v0.12.4
 	github.com/tendermint/tendermint v0.32.2

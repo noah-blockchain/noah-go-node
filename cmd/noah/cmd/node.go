@@ -85,6 +85,7 @@ func runNode() error {
 		}
 	})
 
+	fmt.Println("Noah node successful started.")
 	// Run forever
 	select {}
 }
