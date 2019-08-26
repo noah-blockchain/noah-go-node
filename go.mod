@@ -3,7 +3,6 @@ module github.com/noah-blockchain/noah-go-node
 go 1.12
 
 require (
-	github.com/MinterTeam/go-amino v0.14.1
 	github.com/btcsuite/btcd v0.0.0-20190115013929-ed77733ec07d
 	github.com/go-kit/kit v0.6.0
 	github.com/gobuffalo/packr v1.11.1

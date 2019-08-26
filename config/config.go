@@ -2,11 +2,12 @@ package config
 
 import (
 	"fmt"
-	"github.com/noah-blockchain/noah-go-node/cmd/utils"
-	tmConfig "github.com/tendermint/tendermint/config"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/noah-blockchain/noah-go-node/cmd/utils"
+	tmConfig "github.com/tendermint/tendermint/config"
 )
 
 const (

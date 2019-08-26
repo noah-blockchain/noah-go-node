@@ -1,6 +1,6 @@
 package events
 
-import "github.com/MinterTeam/go-amino"
+import "github.com/tendermin/go-amino"
 
 func RegisterAminoEvents(codec *amino.Codec) {
 	codec.RegisterInterface((*Event)(nil), nil)

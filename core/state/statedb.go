@@ -14,7 +14,7 @@ import (
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/rlp"
 	"github.com/noah-blockchain/noah-go-node/upgrades"
-	"github.com/MinterTeam/go-amino"
+	"github.com/tendermin/go-amino"
 	tmTypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 	"math/big"

@@ -73,6 +73,8 @@ func runNode() error {
 		go gui.Run(cfg.GUIListenAddress)
 	}
 
+	fmt.Println("Noah node successful started.")
+
 	// Recheck mempool. Currently kind a hack.
 	go recheckMempool(node, cfg)
 
@@ -85,7 +87,6 @@ func runNode() error {
 		}
 	})
 
-	fmt.Println("Noah node successful started.")
 	// Run forever
 	select {}
 }

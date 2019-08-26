@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	"github.com/MinterTeam/go-amino"
+	"github.com/tendermin/go-amino"
 )
 
 type SampleResult struct {

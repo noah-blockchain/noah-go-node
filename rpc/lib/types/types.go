@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"reflect"
 
-	"github.com/MinterTeam/go-amino"
+	"github.com/tendermin/go-amino"
 	tmpubsub "github.com/tendermint/tendermint/libs/pubsub"
 )
 

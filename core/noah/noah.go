@@ -3,7 +3,6 @@ package noah
 import (
 	"bytes"
 	"fmt"
-	"github.com/MinterTeam/go-amino"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/appdb"
@@ -16,6 +15,7 @@ import (
 	"github.com/noah-blockchain/noah-go-node/eventsdb/events"
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/version"
+	"github.com/tendermint/go-amino"
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/encoding/amino"
@@ -466,7 +466,7 @@ func (app *Blockchain) Stop() {
 
 	app.appDB.Close()
 	app.stateDB.Close()
-	fmt.Println("Blockchain successful stopped")
+	fmt.Println("Noah node successful stopped")
 }
 
 // Get immutable state of NOAH Blockchain

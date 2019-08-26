@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
-	"github.com/MinterTeam/go-amino"
+	"github.com/tendermin/go-amino"
 	"github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tm-db"
 )
