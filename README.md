@@ -28,19 +28,22 @@ Public release
 
 ##  Install and build  node
 
-###### 1. [Install LevelDB](https://github.com/google/leveldb) 
-
+###### 1. [Install MeMDB](https://github.com/hashicorp/go-memdb) 
+Node will be working with memdb.
+   For using this db is necessary to fix file config.toml and change **db_backend = "memdb"**
+   
 ###### 2. Download Noah
 Clone source code to your machine
 ```
-mkdir -p $GOPATH/src/github.com/noah-blockchain
+mkdir -p $GOPATH/src/github.com/noah-blockchain or $HOME/noah
 cd $GOPATH/src/github.com/noah-blockchain
 git clone https://github.com/noah-blockchain/noah-go-node.git
 cd noah-go-node
 ```
+
 Get Tools & Dependencies
 ```
-go mod vendor
+make create_vendor
 ```
 Compile
 
@@ -51,6 +54,8 @@ After this command compiled node will be in folder build.
 
 ###### 3. Run Noah Node
 make file config.toml
+Change config.toml.example to config.toml and push in $HOME/noah/config folder
+
 ```
 ./config/config.toml
 ```
@@ -60,16 +65,3 @@ noah node
 ```
 ###### 4. Use GUI
 Open http://localhost:3000/ in local browser to see node’s GUI.
-
-## How to install node
-
-Working folder for node - $HOME/noah
-1) Change config.toml.example to config.toml and push in $HOME/noah/config folder
-2) **make create_vendor** - for getting all dependencies
-3) **make build** - create build.
-
-<br>Testing - _./build/noah version_
-<br>Start node - _./build/noah node_ 
-
-Node will be working with memdb.
-For using this db is necessary to fix file config.toml and change **db_backend = "memdb"**
