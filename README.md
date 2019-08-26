@@ -61,3 +61,15 @@ noah node
 ###### 4. Use GUI
 Open http://localhost:3000/ in local browser to see node’s GUI.
 
+## How to install node
+
+Working folder for node - $HOME/noah
+1) Change config.toml.example to config.toml and push in $HOME/noah/config folder
+2) **make create_vendor** - for getting all dependencies
+3) **make build** - create build.
+
+<br>Testing - _./build/noah version_
+<br>Start node - _./build/noah node_ 
+
+Node will be working with memdb.
+For using this db is necessary to fix file config.toml and change **db_backend = "memdb"**

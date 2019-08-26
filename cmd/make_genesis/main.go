@@ -11,12 +11,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/noah-blockchain/go-amino"
 	"github.com/noah-blockchain/noah-go-node/core/dao"
 	"github.com/noah-blockchain/noah-go-node/core/noah"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/helpers"
-	"github.com/tendermint/go-amino"
 	tmTypes "github.com/tendermint/tendermint/types"
 )
 
@@ -90,7 +90,7 @@ func main() {
 			Address:      types.HexToAddress(address),
 			CandidateKey: []byte{0},
 			Coin:         types.GetBaseCoin(),
-			Value:        balance,
+			Value:        &types.BigInt{Int: *balance},
 		})
 	}
 
@@ -104,7 +104,7 @@ func main() {
 			Address:      types.HexToAddress(address),
 			CandidateKey: []byte{0},
 			Coin:         types.GetBaseCoin(),
-			Value:        balance,
+			Value:        &types.BigInt{Int: *balance},
 		})
 	}
 
@@ -118,7 +118,7 @@ func main() {
 			Address:      types.HexToAddress(address),
 			CandidateKey: []byte{0},
 			Coin:         types.GetBaseCoin(),
-			Value:        balance,
+			Value:        &types.BigInt{Int: *balance},
 		})
 	}
 
@@ -152,7 +152,7 @@ func main() {
 		Candidates:   candidates,
 		Accounts:     bals,
 		MaxGas:       noah.DefaultMaxGas,
-		TotalSlashed: big.NewInt(0),
+		TotalSlashed: &types.BigInt{},
 		FrozenFunds:  frozenFunds,
 	}, "", "	")
 	if err != nil {
@@ -206,25 +206,25 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 
 		validators[i] = types.Validator{
 			RewardAddress:  addr,
-			TotalNoahStake: stake,
+			TotalNoahStake: &types.BigInt{Int: *stake},
 			PubKey:         pkey,
 			Commission:     100,
-			AccumReward:    big.NewInt(0),
+			AccumReward:    &types.BigInt{Int: *big.NewInt(0)},
 			AbsentTimes:    types.NewBitArray(24),
 		}
 
 		candidates[i] = types.Candidate{
 			RewardAddress:  addr,
 			OwnerAddress:   addr,
-			TotalNoahStake: big.NewInt(1),
+			TotalNoahStake: &types.BigInt{Int: *big.NewInt(1)},
 			PubKey:         pkey,
 			Commission:     100,
 			Stakes: []types.Stake{
 				{
 					Owner:     addr,
 					Coin:      types.GetBaseCoin(),
-					Value:     stake,
-					NoahValue: stake,
+					Value:     &types.BigInt{Int: *stake},
+					NoahValue: &types.BigInt{Int: *stake},
 				},
 			},
 			CreatedAtBlock: 1,
@@ -267,7 +267,7 @@ func makeBalances(balances map[string]*big.Int, balances2 map[string]*big.Int, b
 			Balance: []types.Balance{
 				{
 					Coin:  types.GetBaseCoin(),
-					Value: balance,
+					Value: &types.BigInt{Int: *balance},
 				},
 			},
 		})

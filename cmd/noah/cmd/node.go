@@ -51,11 +51,9 @@ func runNode() error {
 		return err
 	}
 
-	// init events db
 	eventsdb.InitDB(cfg)
 
 	app := noah.NewNoahBlockchain(cfg)
-
 	// update BlocksTimeDelta in case it was corrupted
 	updateBlocksTimeDelta(app, tmConfig)
 
@@ -74,6 +72,8 @@ func runNode() error {
 		go api.RunAPI(app, client, cfg)
 		go gui.Run(cfg.GUIListenAddress)
 	}
+
+	fmt.Println("Noah node successful started.")
 
 	// Recheck mempool. Currently kind a hack.
 	go recheckMempool(node, cfg)

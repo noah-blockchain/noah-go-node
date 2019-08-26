@@ -8,13 +8,13 @@ require (
 	github.com/gobuffalo/packr v1.11.1
 	github.com/gorilla/websocket v1.2.0
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/noah-blockchain/go-amino v0.14.1
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/common v0.0.0-20181113130724-41aa239b4cce // indirect
 	github.com/rs/cors v1.6.0
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/viper v1.2.1
 	github.com/stretchr/testify v1.3.0
-	github.com/syndtr/goleveldb v1.0.1-0.20190318030020-c3a204f8e965
 	github.com/tendermint/go-amino v0.15.0
 	github.com/tendermint/iavl v0.12.4
 	github.com/tendermint/tendermint v0.32.2

@@ -16,7 +16,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	amino "github.com/tendermint/go-amino"
+<<<<<<< HEAD
+	amino "github.com/tendermin/go-amino"
+=======
+	amino "github.com/noah-blockchain/go-amino"
+>>>>>>> origin/fix/build
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
 
