@@ -2,13 +2,12 @@ package rpctypes
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
-	"fmt"
-
+	"github.com/noah-blockchain/go-amino"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	"github.com/tendermin/go-amino"
 )
 
 type SampleResult struct {

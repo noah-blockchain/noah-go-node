@@ -6,6 +6,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/noah-blockchain/go-amino"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/state"
@@ -14,7 +15,6 @@ import (
 	"github.com/noah-blockchain/noah-go-node/helpers"
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/rlp"
-	"github.com/tendermin/go-amino"
 	"github.com/tendermint/tm-db"
 )
 

@@ -3,6 +3,11 @@ package noah
 import (
 	"bytes"
 	"fmt"
+	"math/big"
+	"sync"
+	"sync/atomic"
+
+	"github.com/noah-blockchain/go-amino"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/appdb"
@@ -15,7 +20,6 @@ import (
 	"github.com/noah-blockchain/noah-go-node/eventsdb/events"
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/version"
-	"github.com/tendermint/go-amino"
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/encoding/amino"
@@ -23,9 +27,6 @@ import (
 	"github.com/tendermint/tendermint/rpc/lib/types"
 	types2 "github.com/tendermint/tendermint/types"
 	"github.com/tendermint/tm-db"
-	"math/big"
-	"sync"
-	"sync/atomic"
 )
 
 const (

@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/csv"
 	"encoding/json"
-	"github.com/tendermint/go-amino"
 	"math"
 	"math/big"
 	"os"
@@ -12,6 +11,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/noah-blockchain/go-amino"
 	"github.com/noah-blockchain/noah-go-node/core/dao"
 	"github.com/noah-blockchain/noah-go-node/core/noah"
 	"github.com/noah-blockchain/noah-go-node/core/state"

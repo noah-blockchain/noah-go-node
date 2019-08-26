@@ -19,10 +19,11 @@ package types
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/tendermin/go-amino"
 	"math/big"
 	"strings"
 	"testing"
+
+	"github.com/noah-blockchain/go-amino"
 )
 
 func TestBytesConversion(t *testing.T) {

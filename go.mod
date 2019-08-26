@@ -8,6 +8,7 @@ require (
 	github.com/gobuffalo/packr v1.11.1
 	github.com/gorilla/websocket v1.2.0
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/noah-blockchain/go-amino v0.14.1
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/common v0.0.0-20181113130724-41aa239b4cce // indirect
 	github.com/rs/cors v1.6.0

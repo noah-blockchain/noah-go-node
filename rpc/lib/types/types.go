@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"reflect"
 
-	"github.com/tendermin/go-amino"
+	"github.com/noah-blockchain/go-amino"
+	"github.com/pkg/errors"
 	tmpubsub "github.com/tendermint/tendermint/libs/pubsub"
 )
 
