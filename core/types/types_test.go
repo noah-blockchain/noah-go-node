@@ -19,7 +19,7 @@ package types
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/MinterTeam/go-amino"
+	"github.com/noah-blockchain/go-amino"
 	"math/big"
 	"strings"
 	"testing"

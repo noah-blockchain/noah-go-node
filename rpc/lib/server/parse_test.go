@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/MinterTeam/go-amino"
+	"github.com/noah-blockchain/go-amino"
 	cmn "github.com/tendermint/tendermint/libs/common"
 )
 

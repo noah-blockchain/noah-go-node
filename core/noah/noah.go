@@ -3,7 +3,7 @@ package noah
 import (
 	"bytes"
 	"fmt"
-	"github.com/MinterTeam/go-amino"
+	"github.com/noah-blockchain/go-amino"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/appdb"

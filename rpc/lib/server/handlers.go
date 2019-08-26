@@ -19,7 +19,7 @@ import (
 	"github.com/pkg/errors"
 
 	types "github.com/noah-blockchain/noah-go-node/rpc/lib/types"
-	amino "github.com/MinterTeam/go-amino"
+	amino "github.com/noah-blockchain/go-amino"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
 )

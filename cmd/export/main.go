@@ -8,7 +8,7 @@ import (
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/appdb"
 	"github.com/noah-blockchain/noah-go-node/core/state"
-	"github.com/MinterTeam/go-amino"
+	"github.com/noah-blockchain/go-amino"
 	"github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/types"
 	"github.com/tendermint/tm-db"
