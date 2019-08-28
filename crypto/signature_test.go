@@ -76,9 +76,9 @@ func TestVerifySignature(t *testing.T) {
 
 // This test checks that VerifySignature rejects malleable signatures with s > N/2.
 func TestVerifySignatureMalleable(t *testing.T) {
-	sig := hexutil.MustDecode("Mx638a54215d80a6713c8d523a6adc4e6e73652d859103a36b700851cb0e61b66b8ebfc1a610c57d732ec6e0a8f06a9a7a28df5051ece514702ff9cdff0b11f454")
-	key := hexutil.MustDecode("Mx03ca634cae0d49acb401d8a4c6b6fe8c55b70d115bf400769cc1400f3258cd3138")
-	msg := hexutil.MustDecode("Mxd301ce462d3e639518f482c7f03821fec1e602018630ce621e1e7851c12343a6")
+	sig := hexutil.MustDecode("NOAHx638a54215d80a6713c8d523a6adc4e6e73652d859103a36b700851cb0e61b66b8ebfc1a610c57d732ec6e0a8f06a9a7a28df5051ece514702ff9cdff0b11f454")
+	key := hexutil.MustDecode("NOAHx03ca634cae0d49acb401d8a4c6b6fe8c55b70d115bf400769cc1400f3258cd3138")
+	msg := hexutil.MustDecode("NOAHxd301ce462d3e639518f482c7f03821fec1e602018630ce621e1e7851c12343a6")
 	if VerifySignature(key, msg, sig) {
 		t.Error("VerifySignature returned true for malleable signature")
 	}

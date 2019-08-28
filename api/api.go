@@ -93,7 +93,7 @@ func Handler(h http.Handler) http.Handler {
 
 		for key, value := range query {
 			val := value[0]
-			if strings.HasPrefix(val, "Mx") {
+			if strings.HasPrefix(val, "NOAHx") {
 				query.Set(key, fmt.Sprintf("\"%s\"", val))
 			}
 		}

@@ -44,7 +44,7 @@ type AppState struct {
 
 type Validator struct {
 	RewardAddress  Address   `json:"reward_address"`
-	TotalNoahStake *BigInt   `json:"total_bip_stake"`
+	TotalNoahStake *BigInt   `json:"total_noah_stake"`
 	PubKey         Pubkey    `json:"pub_key"`
 	Commission     uint      `json:"commission"`
 	AccumReward    *BigInt   `json:"accum_reward"`
@@ -54,7 +54,7 @@ type Validator struct {
 type Candidate struct {
 	RewardAddress  Address `json:"reward_address"`
 	OwnerAddress   Address `json:"owner_address"`
-	TotalNoahStake *BigInt `json:"total_bip_stake"`
+	TotalNoahStake *BigInt `json:"total_noah_stake"`
 	PubKey         Pubkey  `json:"pub_key"`
 	Commission     uint    `json:"commission"`
 	Stakes         []Stake `json:"stakes"`
@@ -66,7 +66,7 @@ type Stake struct {
 	Owner     Address    `json:"owner"`
 	Coin      CoinSymbol `json:"coin"`
 	Value     *BigInt    `json:"value"`
-	NoahValue *BigInt    `json:"bip_value"`
+	NoahValue *BigInt    `json:"noah_value"`
 }
 
 type Coin struct {
