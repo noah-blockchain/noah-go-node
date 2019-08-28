@@ -7,13 +7,21 @@ import (
 )
 
 func main() {
+
+	//box := packr.New("myBox", "testnet/noah-testnet-1")
+	//_, err := box.FindString("genesis.json")
+	//if err != nil {
+	//	panic(err)
+	//}
+	//panic(err)
 	rootCmd := cmd.RootCmd
 
 	rootCmd.AddCommand(
 		cmd.RunNode,
 		cmd.ShowNodeId,
 		cmd.ShowValidator,
-		cmd.Version)
+		cmd.Version,
+	)
 
 	rootCmd.PersistentFlags().StringVar(&utils.NoahHome, "home-dir", "", "base dir (default is $HOME/noah)")
 	rootCmd.PersistentFlags().StringVar(&utils.NoahConfig, "config", "", "path to config (default is $(home-dir)/config/config.toml)")

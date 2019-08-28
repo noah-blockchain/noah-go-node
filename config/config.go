@@ -257,7 +257,7 @@ func DefaultBaseConfig() BaseConfig {
 		ProfListenAddress:       "",
 		FastSync:                true,
 		FilterPeers:             false,
-		DBBackend:               "cleveldb",
+		DBBackend:               "memdb",
 		DBPath:                  "data",
 		GUIListenAddress:        ":3000",
 		APIListenAddress:        "tcp://0.0.0.0:8841",
