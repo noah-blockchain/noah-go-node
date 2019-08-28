@@ -57,9 +57,9 @@ func (s *BytesSuite) TestRightPadBytes(c *checker.C) {
 }
 
 func TestFromHex(t *testing.T) {
-	input := "Mx01"
+	input := "NOAHx01"
 	expected := []byte{1}
-	result := FromHex(input, "Mx")
+	result := FromHex(input, "NOAHx")
 	if !bytes.Equal(expected, result) {
 		t.Errorf("Expected %x got %x", expected, result)
 	}
@@ -75,9 +75,9 @@ func TestIsHex(t *testing.T) {
 		{"00", true},
 		{"a9e67e", true},
 		{"A9E67E", true},
-		{"Mxa9e67e", false},
+		{"NOAHxa9e67e", false},
 		{"a9e67e001", false},
-		{"MxHELLO_MY_NAME_IS_STEVEN_@#$^&*", false},
+		{"NOAHxHELLO_MY_NAME_IS_STEVEN_@#$^&*", false},
 	}
 	for _, test := range tests {
 		if ok := isHex(test.input); ok != test.ok {
@@ -87,9 +87,9 @@ func TestIsHex(t *testing.T) {
 }
 
 func TestFromHexOddLength(t *testing.T) {
-	input := "Mx1"
+	input := "NOAHx1"
 	expected := []byte{1}
-	result := FromHex(input, "Mx")
+	result := FromHex(input, "NOAHx")
 	if !bytes.Equal(expected, result) {
 		t.Errorf("Expected %x got %x", expected, result)
 	}
@@ -98,7 +98,7 @@ func TestFromHexOddLength(t *testing.T) {
 func TestNoPrefixShortHexOddLength(t *testing.T) {
 	input := "1"
 	expected := []byte{1}
-	result := FromHex(input, "Mx")
+	result := FromHex(input, "NOAHx")
 	if !bytes.Equal(expected, result) {
 		t.Errorf("Expected %x got %x", expected, result)
 	}

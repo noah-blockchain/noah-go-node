@@ -2,9 +2,10 @@ package api
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/noah-blockchain/noah-go-node/version"
 	"github.com/tendermint/tendermint/rpc/core/types"
-	"time"
 )
 
 type StatusResponse struct {

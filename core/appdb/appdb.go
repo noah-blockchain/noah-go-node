@@ -3,9 +3,10 @@ package appdb
 import (
 	"encoding/binary"
 	"errors"
+
+	"github.com/noah-blockchain/go-amino"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
-	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tm-db"
 )

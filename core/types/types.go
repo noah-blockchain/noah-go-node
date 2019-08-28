@@ -186,15 +186,15 @@ func BytesToAddress(b []byte) Address {
 }
 func StringToAddress(s string) Address { return BytesToAddress([]byte(s)) }
 func BigToAddress(b *big.Int) Address  { return BytesToAddress(b.Bytes()) }
-func HexToAddress(s string) Address    { return BytesToAddress(FromHex(s, "Noahx")) }
+func HexToAddress(s string) Address    { return BytesToAddress(FromHex(s, "NOAHx")) }
 
 // IsHexAddress verifies whether a string can represent a valid hex-encoded
 // Noah address or not.
 func IsHexAddress(s string) bool {
-	if hasHexPrefix(s, "Noahx") {
-		s = s[2:]
+	if hasHexPrefix(s, "NOAHx") {
+		s = s[5:]
 	}
-	return len(s) == 2*AddressLength && isHex(s)
+	return len(s) == 5*AddressLength && isHex(s)
 }
 
 // Get the string representation of the underlying address
@@ -204,7 +204,7 @@ func (a Address) Big() *big.Int { return new(big.Int).SetBytes(a[:]) }
 func (a Address) Hash() Hash    { return BytesToHash(a[:]) }
 
 func (a Address) Hex() string {
-	return "Noahx" + hex.EncodeToString(a[:])
+	return "NOAHx" + hex.EncodeToString(a[:])
 }
 
 // String implements the stringer interface and is used also by the logger.
@@ -215,7 +215,7 @@ func (a Address) String() string {
 // Format implements fmt.Formatter, forcing the byte slice to be formatted as is,
 // without going through the stringer interface used for logging.
 func (a Address) Format(s fmt.State, c rune) {
-	fmt.Fprintf(s, "%"+string(c), a[:])
+	_, _ = fmt.Fprintf(s, "%"+string(c), a[:])
 }
 
 // Sets the address to the value of b. If b is larger than len(a) it will panic

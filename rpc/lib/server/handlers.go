@@ -16,10 +16,9 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/pkg/errors"
-
+	"github.com/noah-blockchain/go-amino"
 	types "github.com/noah-blockchain/noah-go-node/rpc/lib/types"
-	amino "github.com/tendermint/go-amino"
+	"github.com/pkg/errors"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
 )

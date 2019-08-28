@@ -2,11 +2,12 @@ package config
 
 import (
 	"fmt"
-	"github.com/noah-blockchain/noah-go-node/cmd/utils"
-	tmConfig "github.com/tendermint/tendermint/config"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/noah-blockchain/noah-go-node/cmd/utils"
+	tmConfig "github.com/tendermint/tendermint/config"
 )
 
 const (
@@ -28,7 +29,7 @@ const (
 
 var (
 	NetworkId        string
-	DefaultNetworkId = "noah-mainnet-1"
+	DefaultNetworkId = "noah-testnet-1"
 
 	defaultConfigFilePath   = filepath.Join(defaultConfigDir, defaultConfigFileName)
 	defaultGenesisJSONPath  = filepath.Join(defaultConfigDir, defaultGenesisJSONName)
@@ -40,10 +41,10 @@ var (
 func DefaultConfig() *Config {
 	cfg := defaultConfig()
 
-	cfg.P2P.Seeds = "25104d4b173d1047e9d1a70cdefde9e30707beb1@84.201.143.192:26656," +
-		"1e1c6149451d2a7c1072523e49cab658080d9bd2@noah-nodes-1.mainnet.btcsecure.io:26656," +
-		"667b26ffa9f844719a9cd73f96a49252f8bfd7df@node-1.btcnext.com:26656," + // todo fix!!!!!!!
-		"c098df48319b81a7535b9784873d0f143f8b72f5@noah-node-1.rundax.com:26656"
+	cfg.P2P.Seeds = "4B16B87604E26d28b591197b9B0BEDa7537a3ADF@1.testnet.noah-blockchain.com:26656," +
+					"2ea8b0e56F15B502ef4a04248c263d6Eba0C02E2@2.testnet.noah-blockchain.com:26656," +
+					"643a91c1d96e8C2a345592b169D0f06df62F9A81@3.testnet.noah-blockchain.com:26656," +
+					"532EcE703C67A2C9E5050178FfC2331953996D52@4.testnet.noah-blockchain.com:26656"
 
 	cfg.TxIndex = &tmConfig.TxIndexConfig{
 		Indexer:      "kv",
@@ -108,6 +109,7 @@ type Config struct {
 	P2P             *tmConfig.P2PConfig             `mapstructure:"p2p"`
 	Mempool         *tmConfig.MempoolConfig         `mapstructure:"mempool"`
 	Consensus       *tmConfig.ConsensusConfig       `mapstructure:"consensus"`
+	FastSyncSection *tmConfig.FastSyncConfig        `mapstructure:"fastsync"`
 	TxIndex         *tmConfig.TxIndexConfig         `mapstructure:"tx_index"`
 	Instrumentation *tmConfig.InstrumentationConfig `mapstructure:"instrumentation"`
 }
@@ -120,6 +122,7 @@ func defaultConfig() *Config {
 		P2P:             tmConfig.DefaultP2PConfig(),
 		Mempool:         tmConfig.DefaultMempoolConfig(),
 		Consensus:       tmConfig.DefaultConsensusConfig(),
+		FastSyncSection: tmConfig.DefaultFastSyncConfig(),
 		TxIndex:         tmConfig.DefaultTxIndexConfig(),
 		Instrumentation: tmConfig.DefaultInstrumentationConfig(),
 	}
@@ -159,6 +162,7 @@ func GetTmConfig(cfg *Config) *tmConfig.Config {
 		P2P:             cfg.P2P,
 		Mempool:         cfg.Mempool,
 		Consensus:       cfg.Consensus,
+		FastSync:        cfg.FastSyncSection,
 		TxIndex:         cfg.TxIndex,
 		Instrumentation: cfg.Instrumentation,
 	}
@@ -253,7 +257,7 @@ func DefaultBaseConfig() BaseConfig {
 		ProfListenAddress:       "",
 		FastSync:                true,
 		FilterPeers:             false,
-		DBBackend:               "cleveldb",
+		DBBackend:               "memdb",
 		DBPath:                  "data",
 		GUIListenAddress:        ":3000",
 		APIListenAddress:        "tcp://0.0.0.0:8841",

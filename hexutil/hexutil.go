@@ -15,18 +15,18 @@
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
 /*
-Package hexutil implements hex encoding with Mx prefix.
+Package hexutil implements hex encoding with NOAHx prefix.
 This encoding is used by the Ethereum RPC API to transport binary data in JSON payloads.
 
 Encoding Rules
 
-All hex data must have prefix "Mx".
+All hex data must have prefix "NOAHx".
 
 For byte slices, the hex data must be of even length. An empty byte slice
-encodes as "Mx".
+encodes as "NOAHx".
 
 Integers are encoded using the least amount of digits (no leading zero digits). Their
-encoding may be of uneven length. The number zero encodes as "Mx0".
+encoding may be of uneven length. The number zero encodes as "NOAHx0".
 */
 package hexutil
 
@@ -42,9 +42,9 @@ const uintBits = 32 << (uint64(^uint(0)) >> 63)
 var (
 	ErrEmptyString   = &decError{"empty hex string"}
 	ErrSyntax        = &decError{"invalid hex string"}
-	ErrMissingPrefix = &decError{"hex string without Mx prefix"}
+	ErrMissingPrefix = &decError{"hex string without HOAHx prefix"}
 	ErrOddLength     = &decError{"hex string of odd length"}
-	ErrEmptyNumber   = &decError{"hex string \"Mx\""}
+	ErrEmptyNumber   = &decError{"hex string \"HOAHx\""}
 	ErrLeadingZero   = &decError{"hex number with leading zero digits"}
 	ErrUint64Range   = &decError{"hex number > 64 bits"}
 	ErrUintRange     = &decError{fmt.Sprintf("hex number > %d bits", uintBits)}
@@ -55,12 +55,12 @@ type decError struct{ msg string }
 
 func (err decError) Error() string { return err.msg }
 
-// Decode decodes a hex string with Mx prefix.
+// Decode decodes a hex string with NOAHx prefix.
 func Decode(input string) ([]byte, error) {
 	if len(input) == 0 {
 		return nil, ErrEmptyString
 	}
-	if !hasMxPrefix(input) {
+	if !hasHOAHxPrefix(input) {
 		return nil, ErrMissingPrefix
 	}
 	b, err := hex.DecodeString(input[2:])
@@ -70,7 +70,7 @@ func Decode(input string) ([]byte, error) {
 	return b, err
 }
 
-// MustDecode decodes a hex string with Mx prefix. It panics for invalid input.
+// MustDecode decodes a hex string with NOAHx prefix. It panics for invalid input.
 func MustDecode(input string) []byte {
 	dec, err := Decode(input)
 	if err != nil {
@@ -79,15 +79,15 @@ func MustDecode(input string) []byte {
 	return dec
 }
 
-// Encode encodes b as a hex string with Mx prefix.
+// Encode encodes b as a hex string with NOAHx prefix.
 func Encode(b []byte) string {
-	enc := make([]byte, len(b)*2+2)
-	copy(enc, "Mx")
-	hex.Encode(enc[2:], b)
+	enc := make([]byte, len(b)*2+5)
+	copy(enc, "NOAHx")
+	hex.Encode(enc[5:], b)
 	return string(enc)
 }
 
-// DecodeUint64 decodes a hex string with Mx prefix as a quantity.
+// DecodeUint64 decodes a hex string with NOAHx prefix as a quantity.
 func DecodeUint64(input string) (uint64, error) {
 	raw, err := checkNumber(input)
 	if err != nil {
@@ -100,7 +100,7 @@ func DecodeUint64(input string) (uint64, error) {
 	return dec, err
 }
 
-// MustDecodeUint64 decodes a hex string with Mx prefix as a quantity.
+// MustDecodeUint64 decodes a hex string with NOAHx prefix as a quantity.
 // It panics for invalid input.
 func MustDecodeUint64(input string) uint64 {
 	dec, err := DecodeUint64(input)
@@ -110,10 +110,10 @@ func MustDecodeUint64(input string) uint64 {
 	return dec
 }
 
-// EncodeUint64 encodes i as a hex string with Mx prefix.
+// EncodeUint64 encodes i as a hex string with NOAHx prefix.
 func EncodeUint64(i uint64) string {
-	enc := make([]byte, 2, 10)
-	copy(enc, "Mx")
+	enc := make([]byte, 5, 10)
+	copy(enc, "NOAHx")
 	return string(strconv.AppendUint(enc, i, 16))
 }
 
@@ -133,7 +133,7 @@ func init() {
 	}
 }
 
-// DecodeBig decodes a hex string with Mx prefix as a quantity.
+// DecodeBig decodes a hex string with NOAHx prefix as a quantity.
 // Numbers larger than 256 bits are not accepted.
 func DecodeBig(input string) (*big.Int, error) {
 	raw, err := checkNumber(input)
@@ -164,7 +164,7 @@ func DecodeBig(input string) (*big.Int, error) {
 	return dec, nil
 }
 
-// MustDecodeBig decodes a hex string with Mx prefix as a quantity.
+// MustDecodeBig decodes a hex string with NOAHx prefix as a quantity.
 // It panics for invalid input.
 func MustDecodeBig(input string) *big.Int {
 	dec, err := DecodeBig(input)
@@ -174,28 +174,28 @@ func MustDecodeBig(input string) *big.Int {
 	return dec
 }
 
-// EncodeBig encodes bigint as a hex string with Mx prefix.
+// EncodeBig encodes bigint as a hex string with NOAHx prefix.
 // The sign of the integer is ignored.
 func EncodeBig(bigint *big.Int) string {
 	nbits := bigint.BitLen()
 	if nbits == 0 {
-		return "Mx0"
+		return "NOAHx0"
 	}
 	return fmt.Sprintf("%#x", bigint)
 }
 
-func hasMxPrefix(input string) bool {
-	return len(input) >= 2 && input[0] == 'M' && (input[1] == 'x' || input[1] == 'X')
+func hasHOAHxPrefix(input string) bool {
+	return len(input) >= 5 && string(input[:5]) == "NOAHx"
 }
 
 func checkNumber(input string) (raw string, err error) {
 	if len(input) == 0 {
 		return "", ErrEmptyString
 	}
-	if !hasMxPrefix(input) {
+	if !hasHOAHxPrefix(input) {
 		return "", ErrMissingPrefix
 	}
-	input = input[2:]
+	input = input[5:]
 	if len(input) == 0 {
 		return "", ErrEmptyNumber
 	}
