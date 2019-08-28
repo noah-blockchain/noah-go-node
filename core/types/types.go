@@ -186,13 +186,13 @@ func BytesToAddress(b []byte) Address {
 }
 func StringToAddress(s string) Address { return BytesToAddress([]byte(s)) }
 func BigToAddress(b *big.Int) Address  { return BytesToAddress(b.Bytes()) }
-func HexToAddress(s string) Address    { return BytesToAddress(FromHex(s, "Noahx")) }
+func HexToAddress(s string) Address    { return BytesToAddress(FromHex(s, "NOAHx")) }
 
 // IsHexAddress verifies whether a string can represent a valid hex-encoded
 // Noah address or not.
 func IsHexAddress(s string) bool {
-	if hasHexPrefix(s, "NOAXx") {
-		s = s[4:]
+	if hasHexPrefix(s, "NOAHx") {
+		s = s[5:]
 	}
 	return len(s) == 5*AddressLength && isHex(s)
 }
