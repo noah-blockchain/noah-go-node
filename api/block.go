@@ -127,7 +127,7 @@ func Block(height int64) (*BlockResponse, error) {
 			}
 
 			validators[i] = BlockValidatorResponse{
-				Pubkey: fmt.Sprintf("Mp%x", tmval.PubKey.Bytes()[5:]),
+				Pubkey: fmt.Sprintf("Np%x", tmval.PubKey.Bytes()[5:]),
 				Signed: signed,
 			}
 
