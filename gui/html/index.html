@@ -220,7 +220,7 @@
                     this.version = status.data.result.version
                     this.net_info = net_info.data.result
 
-                    this.validatorPubKey = 'Mp' + this.base64ToHex(status.data.result.tm_status.validator_info.pub_key.value)
+                    this.validatorPubKey = 'Np' + this.base64ToHex(status.data.result.tm_status.validator_info.pub_key.value)
 
                     axios.all([
                         axios.get("//" + window.location.hostname + ':8841/validators'),
