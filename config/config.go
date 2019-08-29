@@ -41,10 +41,10 @@ var (
 func DefaultConfig() *Config {
 	cfg := defaultConfig()
 
-	cfg.P2P.Seeds = "4B16B87604E26d28b591197b9B0BEDa7537a3ADF@1.testnet.noah-blockchain.com:26656," +
-					"2ea8b0e56F15B502ef4a04248c263d6Eba0C02E2@2.testnet.noah-blockchain.com:26656," +
-					"643a91c1d96e8C2a345592b169D0f06df62F9A81@3.testnet.noah-blockchain.com:26656," +
-					"532EcE703C67A2C9E5050178FfC2331953996D52@4.testnet.noah-blockchain.com:26656"
+	cfg.P2P.Seeds = "c73999ecad1071cad3e98c5330a4b0d1842640e3@1.testnet.noah-blockchain.com:26656," +
+					"9a7f5dfb5e11f75ac1794efd99a24127d89a5d30@2.testnet.noah-blockchain.com:26656," +
+					"0fd8b25a1235bf08314fc517cfd87c5d34561ef3@3.testnet.noah-blockchain.com:26656," +
+					"a9e2545bc1fc4476413d387be0dd22d5027fa936@4.testnet.noah-blockchain.com:26656"
 
 	cfg.TxIndex = &tmConfig.TxIndexConfig{
 		Indexer:      "kv",
