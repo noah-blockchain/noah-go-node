@@ -1,26 +1,18 @@
-FROM alpine:3.7
+# docker build -t node:latest -d DOCKER/Dockerfile .
+# docker run -d -p 3000:3000 -p 8841:8841 -p 26656:26656 -p 26657:26657 -p 26660:26660 -v /node/node/:/root/noah/ node:latest
 
-ENV PILLARDEV /noah
+FROM golang:1.12-buster as builder
 
-RUN apk update && \
-    apk upgrade && \
-    apk --no-cache add curl jq bash && \
-    addgroup pillardev && \
-    adduser -S -G pillardev pillardev -h "$PILLARDEV"
+ENV APP_PATH /home/noah
 
-USER pillardev
+COPY . ${APP_PATH}
 
-VOLUME [ $PILLARDEV ]
+WORKDIR ${APP_PATH}
 
-WORKDIR $PILLARDEV
+RUN make create_vendor && \
+    make build && \
+    cp ./build/noah /usr/local/bin/noah
 
-# api port
-EXPOSE 8841 46658
-
-ENTRYPOINT ["/usr/bin/noah"]
-CMD ["/usr/bin/noah"]
+EXPOSE 3000 26656 8841 26657 26660
+CMD ["noah", "node"]
 STOPSIGNAL SIGTERM
-
-ARG BINARY=noah
-COPY $BINARY /usr/bin/noah
-
