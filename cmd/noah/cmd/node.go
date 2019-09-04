@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"time"
 
 	"github.com/gobuffalo/packr"
@@ -126,8 +127,25 @@ func updateBlocksTimeDelta(app *noah.Blockchain, config *tmCfg.Config) {
 	blockStoreDB.Close()
 }
 
-func startTendermintNode(app types.Application, cfg *tmCfg.Config) *tmNode.Node {
+func getNodeKey() (*p2p.NodeKey, error) {
+	nodeKeyJSON := config.GetEnv("NODE_KEY", "")
+	if len(nodeKeyJSON) > 0 {
+		err := ioutil.WriteFile(cfg.NodeKeyFile(), []byte(nodeKeyJSON), 0600)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	nodeKey, err := p2p.LoadOrGenNodeKey(cfg.NodeKeyFile())
+	if err != nil {
+		return nil, err
+	}
+
+	return nodeKey, nil
+}
+
+func startTendermintNode(app types.Application, cfg *tmCfg.Config) *tmNode.Node {
+	nodeKey, err := getNodeKey()
 	if err != nil {
 		panic(err)
 	}
@@ -161,7 +179,7 @@ func getGenesis() (doc *tmTypes.GenesisDoc, e error) {
 
 	if !common.FileExists(genesisFile) {
 		box := packr.NewBox("../../../testnet/")
-		bytes, err := box.MustBytes(config.NetworkId + "/genesis.json")
+		bytes, err := box.Find(config.NetworkId + "/genesis.json")
 		if err != nil {
 			panic(err)
 		}
