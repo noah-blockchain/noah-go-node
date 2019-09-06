@@ -6,7 +6,7 @@ require (
 	github.com/btcsuite/btcd v0.0.0-20190115013929-ed77733ec07d
 	github.com/go-kit/kit v0.6.0
 	github.com/gobuffalo/packr v1.30.1
-	github.com/gobuffalo/packr/v2 v2.6.0
+	github.com/gobuffalo/packr/v2 v2.6.0 // indirect
 	github.com/gorilla/websocket v1.2.0
 	github.com/noah-blockchain/go-amino v0.14.1
 	github.com/pkg/errors v0.8.1

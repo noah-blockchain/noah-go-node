@@ -280,7 +280,7 @@ func (a UnprefixedAddress) MarshalText() ([]byte, error) {
 type Pubkey []byte
 
 func (p Pubkey) String() string {
-	return fmt.Sprintf("Mp%x", []byte(p))
+	return fmt.Sprintf("Np%x", []byte(p))
 }
 
 func (p Pubkey) MarshalText() ([]byte, error) {
