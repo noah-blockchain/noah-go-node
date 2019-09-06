@@ -26,6 +26,7 @@ var RootCmd = &cobra.Command{
 			panic(err)
 		}
 
+		cfg.ValidatorMode = config.GetEnvAsBool("VALIDATOR_MODE", cfg.ValidatorMode)
 		log.InitLog(cfg)
 	},
 }
