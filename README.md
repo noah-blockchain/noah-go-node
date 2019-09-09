@@ -28,11 +28,7 @@ Public release
 
 ##  Install and build  node
 
-###### 1. [Install MeMDB](https://github.com/hashicorp/go-memdb) 
-Node will be working with memdb.
-   For using this db is necessary to fix file config.toml and change **db_backend = "memdb"**
-   
-###### 2. Download Noah
+###### 1. Download Noah
 Clone source code to your machine
 ```
 mkdir -p $GOPATH/src/github.com/noah-blockchain or $HOME/noah
@@ -41,27 +37,35 @@ git clone https://github.com/noah-blockchain/noah-go-node.git
 cd noah-go-node
 ```
 
-Get Tools & Dependencies
+###### 2. Install Node Modules
 ```
 make create_vendor
 ```
-Compile
 
+###### 3. Compile
 ```
 make build
 ```
-After this command compiled node will be in folder build.
+After this command compiled node will be in folder build and node configuration will be in folder **$HOME/noah.**
 
-###### 3. Run Noah Node
-make file config.toml
-Change config.toml.example to config.toml and push in $HOME/noah/config folder
+###### 4. Configure Node Settings
 
-```
-./config/config.toml
-```
+1) Open folder **$HOME/noah/config** and find file **config.toml**
+2) Set up db for node. For using **goleveldb** setup parameter **db_backend="goleveldb"**
+3) Set up node mode (validator or not validator). For setup node mode we using env variable **VALIDATOR_MODE=(true or false)**.
+But if the env **VALIDATOR_MODE** not exist we using parameter from **config.toml** named **validator_mode='(true or false)'**.
+Default value **validator_mode='false'**.
+4) Setup private node key for generation **Node ID**. By default, node will be generate node key automatically, 
+but if you have setup your own node key you can put them in env **NODE_KEY.**
+
+###### 5. Run node
+For running node use command **./build/noah node**.
 ```
 noah version
 noah node 
 ```
-###### 4. Use GUI
+
+_We recommend using our node docker._
+###### 6. Use GUI
 Open http://localhost:3000/ in local browser to see node’s GUI.
+P.S. Available only in **not validator** mode.
