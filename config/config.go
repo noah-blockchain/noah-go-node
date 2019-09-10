@@ -261,7 +261,7 @@ func DefaultBaseConfig() BaseConfig {
 		DBPath:                  "data",
 		GUIListenAddress:        ":3000",
 		APIListenAddress:        "tcp://0.0.0.0:8841",
-		ValidatorMode:           false,
+		ValidatorMode:           true,
 		KeepStateHistory:        false,
 		APISimultaneousRequests: 100,
 		LogPath:                 "stdout",
