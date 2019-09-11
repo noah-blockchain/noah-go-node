@@ -3,14 +3,14 @@ package validators
 var startHeight uint64 = 0
 
 func GetValidatorsCountForBlock(block uint64) int {
-	block += startHeight
-	count := 16 + (block/518400)*4 // todo production = 518400*4, testNet =
+	//block += startHeight
+	//count := 16 + (block/518400)*4 // todo production = 518400*4, testNet =
+	//
+	//if count > 256 {
+	//	return 256
+	//}
 
-	if count > 256 {
-		return 256
-	}
-
-	return int(count)
+	return 4 // int(count)
 }
 
 func GetCandidatesCountForBlock(block uint64) int {
