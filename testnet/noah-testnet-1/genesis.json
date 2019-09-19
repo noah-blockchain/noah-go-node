@@ -22,33 +22,33 @@
     "start_height": "0",
     "validators": [
       {
-        "reward_address": "NOAHx4B16B87604E26d28b591197b9B0BEDa7537a3ADF",
+        "reward_address": "NOAHx92FD676DCDE1F87A94FD562878D3BC4AD8FAFAA2",
         "total_noah_stake": "1",
-        "pub_key": "Np03058bea22a608c40a666764fc75aad8e331a9fb2121d13d46e9bebe4b7fdf6b03",
+        "pub_key": "Np9bb0db18b16cf9fb696a8cf127027f83862b8d97c1e3cfd7c1650248fc70a1e7",
         "commission": "100",
         "accum_reward": "0",
         "absent_times": "________________________"
       },
       {
-        "reward_address": "NOAHx2ea8b0e56F15B502ef4a04248c263d6Eba0C02E2",
+        "reward_address": "NOAHx05B4B2D78B8EDE161994D03CAFF9629CD2B0C37C",
         "total_noah_stake": "1",
-        "pub_key": "Np02a97308d6c5b83a5ab52a9875c3b7613043654f540a9ff458906c6bf2863d397c",
+        "pub_key": "Np59ee6baed4b03a9cc4ab2736ef25e80dcf1840f60e0f8c0559692719f505a0c4",
         "commission": "100",
         "accum_reward": "0",
         "absent_times": "________________________"
       },
       {
-        "reward_address": "NOAHx643a91c1d96e8C2a345592b169D0f06df62F9A81",
+        "reward_address": "NOAHx6A986CA554BE826264D0F88C8C64A0A1A4F6CEA3",
         "total_noah_stake": "1",
-        "pub_key": "Np022e70c3b09c37d91440ab7ab2eb188d743edf3934cd7dac38de41f8ff907a6be0",
+        "pub_key": "Np849356fc63fb4335a3e58da8e52a2f35f50c781bb55680be86c517244cd5e9a5",
         "commission": "100",
         "accum_reward": "0",
         "absent_times": "________________________"
       },
       {
-        "reward_address": "NOAHx532EcE703C67A2C9E5050178FfC2331953996D52",
+        "reward_address": "NOAHx1B51C302DA435691ACD88C5ACBFAC2E83E836BEC",
         "total_noah_stake": "1",
-        "pub_key": "Np03d31f20a73a192f286bfd5f2104ff9cc9f929e10cc5c29987b3072c6770c6c0b5",
+        "pub_key": "Np190c03aba5103a07a5643d34b5d90f4523bc8646dccd8719272f7cf6553bda73",
         "commission": "100",
         "accum_reward": "0",
         "absent_times": "________________________"
