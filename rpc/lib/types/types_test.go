@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/noah-blockchain/go-amino"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/tendermint/go-amino"
 )
 
 type SampleResult struct {

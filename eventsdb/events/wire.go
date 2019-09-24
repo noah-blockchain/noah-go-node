@@ -1,6 +1,6 @@
 package events
 
-import "github.com/noah-blockchain/go-amino"
+import "github.com/tendermint/go-amino"
 
 func RegisterAminoEvents(codec *amino.Codec) {
 	codec.RegisterInterface((*Event)(nil), nil)

@@ -11,12 +11,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/noah-blockchain/go-amino"
 	"github.com/noah-blockchain/noah-go-node/core/dao"
 	"github.com/noah-blockchain/noah-go-node/core/noah"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/helpers"
+	"github.com/tendermint/go-amino"
 	tmTypes "github.com/tendermint/tendermint/types"
 )
 

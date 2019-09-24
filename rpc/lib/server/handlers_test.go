@@ -10,11 +10,11 @@ import (
 	"testing"
 
 	"github.com/gorilla/websocket"
-	"github.com/noah-blockchain/go-amino"
 	rs "github.com/noah-blockchain/noah-go-node/rpc/lib/server"
 	types "github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/log"
 )
 
