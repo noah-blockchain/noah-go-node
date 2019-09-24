@@ -150,7 +150,7 @@ func getValidatorKey() (*privval.FilePV, error) {
 			return nil, err
 		}
 
-		defaultState := "{\"height\":\"0\",\"round\":\"0\",\"step\":0}"
+		defaultState := "{}"
 		if err := ioutil.WriteFile(cfg.PrivValidatorStateFile(), []byte(defaultState), 0600); err != nil {
 			return nil, err
 		}
