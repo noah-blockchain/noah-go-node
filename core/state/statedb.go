@@ -10,7 +10,6 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/noah-blockchain/go-amino"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/core/check"
 	"github.com/noah-blockchain/noah-go-node/core/dao"
@@ -25,6 +24,7 @@ import (
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/rlp"
 	"github.com/noah-blockchain/noah-go-node/upgrades"
+	"github.com/tendermint/go-amino"
 	tmTypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 )
