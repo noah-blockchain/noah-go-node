@@ -347,7 +347,7 @@ func nonJSONStringToArg(cdc *amino.Codec, rt reflect.Type, arg string) (reflect.
 func _nonJSONStringToArg(cdc *amino.Codec, rt reflect.Type, arg string) (reflect.Value, error, bool) {
 	isIntString := RE_INT.Match([]byte(arg))
 	isQuotedString := strings.HasPrefix(arg, `"`) && strings.HasSuffix(arg, `"`)
-	isHexString := strings.HasPrefix(arg, "0x") || strings.HasPrefix(arg, "Mt") ||
+	isHexString := strings.HasPrefix(arg, "0x") || strings.HasPrefix(arg, "Nt") ||
 		strings.HasPrefix(arg, "Np")
 
 	var expectingString, expectingByteSlice, expectingInt bool
