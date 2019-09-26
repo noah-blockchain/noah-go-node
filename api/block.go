@@ -11,7 +11,6 @@ import (
 	"github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
 	types2 "github.com/tendermint/tendermint/types"
-	"math/big"
 	"time"
 )
 
@@ -22,7 +21,7 @@ type BlockResponse struct {
 	NumTxs       int64                      `json:"num_txs"`
 	TotalTxs     int64                      `json:"total_txs"`
 	Transactions []BlockTransactionResponse `json:"transactions"`
-	BlockReward  *big.Int                   `json:"block_reward"`
+	BlockReward  string                     `json:"block_reward"`
 	Size         int                        `json:"size"`
 	Proposer     types.Pubkey               `json:"proposer,omitempty"`
 	Validators   []BlockValidatorResponse   `json:"validators,omitempty"`
@@ -87,7 +86,7 @@ func Block(height int64) (*BlockResponse, error) {
 		}
 
 		txs[i] = BlockTransactionResponse{
-			Hash:        fmt.Sprintf("Mt%x", rawTx.Hash()),
+			Hash:        fmt.Sprintf("Nt%x", rawTx.Hash()),
 			RawTx:       fmt.Sprintf("%x", []byte(rawTx)),
 			From:        sender.String(),
 			Nonce:       tx.Nonce,
@@ -144,7 +143,7 @@ func Block(height int64) (*BlockResponse, error) {
 		NumTxs:       block.Block.NumTxs,
 		TotalTxs:     block.Block.TotalTxs,
 		Transactions: txs,
-		BlockReward:  rewards.GetRewardForBlock(uint64(height)),
+		BlockReward:  rewards.GetRewardForBlock(uint64(height)).String(),
 		Size:         len(cdc.MustMarshalBinaryLengthPrefixed(block)),
 		Proposer:     proposer,
 		Validators:   validators,
