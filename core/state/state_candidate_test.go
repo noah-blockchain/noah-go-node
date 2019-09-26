@@ -40,7 +40,7 @@ func createTestCandidate(stateDB *StateDB) []byte {
 	pubkey := make([]byte, 32)
 	rand.Read(pubkey)
 
-	stateDB.CreateCandidate(address, address, pubkey, 10, 0, types.GetBaseCoin(), helpers.NoahToPip(big.NewInt(1)))
+	stateDB.CreateCandidate(address, address, pubkey, 10, 0, types.GetBaseCoin(), helpers.NoahToQNoah(big.NewInt(1)))
 
 	return pubkey
 }
