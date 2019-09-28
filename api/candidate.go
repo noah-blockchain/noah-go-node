@@ -4,7 +4,6 @@ import (
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/rpc/lib/types"
-	"math/big"
 )
 
 type Stake struct {
@@ -17,7 +16,7 @@ type Stake struct {
 type CandidateResponse struct {
 	RewardAddress  types.Address `json:"reward_address"`
 	OwnerAddress   types.Address `json:"owner_address"`
-	TotalStake     *big.Int      `json:"total_stake"`
+	TotalStake     string        `json:"total_stake"`
 	PubKey         types.Pubkey  `json:"pub_key"`
 	Commission     uint          `json:"commission"`
 	Stakes         []Stake       `json:"stakes,omitempty"`
@@ -29,7 +28,7 @@ func makeResponseCandidate(c state.Candidate, includeStakes bool) CandidateRespo
 	candidate := CandidateResponse{
 		RewardAddress:  c.RewardAddress,
 		OwnerAddress:   c.OwnerAddress,
-		TotalStake:     c.TotalNoahStake,
+		TotalStake:     c.TotalNoahStake.String(),
 		PubKey:         c.PubKey,
 		Commission:     c.Commission,
 		CreatedAtBlock: c.CreatedAtBlock,
