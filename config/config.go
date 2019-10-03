@@ -44,12 +44,20 @@ func DefaultConfig() *Config {
 	cfg.P2P.Seeds = "eb7acbf988f2183b487c9a1ee69f85050d5aa3a8@1.testnet.noah-blockchain.com:26656," +
 		"a4bbc9c38ec2cb73850109465579ed9e2c445a53@2.testnet.noah-blockchain.com:26656," +
 		"672e70fcbf0284baff0082851826c8aa37a35fb3@3.testnet.noah-blockchain.com:26656," +
-		"5a3eff103ade054d6b90b963c6a5990bed75336c@4.testnet.noah-blockchain.com:26656"
+		"5a3eff103ade054d6b90b963c6a5990bed75336c@4.testnet.noah-blockchain.com:26656," +
+		"49055a20a4ac0992bd492d485efe998f6a8869b1@5.testnet.noah-blockchain.com:26656," +
+		"2c72b7408d44821de67d76daf83f62f5d65c0e7c@6.testnet.noah-blockchain.com:26656," +
+		"a5b5f0296799d0a30909d1f0066355ff72808acf@7.testnet.noah-blockchain.com:26656," +
+		"4a0c6ab31de82ee1988e339cc6efbf807d35d10e@8.testnet.noah-blockchain.com:26656"
 
 	cfg.P2P.PersistentPeers = "eb7acbf988f2183b487c9a1ee69f85050d5aa3a8@1.testnet.noah-blockchain.com:26656," +
 		"a4bbc9c38ec2cb73850109465579ed9e2c445a53@2.testnet.noah-blockchain.com:26656," +
 		"672e70fcbf0284baff0082851826c8aa37a35fb3@3.testnet.noah-blockchain.com:26656," +
-		"5a3eff103ade054d6b90b963c6a5990bed75336c@4.testnet.noah-blockchain.com:26656"
+		"5a3eff103ade054d6b90b963c6a5990bed75336c@4.testnet.noah-blockchain.com:26656," +
+		"49055a20a4ac0992bd492d485efe998f6a8869b1@5.testnet.noah-blockchain.com:26656," +
+		"2c72b7408d44821de67d76daf83f62f5d65c0e7c@6.testnet.noah-blockchain.com:26656," +
+		"a5b5f0296799d0a30909d1f0066355ff72808acf@7.testnet.noah-blockchain.com:26656," +
+		"4a0c6ab31de82ee1988e339cc6efbf807d35d10e@8.testnet.noah-blockchain.com:26656"
 
 	cfg.TxIndex = &tmConfig.TxIndexConfig{
 		Indexer:      "kv",
