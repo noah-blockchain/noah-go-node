@@ -52,6 +52,38 @@
         "commission": "100",
         "accum_reward": "0",
         "absent_times": "________________________"
+      },
+      {
+        "reward_address": "NOAHx0BE23E2C18617C4A4AFBF2C688043FD4B85F462E",
+        "total_noah_stake": "1",
+        "pub_key": "Npe9b6cf90f9e4efbb973473800cf6fd26f0702d8e99aa8f0edee5fa1adcc0dcaa",
+        "commission": "100",
+        "accum_reward": "0",
+        "absent_times": "________________________"
+      },
+      {
+        "reward_address": "NOAHxC4E5890A5588ABA479873DCE3B0E89335EBEA842",
+        "total_noah_stake": "1",
+        "pub_key": "Np0adaa1385e3a2699340bbb44e5ecb7058efdf83662b1537d9f0cd5622f23520f",
+        "commission": "100",
+        "accum_reward": "0",
+        "absent_times": "________________________"
+      },
+      {
+        "reward_address": "NOAHxD30D8F1F86FA0891C8B63A3D029126611974431C",
+        "total_noah_stake": "1",
+        "pub_key": "Np62918ea60c3dbff250a40e52721fd7ba2f4e654448ad7f04a5abbed564491fea",
+        "commission": "100",
+        "accum_reward": "0",
+        "absent_times": "________________________"
+      },
+      {
+        "reward_address": "NOAHxC58669BC41D12CB88FF4DB06560122B84AFDC170",
+        "total_noah_stake": "1",
+        "pub_key": "Np06f434c8e16cf63960fc8f1d5ecb3a71935de67f8a061146ebc0fb9ddc615772",
+        "commission": "100",
+        "accum_reward": "0",
+        "absent_times": "________________________"
       }
     ],
     "candidates": [
@@ -122,6 +154,74 @@
         ],
         "created_at_block": "1",
         "status": 2
+      },
+      {
+        "reward_address": "NOAHx0BE23E2C18617C4A4AFBF2C688043FD4B85F462E",
+        "owner_address": "NOAHx0BE23E2C18617C4A4AFBF2C688043FD4B85F462E",
+        "total_noah_stake": "1",
+        "pub_key": "Npe9b6cf90f9e4efbb973473800cf6fd26f0702d8e99aa8f0edee5fa1adcc0dcaa",
+        "commission": "100",
+        "stakes": [
+          {
+            "owner": "NOAHx0BE23E2C18617C4A4AFBF2C688043FD4B85F462E",
+            "coin": "NOAH",
+            "value": "1",
+            "noah_value": "1"
+          }
+        ],
+        "created_at_block": "1",
+        "status": 2
+      },
+      {
+        "reward_address": "NOAHxC4E5890A5588ABA479873DCE3B0E89335EBEA842",
+        "owner_address": "NOAHxC4E5890A5588ABA479873DCE3B0E89335EBEA842",
+        "total_noah_stake": "1",
+        "pub_key": "Np0adaa1385e3a2699340bbb44e5ecb7058efdf83662b1537d9f0cd5622f23520f",
+        "commission": "100",
+        "stakes": [
+          {
+            "owner": "NOAHxC4E5890A5588ABA479873DCE3B0E89335EBEA842",
+            "coin": "NOAH",
+            "value": "1",
+            "noah_value": "1"
+          }
+        ],
+        "created_at_block": "1",
+        "status": 2
+      },
+      {
+        "reward_address": "NOAHxD30D8F1F86FA0891C8B63A3D029126611974431C",
+        "owner_address": "NOAHxD30D8F1F86FA0891C8B63A3D029126611974431C",
+        "total_noah_stake": "1",
+        "pub_key": "Np62918ea60c3dbff250a40e52721fd7ba2f4e654448ad7f04a5abbed564491fea",
+        "commission": "100",
+        "stakes": [
+          {
+            "owner": "NOAHxD30D8F1F86FA0891C8B63A3D029126611974431C",
+            "coin": "NOAH",
+            "value": "1",
+            "noah_value": "1"
+          }
+        ],
+        "created_at_block": "1",
+        "status": 2
+      },
+      {
+        "reward_address": "NOAHxC58669BC41D12CB88FF4DB06560122B84AFDC170",
+        "owner_address": "NOAHxC58669BC41D12CB88FF4DB06560122B84AFDC170",
+        "total_noah_stake": "1",
+        "pub_key": "Np06f434c8e16cf63960fc8f1d5ecb3a71935de67f8a061146ebc0fb9ddc615772",
+        "commission": "100",
+        "stakes": [
+          {
+            "owner": "NOAHxC58669BC41D12CB88FF4DB06560122B84AFDC170",
+            "coin": "NOAH",
+            "value": "1",
+            "noah_value": "1"
+          }
+        ],
+        "created_at_block": "1",
+        "status": 2
       }
     ],
     "accounts": [
@@ -157,6 +257,136 @@
       },
       {
         "address": "NOAHx1B51C302DA435691ACD88C5ACBFAC2E83E836BEC",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "40106879999999999999999996"
+          }
+        ],
+        "nonce": "0"
+      },
+      {
+        "address": "NOAHxDD6DD653557698cb9ad13639825A48fad435284d",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "100000000000000000000000"
+          }
+        ],
+        "nonce": "0"
+      },
+      {
+        "address": "NOAHxACa1D460A862B02F8E73c0D9f6ff18810Bed8bea",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "100000000000000000000000"
+          }
+        ],
+        "nonce": "0"
+      },
+      {
+        "address": "NOAHx327D3b9692E560B9907D263345650255C843a672",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "100000000000000000000000"
+          }
+        ],
+        "nonce": "0"
+      },
+      {
+        "address": "NOAHxAB649Ff49D5d0d5b51744FaaaB80C6664E97EFd0",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "100000000000000000000000"
+          }
+        ],
+        "nonce": "0"
+      },
+      {
+        "address": "NOAHx2981836679d5D4027ADB6c1dBbE15677002b5F99",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "100000000000000000000000"
+          }
+        ],
+        "nonce": "0"
+      },
+      {
+        "address": "NOAHxbC3bBfc850A301E8F4dC55eF59D32D70493b6E73",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "100000000000000000000000"
+          }
+        ],
+        "nonce": "0"
+      },
+      {
+        "address": "NOAHx857898B99BbBcca0236C5fb95A9c48d45247fC7A",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "100000000000000000000000"
+          }
+        ],
+        "nonce": "0"
+      },
+      {
+        "address": "NOAHxE5cFa3b02e6D27127A7c75Ef7C98E4d9dfe518FC",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "100000000000000000000000"
+          }
+        ],
+        "nonce": "0"
+      },
+      {
+        "address": "NOAHxb1aEFaBa8b5893B3C5673F92b4FA0bE720a656fC",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "100000000000000000000000"
+          }
+        ],
+        "nonce": "0"
+      },
+      {
+        "address": "NOAHx0BE23E2C18617C4A4AFBF2C688043FD4B85F462E",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "40106879999999999999999996"
+          }
+        ],
+        "nonce": "0"
+      },
+      {
+        "address": "NOAHxC4E5890A5588ABA479873DCE3B0E89335EBEA842",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "40106879999999999999999996"
+          }
+        ],
+        "nonce": "0"
+      },
+      {
+        "address": "NOAHxD30D8F1F86FA0891C8B63A3D029126611974431C",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "40106879999999999999999996"
+          }
+        ],
+        "nonce": "0"
+      },
+      {
+        "address": "NOAHxC58669BC41D12CB88FF4DB06560122B84AFDC170",
         "balance": [
           {
             "coin": "NOAH",
