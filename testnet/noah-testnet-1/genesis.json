@@ -354,6 +354,46 @@
           }
         ],
         "nonce": "0"
+      },
+      {
+        "address": "NOAHx0BE23E2C18617C4A4AFBF2C688043FD4B85F462E",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "40106879999999999999999996"
+          }
+        ],
+        "nonce": "0"
+      },
+      {
+        "address": "NOAHxC4E5890A5588ABA479873DCE3B0E89335EBEA842",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "40106879999999999999999996"
+          }
+        ],
+        "nonce": "0"
+      },
+      {
+        "address": "NOAHxD30D8F1F86FA0891C8B63A3D029126611974431C",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "40106879999999999999999996"
+          }
+        ],
+        "nonce": "0"
+      },
+      {
+        "address": "NOAHxC58669BC41D12CB88FF4DB06560122B84AFDC170",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "40106879999999999999999996"
+          }
+        ],
+        "nonce": "0"
       }
     ],
     "frozen_funds": [
