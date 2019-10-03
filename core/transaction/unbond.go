@@ -13,7 +13,7 @@ import (
 	"math/big"
 )
 
-const unbondPeriod = 518400
+const unbondPeriod = 86400
 
 type UnbondData struct {
 	PubKey types.Pubkey     `json:"pub_key"`

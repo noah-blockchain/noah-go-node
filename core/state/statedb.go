@@ -29,12 +29,12 @@ import (
 	dbm "github.com/tendermint/tm-db"
 )
 
-const UnbondPeriod = 518400
+const UnbondPeriod = 86400
 const MaxDelegatorsPerCandidate = 1000
 
 var (
-	ValidatorMaxAbsentWindow = 24
-	ValidatorMaxAbsentTimes  = 12
+	ValidatorMaxAbsentWindow = 240
+	ValidatorMaxAbsentTimes  = 120
 
 	addressPrefix     = []byte("a")
 	coinPrefix        = []byte("c")
