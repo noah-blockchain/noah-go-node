@@ -53,7 +53,7 @@ func BytesToHash(b []byte) Hash {
 }
 func StringToHash(s string) Hash { return BytesToHash([]byte(s)) }
 func BigToHash(b *big.Int) Hash  { return BytesToHash(b.Bytes()) }
-func HexToHash(s string) Hash    { return BytesToHash(FromHex(s, "Mh")) }
+func HexToHash(s string) Hash    { return BytesToHash(FromHex(s, "Nh")) }
 
 // Get the string representation of the underlying hash
 func (h Hash) Str() string   { return string(h[:]) }
@@ -76,7 +76,7 @@ func (h Hash) String() string {
 // Format implements fmt.Formatter, forcing the byte slice to be formatted as is,
 // without going through the stringer interface used for logging.
 func (h Hash) Format(s fmt.State, c rune) {
-	fmt.Fprintf(s, "%"+string(c), h[:])
+	_, _ = fmt.Fprintf(s, "%"+string(c), h[:])
 }
 
 // UnmarshalText parses a hash in hex syntax.

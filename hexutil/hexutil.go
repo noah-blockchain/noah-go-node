@@ -63,7 +63,7 @@ func Decode(input string) ([]byte, error) {
 	if !hasHOAHxPrefix(input) {
 		return nil, ErrMissingPrefix
 	}
-	b, err := hex.DecodeString(input[2:])
+	b, err := hex.DecodeString(input[5:])
 	if err != nil {
 		err = mapError(err)
 	}
