@@ -42,9 +42,9 @@ const uintBits = 32 << (uint64(^uint(0)) >> 63)
 var (
 	ErrEmptyString   = &decError{"empty hex string"}
 	ErrSyntax        = &decError{"invalid hex string"}
-	ErrMissingPrefix = &decError{"hex string without HOAHx prefix"}
+	ErrMissingPrefix = &decError{"hex string without NOAHx prefix"}
 	ErrOddLength     = &decError{"hex string of odd length"}
-	ErrEmptyNumber   = &decError{"hex string \"HOAHx\""}
+	ErrEmptyNumber   = &decError{"hex string \"NOAHx\""}
 	ErrLeadingZero   = &decError{"hex number with leading zero digits"}
 	ErrUint64Range   = &decError{"hex number > 64 bits"}
 	ErrUintRange     = &decError{fmt.Sprintf("hex number > %d bits", uintBits)}
@@ -60,7 +60,7 @@ func Decode(input string) ([]byte, error) {
 	if len(input) == 0 {
 		return nil, ErrEmptyString
 	}
-	if !hasHOAHxPrefix(input) {
+	if !hasNOAHxPrefix(input) {
 		return nil, ErrMissingPrefix
 	}
 	b, err := hex.DecodeString(input[5:])
@@ -184,7 +184,7 @@ func EncodeBig(bigint *big.Int) string {
 	return fmt.Sprintf("%#x", bigint)
 }
 
-func hasHOAHxPrefix(input string) bool {
+func hasNOAHxPrefix(input string) bool {
 	return len(input) >= 5 && string(input[:5]) == "NOAHx"
 }
 
@@ -192,7 +192,7 @@ func checkNumber(input string) (raw string, err error) {
 	if len(input) == 0 {
 		return "", ErrEmptyString
 	}
-	if !hasHOAHxPrefix(input) {
+	if !hasNOAHxPrefix(input) {
 		return "", ErrMissingPrefix
 	}
 	input = input[5:]
