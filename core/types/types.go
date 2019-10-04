@@ -194,7 +194,7 @@ func IsHexAddress(s string) bool {
 	if hasHexPrefix(s, "NOAHx") {
 		s = s[5:]
 	}
-	return len(s) == 2*AddressLength && isHex(s)
+	return len(s) == 5*AddressLength && isHex(s)
 }
 
 // Get the string representation of the underlying address
