@@ -31,9 +31,9 @@ func ToHex(b []byte, prefix string) string {
 }
 
 func FromHex(s string, prefix string) []byte {
-	if len(s) > 1 {
-		if s[0:2] == prefix {
-			s = s[2:]
+	if len(s) >= 5 {
+		if s[:5] == prefix {
+			s = s[5:]
 		}
 	}
 	if len(s)%2 == 1 {
@@ -56,7 +56,7 @@ func CopyBytes(b []byte) (copiedBytes []byte) {
 }
 
 func hasHexPrefix(str string, prefix string) bool {
-	return len(str) >= 2 && strings.HasPrefix(str, prefix)
+	return len(str) >= 5 && strings.HasPrefix(str, prefix)
 }
 
 func isHexCharacter(c byte) bool {
