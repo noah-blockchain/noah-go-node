@@ -6,7 +6,7 @@ const (
 	ChainTestnet = 0x02
 	ChainMainnet = 0x01
 
-	CurrentChainID = ChainTestnet
+	CurrentChainID = ChainMainnet
 )
 
 func GetBaseCoin() CoinSymbol {
@@ -20,7 +20,7 @@ func getBaseCoin(chainID ChainID) CoinSymbol {
 	case ChainMainnet:
 		copy(coin[:], []byte("NOAH"))
 	case ChainTestnet:
-		copy(coin[:], []byte("NOAH")) // todo
+		copy(coin[:], []byte("DAO")) // todo
 	}
 
 	coin[4] = byte(0)
