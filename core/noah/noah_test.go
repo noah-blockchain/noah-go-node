@@ -53,7 +53,7 @@ func init() {
 }
 
 func initNode() {
-	utils.NoahHome = os.ExpandEnv(filepath.Join("$HOME", ".noah_test"))
+	utils.NoahHome = os.ExpandEnv(filepath.Join("$HOME", "noah_test"))
 	_ = os.RemoveAll(utils.NoahHome)
 
 	if err := common.EnsureDir(utils.GetNoahHome()+"/tmdata/blockstore.db", 0777); err != nil {
