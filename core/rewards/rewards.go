@@ -7,9 +7,9 @@ import (
 	"github.com/noah-blockchain/noah-go-node/helpers"
 )
 
-const lastBlock = 143702611 //todo
-const firstReward = 800    // todo
-const lastReward = 15      // todo
+const lastBlock = 43702611 //todo
+const firstReward = 333    // todo
+const lastReward = 68      // todo
 
 var startHeight uint64 = 0
 var BeforeGenesis = big.NewInt(0)
