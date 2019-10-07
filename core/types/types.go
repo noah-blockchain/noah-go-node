@@ -20,10 +20,11 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/noah-blockchain/noah-go-node/hexutil"
 	"math/big"
 	"math/rand"
 	"reflect"
+
+	"github.com/noah-blockchain/noah-go-node/hexutil"
 )
 
 const (
