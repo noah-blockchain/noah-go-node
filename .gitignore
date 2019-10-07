@@ -180,3 +180,5 @@ $RECYCLE.BIN/
 *.lnk
 
 build/
+
+go.sum
