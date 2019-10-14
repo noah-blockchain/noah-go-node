@@ -19,7 +19,6 @@ import (
 	"github.com/noah-blockchain/noah-go-node/eventsdb/events"
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/version"
-	//"github.com/tendermint/go-amino"
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/encoding/amino"
