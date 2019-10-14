@@ -15,10 +15,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/MinterTeam/go-amino"
 	"github.com/gorilla/websocket"
 	types "github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 	"github.com/pkg/errors"
-	"github.com/tendermint/go-amino"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
 )

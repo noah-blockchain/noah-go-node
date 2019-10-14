@@ -85,6 +85,9 @@ func Block(height int64) (*BlockResponse, error) {
 			return nil, err
 		}
 
+		str := string(data)
+		fmt.Println(str)
+
 		txs[i] = BlockTransactionResponse{
 			Hash:        fmt.Sprintf("Nt%x", rawTx.Hash()),
 			RawTx:       fmt.Sprintf("%x", []byte(rawTx)),

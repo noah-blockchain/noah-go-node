@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/MinterTeam/go-amino"
 	"github.com/pkg/errors"
-	"github.com/tendermint/go-amino"
 	tmpubsub "github.com/tendermint/tendermint/libs/pubsub"
 )
 
