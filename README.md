@@ -9,9 +9,6 @@
 ### [dev-branch](https://github.com/noah-blockchain/noah-go-node/tree/dev)
 The branch contains the most current version
 
-#### [alpha-branch](https://github.com/noah-blockchain/noah-go-node/tree/alpha)
-The branch contains a version for alpha-testing
-
 #### [beta-branch](https://github.com/noah-blockchain/noah-go-node/tree/beta)
 The branch contains a version for beta-testing
 
@@ -27,6 +24,8 @@ Public release
 #### [IAVL+ Tree](https://github.com/tendermint/iavl)
 
 ##  Install and build  node
+
+###[Quick Start](https://docs.google.com/document/d/19sZeIFy6aE8xuPg1-mq-0Cah2fiyj-BpyZCSQXEZKFc/edit)
 
 ###### 1. Download Noah
 Clone source code to your machine
