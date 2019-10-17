@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/noah-blockchain/go-amino"
+	"github.com/MinterTeam/go-amino"
 	"github.com/noah-blockchain/noah-go-node/core/dao"
 	"github.com/noah-blockchain/noah-go-node/core/noah"
 	"github.com/noah-blockchain/noah-go-node/core/state"
@@ -164,7 +164,7 @@ func main() {
 
 	// Compose Genesis
 	genesis := tmTypes.GenesisDoc{
-		GenesisTime: time.Date(2019, time.May, 15, 15, 5, 0, 0, time.UTC),
+		GenesisTime: time.Date(2019, time.September, 25, 5, 5, 5, 5, time.UTC),
 		ChainID:     networkId,
 		ConsensusParams: &tmTypes.ConsensusParams{
 			Block: tmTypes.BlockParams{

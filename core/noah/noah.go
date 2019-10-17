@@ -7,7 +7,6 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/noah-blockchain/go-amino"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/appdb"
@@ -27,6 +26,8 @@ import (
 	"github.com/tendermint/tendermint/rpc/lib/types"
 	types2 "github.com/tendermint/tendermint/types"
 	"github.com/tendermint/tm-db"
+
+	"github.com/MinterTeam/go-amino"
 )
 
 const (
@@ -112,7 +113,7 @@ func (app *Blockchain) InitChain(req abciTypes.RequestInitChain) abciTypes.Respo
 
 	totalPower := big.NewInt(0)
 	for _, val := range genesisState.Validators {
-		totalPower.Add(totalPower, &val.TotalNoahStake.Int)
+		totalPower.Add(totalPower, val.TotalNoahStake)
 	}
 
 	vals := make([]abciTypes.ValidatorUpdate, len(genesisState.Validators))
@@ -126,8 +127,7 @@ func (app *Blockchain) InitChain(req abciTypes.RequestInitChain) abciTypes.Respo
 
 		vals[i] = abciTypes.ValidatorUpdate{
 			PubKey: types2.TM2PB.PubKey(pkey),
-			Power: big.NewInt(0).Div(big.NewInt(0).Mul(&val.TotalNoahStake.Int,
-				big.NewInt(100000000)), totalPower).Int64(),
+			Power:  big.NewInt(0).Div(big.NewInt(0).Mul(val.TotalNoahStake, big.NewInt(100000000)), totalPower).Int64(),
 		}
 	}
 

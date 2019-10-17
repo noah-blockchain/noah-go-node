@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"sync"
 
-	"github.com/noah-blockchain/go-amino"
+	"github.com/MinterTeam/go-amino"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	e "github.com/noah-blockchain/noah-go-node/eventsdb/events"

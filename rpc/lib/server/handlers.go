@@ -15,8 +15,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/MinterTeam/go-amino"
 	"github.com/gorilla/websocket"
-	"github.com/noah-blockchain/go-amino"
 	types "github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 	"github.com/pkg/errors"
 	cmn "github.com/tendermint/tendermint/libs/common"
@@ -347,7 +347,7 @@ func nonJSONStringToArg(cdc *amino.Codec, rt reflect.Type, arg string) (reflect.
 func _nonJSONStringToArg(cdc *amino.Codec, rt reflect.Type, arg string) (reflect.Value, error, bool) {
 	isIntString := RE_INT.Match([]byte(arg))
 	isQuotedString := strings.HasPrefix(arg, `"`) && strings.HasSuffix(arg, `"`)
-	isHexString := strings.HasPrefix(arg, "0x") || strings.HasPrefix(arg, "Mt") ||
+	isHexString := strings.HasPrefix(arg, "0x") || strings.HasPrefix(arg, "Nt") ||
 		strings.HasPrefix(arg, "Np")
 
 	var expectingString, expectingByteSlice, expectingInt bool

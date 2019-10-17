@@ -96,7 +96,8 @@ func (data SendData) Run(tx *Transaction, context *state.StateDB, isCheck bool, 
 				Log: fmt.Sprintf("Insufficient funds for sender account: %s. Wanted %s %s.",
 					sender.String(),
 					ts.Value.String(),
-					ts.Coin)}
+					ts.Coin),
+			}
 		}
 	}
 

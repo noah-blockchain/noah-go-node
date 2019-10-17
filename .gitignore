@@ -178,3 +178,7 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+build/
+
+go.sum

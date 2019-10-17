@@ -130,8 +130,7 @@ func updateBlocksTimeDelta(app *noah.Blockchain, config *tmCfg.Config) {
 func getNodeKey() (*p2p.NodeKey, error) {
 	nodeKeyJSON := config.GetEnv("NODE_KEY", "")
 	if len(nodeKeyJSON) > 0 {
-		err := ioutil.WriteFile(cfg.NodeKeyFile(), []byte(nodeKeyJSON), 0600)
-		if err != nil {
+		if err := ioutil.WriteFile(cfg.NodeKeyFile(), []byte(nodeKeyJSON), 0600); err != nil {
 			return nil, err
 		}
 	}
@@ -144,15 +143,42 @@ func getNodeKey() (*p2p.NodeKey, error) {
 	return nodeKey, nil
 }
 
+func getValidatorKey() (*privval.FilePV, error) {
+	validatorKeyJSON := config.GetEnv("VALIDATOR_KEY", "")
+	if len(validatorKeyJSON) > 0 {
+		if err := ioutil.WriteFile(cfg.PrivValidatorKeyFile(), []byte(validatorKeyJSON), 0600); err != nil {
+			return nil, err
+		}
+
+		if err := ioutil.WriteFile(cfg.PrivValidatorStateFile(), []byte("{}"), 0600); err != nil {
+			return nil, err
+		}
+	}
+
+	var pv *privval.FilePV
+	if common.FileExists(cfg.PrivValidatorKeyFile()) {
+		pv = privval.LoadFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile())
+	} else {
+		pv = privval.GenFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile())
+		pv.Save()
+	}
+	return pv, nil
+}
+
 func startTendermintNode(app types.Application, cfg *tmCfg.Config) *tmNode.Node {
 	nodeKey, err := getNodeKey()
 	if err != nil {
 		panic(err)
 	}
 
+	validatorKey, err := getValidatorKey()
+	if err != nil {
+		panic(err)
+	}
+
 	node, err := tmNode.NewNode(
 		cfg,
-		privval.LoadOrGenFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile()),
+		validatorKey,
 		nodeKey,
 		proxy.NewLocalClientCreator(app),
 		getGenesis,

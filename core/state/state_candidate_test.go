@@ -38,9 +38,9 @@ func TestStake_CalcSimulatedNoahValue(t *testing.T) {
 func createTestCandidate(stateDB *StateDB) []byte {
 	address := types.Address{}
 	pubkey := make([]byte, 32)
-	rand.Read(pubkey)
+	_, _ = rand.Read(pubkey)
 
-	stateDB.CreateCandidate(address, address, pubkey, 10, 0, types.GetBaseCoin(), helpers.NoahToPip(big.NewInt(1)))
+	stateDB.CreateCandidate(address, address, pubkey, 10, 0, types.GetBaseCoin(), helpers.NoahToQNoah(big.NewInt(1)))
 
 	return pubkey
 }

@@ -1,33 +1,8 @@
 package types
 
 import (
-	"fmt"
 	"math/big"
-	"strings"
 )
-
-type BigInt struct {
-	big.Int
-}
-
-func (b BigInt) MarshalJSON() ([]byte, error) {
-	return []byte(b.String()), nil
-}
-
-func (b *BigInt) UnmarshalJSON(p []byte) error {
-	if string(p) == "null" {
-		return nil
-	}
-
-	var z big.Int
-	trim := strings.Replace(string(p), "\"", "",-1)
-	_, ok := z.SetString(trim, 10)
-	if !ok {
-		return fmt.Errorf("not a valid big integer: %s", p)
-	}
-	b.Int = z
-	return nil
-}
 
 type AppState struct {
 	Note         string       `json:"note"`
@@ -39,42 +14,42 @@ type AppState struct {
 	FrozenFunds  []FrozenFund `json:"frozen_funds,omitempty"`
 	UsedChecks   []UsedCheck  `json:"used_checks,omitempty"`
 	MaxGas       uint64       `json:"max_gas"`
-	TotalSlashed *BigInt      `json:"total_slashed"`
+	TotalSlashed *big.Int     `json:"total_slashed"`
 }
 
 type Validator struct {
 	RewardAddress  Address   `json:"reward_address"`
-	TotalNoahStake *BigInt   `json:"total_noah_stake"`
+	TotalNoahStake *big.Int  `json:"total_noah_stake"`
 	PubKey         Pubkey    `json:"pub_key"`
 	Commission     uint      `json:"commission"`
-	AccumReward    *BigInt   `json:"accum_reward"`
+	AccumReward    *big.Int  `json:"accum_reward"`
 	AbsentTimes    *BitArray `json:"absent_times"`
 }
 
 type Candidate struct {
-	RewardAddress  Address `json:"reward_address"`
-	OwnerAddress   Address `json:"owner_address"`
-	TotalNoahStake *BigInt `json:"total_noah_stake"`
-	PubKey         Pubkey  `json:"pub_key"`
-	Commission     uint    `json:"commission"`
-	Stakes         []Stake `json:"stakes"`
-	CreatedAtBlock uint    `json:"created_at_block"`
-	Status         byte    `json:"status"`
+	RewardAddress  Address  `json:"reward_address"`
+	OwnerAddress   Address  `json:"owner_address"`
+	TotalNoahStake *big.Int `json:"total_noah_stake"`
+	PubKey         Pubkey   `json:"pub_key"`
+	Commission     uint     `json:"commission"`
+	Stakes         []Stake  `json:"stakes"`
+	CreatedAtBlock uint     `json:"created_at_block"`
+	Status         byte     `json:"status"`
 }
 
 type Stake struct {
 	Owner     Address    `json:"owner"`
 	Coin      CoinSymbol `json:"coin"`
-	Value     *BigInt    `json:"value"`
-	NoahValue *BigInt    `json:"noah_value"`
+	Value     *big.Int   `json:"value"`
+	NoahValue *big.Int   `json:"noah_value"`
 }
 
 type Coin struct {
 	Name           string     `json:"name"`
 	Symbol         CoinSymbol `json:"symbol"`
-	Volume         *BigInt    `json:"volume"`
+	Volume         *big.Int   `json:"volume"`
 	Crr            uint       `json:"crr"`
-	ReserveBalance *BigInt    `json:"reserve_balance"`
+	ReserveBalance *big.Int   `json:"reserve_balance"`
 }
 
 type FrozenFund struct {
@@ -82,7 +57,7 @@ type FrozenFund struct {
 	Address      Address    `json:"address"`
 	CandidateKey Pubkey     `json:"candidate_key"`
 	Coin         CoinSymbol `json:"coin"`
-	Value        *BigInt    `json:"value"`
+	Value        *big.Int   `json:"value"`
 }
 
 type UsedCheck string
@@ -96,7 +71,7 @@ type Account struct {
 
 type Balance struct {
 	Coin  CoinSymbol `json:"coin"`
-	Value *BigInt    `json:"value"`
+	Value *big.Int   `json:"value"`
 }
 
 type Multisig struct {

@@ -23,7 +23,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/noah-blockchain/go-amino"
+	"github.com/tendermint/go-amino"
 )
 
 func TestBytesConversion(t *testing.T) {

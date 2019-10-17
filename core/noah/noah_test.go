@@ -14,7 +14,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/noah-blockchain/go-amino"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/developers"
@@ -26,6 +25,7 @@ import (
 	"github.com/noah-blockchain/noah-go-node/helpers"
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/rlp"
+	"github.com/tendermint/go-amino"
 	tmConfig "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/common"
 	log2 "github.com/tendermint/tendermint/libs/log"
@@ -53,7 +53,7 @@ func init() {
 }
 
 func initNode() {
-	utils.NoahHome = os.ExpandEnv(filepath.Join("$HOME", ".noah_test"))
+	utils.NoahHome = os.ExpandEnv(filepath.Join("$HOME", "noah_test"))
 	_ = os.RemoveAll(utils.NoahHome)
 
 	if err := common.EnsureDir(utils.GetNoahHome()+"/tmdata/blockstore.db", 0777); err != nil {

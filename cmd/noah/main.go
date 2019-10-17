@@ -7,13 +7,6 @@ import (
 )
 
 func main() {
-
-	//box := packr.New("myBox", "testnet/noah-testnet-1")
-	//_, err := box.FindString("genesis.json")
-	//if err != nil {
-	//	panic(err)
-	//}
-	//panic(err)
 	rootCmd := cmd.RootCmd
 
 	rootCmd.AddCommand(
