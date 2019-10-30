@@ -50,17 +50,17 @@ func makeResponseCandidate(c state.Candidate, includeStakes bool) CandidateRespo
 	return candidate
 }
 
-func Candidate(pubkey []byte, height int) (*CandidateResponse, error) {
+func Candidate(pubkey types.Pubkey, height int) (*CandidateResponse, error) {
 	cState, err := GetStateForHeight(height)
 	if err != nil {
 		return nil, err
 	}
 
-	candidate := cState.GetStateCandidate(pubkey)
+	candidate := cState.Candidates.GetCandidate(pubkey)
 	if candidate == nil {
 		return nil, rpctypes.RPCError{Code: 404, Message: "Candidate not found"}
 	}
 
-	response := makeResponseCandidate(*candidate, true)
+	response := makeResponseCandidate(cState, *candidate, true)
 	return &response, nil
 }

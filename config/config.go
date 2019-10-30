@@ -122,7 +122,6 @@ type Config struct {
 	P2P             *tmConfig.P2PConfig             `mapstructure:"p2p"`
 	Mempool         *tmConfig.MempoolConfig         `mapstructure:"mempool"`
 	Consensus       *tmConfig.ConsensusConfig       `mapstructure:"consensus"`
-	FastSyncSection *tmConfig.FastSyncConfig        `mapstructure:"fastsync"`
 	TxIndex         *tmConfig.TxIndexConfig         `mapstructure:"tx_index"`
 	Instrumentation *tmConfig.InstrumentationConfig `mapstructure:"instrumentation"`
 }
@@ -135,7 +134,6 @@ func defaultConfig() *Config {
 		P2P:             tmConfig.DefaultP2PConfig(),
 		Mempool:         tmConfig.DefaultMempoolConfig(),
 		Consensus:       tmConfig.DefaultConsensusConfig(),
-		FastSyncSection: tmConfig.DefaultFastSyncConfig(),
 		TxIndex:         tmConfig.DefaultTxIndexConfig(),
 		Instrumentation: tmConfig.DefaultInstrumentationConfig(),
 	}
@@ -155,27 +153,27 @@ func GetTmConfig(cfg *Config) *tmConfig.Config {
 	return &tmConfig.Config{
 		BaseConfig: tmConfig.BaseConfig{
 			RootDir:                 cfg.RootDir,
+			ProxyApp:                cfg.ProxyApp,
+			Moniker:                 cfg.Moniker,
+			FastSyncMode:            cfg.FastSync,
+			DBBackend:               cfg.DBBackend,
+			DBPath:                  cfg.DBPath,
+			LogLevel:                cfg.LogLevel,
+			LogFormat:               cfg.LogFormat,
 			Genesis:                 cfg.Genesis,
 			PrivValidatorKey:        cfg.PrivValidatorKey,
 			PrivValidatorState:      cfg.PrivValidatorState,
-			NodeKey:                 cfg.NodeKey,
-			Moniker:                 cfg.Moniker,
 			PrivValidatorListenAddr: cfg.PrivValidatorListenAddr,
-			ProxyApp:                cfg.ProxyApp,
+			NodeKey:                 cfg.NodeKey,
 			ABCI:                    cfg.ABCI,
-			LogLevel:                cfg.LogLevel,
-			LogFormat:               cfg.LogFormat,
 			ProfListenAddress:       cfg.ProfListenAddress,
-			FastSyncMode:            cfg.FastSync,
 			FilterPeers:             cfg.FilterPeers,
-			DBBackend:               cfg.DBBackend,
-			DBPath:                  cfg.DBPath,
 		},
 		RPC:             cfg.RPC,
 		P2P:             cfg.P2P,
 		Mempool:         cfg.Mempool,
+		FastSync:        &tmConfig.FastSyncConfig{Version: "v1"},
 		Consensus:       cfg.Consensus,
-		FastSync:        cfg.FastSyncSection,
 		TxIndex:         cfg.TxIndex,
 		Instrumentation: cfg.Instrumentation,
 	}
@@ -270,11 +268,11 @@ func DefaultBaseConfig() BaseConfig {
 		ProfListenAddress:       "",
 		FastSync:                true,
 		FilterPeers:             false,
-		DBBackend:               "goleveldb",
+		DBBackend:               "cleveldb",
 		DBPath:                  "data",
 		GUIListenAddress:        ":3000",
 		APIListenAddress:        "tcp://0.0.0.0:8841",
-		ValidatorMode:           true,
+		ValidatorMode:           false,
 		KeepStateHistory:        false,
 		APISimultaneousRequests: 100,
 		LogPath:                 "stdout",

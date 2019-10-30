@@ -67,12 +67,12 @@ func TestDeclareCandidacyTx(t *testing.T) {
 	}
 
 	targetBalance, _ := big.NewInt(0).SetString("999890000000000000000000", 10)
-	balance := cState.GetBalance(addr, coin)
+	balance := cState.Accounts.GetBalance(addr, coin)
 	if balance.Cmp(targetBalance) != 0 {
 		t.Fatalf("Target %s balance is not correct. Expected %s, got %s", coin, targetBalance, balance)
 	}
 
-	candidate := cState.GetStateCandidate(publicKey)
+	candidate := cState.Candidates.GetCandidate(publicKey)
 
 	if candidate == nil {
 		t.Fatalf("Candidate not found")
@@ -94,7 +94,7 @@ func TestDeclareCandidacyTx(t *testing.T) {
 		t.Fatalf("Commission is not correct")
 	}
 
-	if candidate.Status != state.CandidateStatusOffline {
+	if candidate.Status != candidates.CandidateStatusOffline {
 		t.Fatalf("Incorrect candidate status")
 	}
 }

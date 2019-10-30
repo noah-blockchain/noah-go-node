@@ -6,9 +6,9 @@ import (
 )
 
 type AddressesResponse struct {
-	Address          types.Address     `json:"address"`
-	Balance          map[string]string `json:"balance"`
-	TransactionCount uint64            `json:"transaction_count"`
+	Address          types.Address       `json:"address"`
+	Balance          map[string]*big.Int `json:"balance"`
+	TransactionCount uint64              `json:"transaction_count"`
 }
 
 func Addresses(addresses []types.Address, height int) (*[]AddressesResponse, error) {
@@ -22,17 +22,17 @@ func Addresses(addresses []types.Address, height int) (*[]AddressesResponse, err
 	for i, address := range addresses {
 		data := AddressesResponse{
 			Address:          address,
-			Balance:          make(map[string]string),
-			TransactionCount: cState.GetNonce(address),
+			Balance:          make(map[string]*big.Int),
+			TransactionCount: cState.Accounts.GetNonce(address),
 		}
 
-		balances := cState.GetBalances(address)
-		for k, v := range balances.Data {
-			data.Balance[k.String()] = v.String()
+		balances := cState.Accounts.GetBalances(address)
+		for k, v := range balances {
+			data.Balance[k.String()] = v
 		}
 
 		if _, exists := data.Balance[types.GetBaseCoin().String()]; !exists {
-			data.Balance[types.GetBaseCoin().String()] = big.NewInt(0).String()
+			data.Balance[types.GetBaseCoin().String()] = big.NewInt(0)
 		}
 
 		response[i] = data

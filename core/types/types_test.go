@@ -19,11 +19,10 @@ package types
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/MinterTeam/go-amino"
 	"math/big"
 	"strings"
 	"testing"
-
-	"github.com/tendermint/go-amino"
 )
 
 func TestBytesConversion(t *testing.T) {
@@ -195,7 +194,7 @@ func TestAppState(t *testing.T) {
 			{
 				Height:       1,
 				Address:      testAddr,
-				CandidateKey: pubkey,
+				CandidateKey: &pubkey,
 				Coin:         GetBaseCoin(),
 				Value:        big.NewInt(1),
 			},

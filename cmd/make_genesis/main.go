@@ -88,9 +88,9 @@ func main() {
 		frozenFunds = append(frozenFunds, types.FrozenFund{
 			Height:       17280 * 8,
 			Address:      types.HexToAddress(address),
-			CandidateKey: []byte{0},
+			CandidateKey: nil,
 			Coin:         types.GetBaseCoin(),
-			Value:        &types.BigInt{Int: *balance},
+			Value:        balance,
 		})
 	}
 
@@ -102,9 +102,9 @@ func main() {
 		frozenFunds = append(frozenFunds, types.FrozenFund{
 			Height:       17280 * 15,
 			Address:      types.HexToAddress(address),
-			CandidateKey: []byte{0},
+			CandidateKey: nil,
 			Coin:         types.GetBaseCoin(),
-			Value:        &types.BigInt{Int: *balance},
+			Value:        balance,
 		})
 	}
 
@@ -116,9 +116,9 @@ func main() {
 		frozenFunds = append(frozenFunds, types.FrozenFund{
 			Height:       17280 * 29,
 			Address:      types.HexToAddress(address),
-			CandidateKey: []byte{0},
+			CandidateKey: nil,
 			Coin:         types.GetBaseCoin(),
-			Value:        &types.BigInt{Int: *balance},
+			Value:        balance,
 		})
 	}
 
@@ -267,7 +267,7 @@ func makeBalances(balances map[string]*big.Int, balances2 map[string]*big.Int, b
 			Balance: []types.Balance{
 				{
 					Coin:  types.GetBaseCoin(),
-					Value: &types.BigInt{Int: *balance},
+					Value: balance,
 				},
 			},
 		})

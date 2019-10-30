@@ -202,9 +202,9 @@ func TestSmallStakeValidator(t *testing.T) {
 	for blockchain.Height() < 2 {
 		time.Sleep(time.Millisecond)
 	}
-
+	
 	pubkey := types.Pubkey{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-
+	
 	data := transaction.DeclareCandidacyData{
 		Address:    crypto.PubkeyToAddress(privateKey.PublicKey),
 		PubKey:     pubkey,
@@ -212,12 +212,12 @@ func TestSmallStakeValidator(t *testing.T) {
 		Coin:       types.GetBaseCoin(),
 		Stake:      big.NewInt(1),
 	}
-
+	
 	encodedData, err := rlp.EncodeToBytes(data)
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	
 	tx := transaction.Transaction{
 		Nonce:         nonce,
 		ChainID:       types.CurrentChainID,
@@ -228,11 +228,11 @@ func TestSmallStakeValidator(t *testing.T) {
 		SignatureType: transaction.SigTypeSingle,
 	}
 	nonce++
-
+	
 	if err := tx.Sign(privateKey); err != nil {
 		t.Fatal(err)
 	}
-
+	
 	txBytes, _ := tx.Serialize()
 	res, err := tmCli.BroadcastTxSync(txBytes)
 	if err != nil {

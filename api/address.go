@@ -6,8 +6,8 @@ import (
 )
 
 type AddressResponse struct {
-	Balance          map[string]string `json:"balance"`
-	TransactionCount uint64            `json:"transaction_count"`
+	Balance          map[string]*big.Int `json:"balance"`
+	TransactionCount uint64              `json:"transaction_count"`
 }
 
 func Address(address types.Address, height int) (*AddressResponse, error) {

@@ -109,7 +109,7 @@ func TestRedeemCheckTx(t *testing.T) {
 		t.Fatalf("Response code is not 0. Error %s", response.Log)
 	}
 
-	balance := cState.GetBalance(receiverAddr, coin)
+	balance := cState.Accounts.GetBalance(receiverAddr, coin)
 	if balance.Cmp(checkValue) != 0 {
 		t.Fatalf("Target %s balance is not correct. Expected %s, got %s", coin, checkValue, balance)
 	}

@@ -74,8 +74,6 @@ func runNode() error {
 		go gui.Run(cfg.GUIListenAddress)
 	}
 
-	fmt.Println("Noah node successful started.")
-
 	// Recheck mempool. Currently kind a hack.
 	go recheckMempool(node, cfg)
 
@@ -127,58 +125,15 @@ func updateBlocksTimeDelta(app *noah.Blockchain, config *tmCfg.Config) {
 	blockStoreDB.Close()
 }
 
-func getNodeKey() (*p2p.NodeKey, error) {
-	nodeKeyJSON := config.GetEnv("NODE_KEY", "")
-	if len(nodeKeyJSON) > 0 {
-		if err := ioutil.WriteFile(cfg.NodeKeyFile(), []byte(nodeKeyJSON), 0600); err != nil {
-			return nil, err
-		}
-	}
-
-	nodeKey, err := p2p.LoadOrGenNodeKey(cfg.NodeKeyFile())
-	if err != nil {
-		return nil, err
-	}
-
-	return nodeKey, nil
-}
-
-func getValidatorKey() (*privval.FilePV, error) {
-	validatorKeyJSON := config.GetEnv("VALIDATOR_KEY", "")
-	if len(validatorKeyJSON) > 0 {
-		if err := ioutil.WriteFile(cfg.PrivValidatorKeyFile(), []byte(validatorKeyJSON), 0600); err != nil {
-			return nil, err
-		}
-
-		if err := ioutil.WriteFile(cfg.PrivValidatorStateFile(), []byte("{}"), 0600); err != nil {
-			return nil, err
-		}
-	}
-
-	var pv *privval.FilePV
-	if common.FileExists(cfg.PrivValidatorKeyFile()) {
-		pv = privval.LoadFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile())
-	} else {
-		pv = privval.GenFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile())
-		pv.Save()
-	}
-	return pv, nil
-}
-
 func startTendermintNode(app types.Application, cfg *tmCfg.Config) *tmNode.Node {
-	nodeKey, err := getNodeKey()
-	if err != nil {
-		panic(err)
-	}
-
-	validatorKey, err := getValidatorKey()
+	nodeKey, err := p2p.LoadOrGenNodeKey(cfg.NodeKeyFile())
 	if err != nil {
 		panic(err)
 	}
 
 	node, err := tmNode.NewNode(
 		cfg,
-		validatorKey,
+		privval.LoadOrGenFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile()),
 		nodeKey,
 		proxy.NewLocalClientCreator(app),
 		getGenesis,

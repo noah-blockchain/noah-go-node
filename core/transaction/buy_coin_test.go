@@ -26,8 +26,13 @@ func init() {
 	log.InitLog(config.GetConfig())
 }
 
-func getState() *state.StateDB {
-	s, err := state.New(0, db.NewMemDB(), false)
+func getState() *state.State {
+	opt := nutsdb.DefaultOptions
+	opt.Dir = "/tmp/nutsdb"
+	os.RemoveAll(opt.Dir)
+	nuts, err := nutsdb.Open(opt)
+
+	s, err := state.NewState(0, db.NewMemDB(), nuts, nil)
 
 	if err != nil {
 		panic(err)
@@ -103,12 +108,12 @@ func TestBuyCoinTx(t *testing.T) {
 	}
 
 	targetBalance, _ := big.NewInt(0).SetString("999840525753990000000000", 10)
-	balance := cState.GetBalance(addr, coin)
+	balance := cState.Accounts.GetBalance(addr, coin)
 	if balance.Cmp(targetBalance) != 0 {
 		t.Fatalf("Target %s balance is not correct. Expected %s, got %s", coin, targetBalance, balance)
 	}
 
-	testBalance := cState.GetBalance(addr, getTestCoinSymbol())
+	testBalance := cState.Accounts.GetBalance(addr, getTestCoinSymbol())
 	if testBalance.Cmp(toBuy) != 0 {
 		t.Fatalf("Target %s balance is not correct. Expected %s, got %s", getTestCoinSymbol(), toBuy, testBalance)
 	}

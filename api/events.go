@@ -1,16 +1,15 @@
 package api
 
 import (
-	"github.com/noah-blockchain/noah-go-node/eventsdb"
-	"github.com/noah-blockchain/noah-go-node/eventsdb/events"
+	compact "github.com/klim0v/compact-db"
 )
 
 type EventsResponse struct {
-	Events events.Events `json:"events"`
+	Events compact.Events `json:"events"`
 }
 
-func Events(height uint64) (*EventsResponse, error) {
+func Events(height uint32) (*EventsResponse, error) {
 	return &EventsResponse{
-		Events: eventsdb.GetCurrent().LoadEvents(height),
+		Events: blockchain.GetEventsDB().LoadEvents(height),
 	}, nil
 }

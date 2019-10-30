@@ -67,12 +67,12 @@ func TestEditCandidateTx(t *testing.T) {
 	}
 
 	targetBalance, _ := big.NewInt(0).SetString("999990000000000000000000", 10)
-	balance := cState.GetBalance(addr, coin)
+	balance := cState.Accounts.GetBalance(addr, coin)
 	if balance.Cmp(targetBalance) != 0 {
 		t.Fatalf("Target %s balance is not correct. Expected %s, got %s", coin, targetBalance, balance)
 	}
 
-	candidate := cState.GetStateCandidate(pubkey)
+	candidate := cState.Candidates.GetCandidate(pubkey)
 
 	if candidate == nil {
 		t.Fatalf("Candidate not found")
