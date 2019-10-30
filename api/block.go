@@ -11,6 +11,7 @@ import (
 	"github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
 	types2 "github.com/tendermint/tendermint/types"
+	"math/big"
 	"time"
 )
 
@@ -85,9 +86,6 @@ func Block(height int64) (*BlockResponse, error) {
 			return nil, err
 		}
 
-		str := string(data)
-		fmt.Println(str)
-
 		txs[i] = BlockTransactionResponse{
 			Hash:        fmt.Sprintf("Nt%x", rawTx.Hash()),
 			RawTx:       fmt.Sprintf("%x", []byte(rawTx)),
@@ -134,7 +132,7 @@ func Block(height int64) (*BlockResponse, error) {
 			}
 
 			if bytes.Equal(tmval.Address.Bytes(), block.Block.ProposerAddress.Bytes()) {
-				proposer = tmval.PubKey.Bytes()[5:]
+				copy(proposer[:], tmval.PubKey.Bytes()[5:])
 			}
 		}
 	}

@@ -11,8 +11,8 @@ import (
 )
 
 type EstimateCoinBuyResponse struct {
-	WillPay    string `json:"will_pay"`
-	Commission string `json:"commission"`
+	WillPay    *big.Int `json:"will_pay"`
+	Commission *big.Int `json:"commission"`
 }
 
 func EstimateCoinBuy(coinToSellString string, coinToBuyString string, valueToBuy *big.Int, height int) (*EstimateCoinBuyResponse, error) {
