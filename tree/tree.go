@@ -1,10 +1,9 @@
-package state
+package tree
 
 import (
-	"sync"
-
 	"github.com/tendermint/iavl"
 	dbm "github.com/tendermint/tm-db"
+	"sync"
 )
 
 type Tree interface {
