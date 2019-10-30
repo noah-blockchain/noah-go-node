@@ -7,25 +7,18 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"math/big"
-	"os"
-	"path/filepath"
-	"sync"
-	"testing"
-	"time"
-
+	"github.com/noah-blockchain/go-amino"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/developers"
-	"github.com/noah-blockchain/noah-go-node/core/state"
+	candidates2 "github.com/noah-blockchain/noah-go-node/core/state/candidates"
 	"github.com/noah-blockchain/noah-go-node/core/transaction"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/crypto"
-	"github.com/noah-blockchain/noah-go-node/eventsdb"
 	"github.com/noah-blockchain/noah-go-node/helpers"
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/rlp"
-	"github.com/tendermint/go-amino"
+	`github.com/btcsuite/btcd/blockchain`
 	tmConfig "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/common"
 	log2 "github.com/tendermint/tendermint/libs/log"
@@ -36,6 +29,12 @@ import (
 	rpc "github.com/tendermint/tendermint/rpc/client"
 	_ "github.com/tendermint/tendermint/types"
 	types2 "github.com/tendermint/tendermint/types"
+	"math/big"
+	"os"
+	"path/filepath"
+	"sync"
+	"testing"
+	"time"
 )
 
 var pv *privval.FilePV
@@ -53,17 +52,16 @@ func init() {
 }
 
 func initNode() {
-	utils.NoahHome = os.ExpandEnv(filepath.Join("$HOME", "noah_test"))
+	utils.NoahHome = os.ExpandEnv(filepath.Join("$HOME", ".noah_test"))
 	_ = os.RemoveAll(utils.NoahHome)
-
+	
 	if err := common.EnsureDir(utils.GetNoahHome()+"/tmdata/blockstore.db", 0777); err != nil {
 		log.Error(err.Error())
 		os.Exit(1)
 	}
-
+	
 	noahCfg := config.GetConfig()
 	log.InitLog(noahCfg)
-	eventsdb.InitDB(noahCfg)
 	cfg = config.GetTmConfig(noahCfg)
 	cfg.Consensus.TimeoutPropose = 0
 	cfg.Consensus.TimeoutPrecommit = 0
@@ -210,7 +208,7 @@ func TestSmallStakeValidator(t *testing.T) {
 		PubKey:     pubkey,
 		Commission: 10,
 		Coin:       types.GetBaseCoin(),
-		Stake:      big.NewInt(1),
+		Stake:      big.NewInt(0),
 	}
 	
 	encodedData, err := rlp.EncodeToBytes(data)
@@ -293,17 +291,17 @@ func TestSmallStakeValidator(t *testing.T) {
 			if block.Data.(types2.EventDataNewBlock).Block.Height < targetBlockHeight {
 				continue
 			}
-
+			
 			vals, _ := tmCli.Validators(&targetBlockHeight)
-
+			
 			if len(vals.Validators) > 1 {
 				t.Errorf("There are should be 1 validator (has %d)", len(vals.Validators))
 			}
-
-			if len(app.stateDeliver.GetStateValidators().Data()) > 1 {
-				t.Errorf("There are should be 1 validator (has %d)", len(app.stateDeliver.GetStateValidators().Data()))
+			
+			if len(app.stateDeliver.Validators.GetValidators()) > 1 {
+				t.Errorf("There are should be 1 validator (has %d)", len(app.stateDeliver.Validators.GetValidators()))
 			}
-
+			
 			ready = true
 		case <-time.After(10 * time.Second):
 			t.Fatalf("Timeout waiting for the block")
@@ -361,23 +359,24 @@ FORLOOP2:
 			if block.Data.(types2.EventDataNewBlock).Block.Height < targetBlockHeight {
 				continue FORLOOP2
 			}
-
+			
 			vals, _ := tmCli.Validators(&targetBlockHeight)
-
+			
 			if len(vals.Validators) > 1 {
-				t.Errorf("There are should be only 1 validator")
+				t.Errorf("There should be only 1 validator, got %d", len(vals.Validators))
 			}
-
-			if len(app.stateDeliver.GetStateValidators().Data()) > 1 {
-				t.Errorf("There are should be only 1 validator")
+			
+			mvals := app.stateDeliver.Validators.GetValidators()
+			if len(mvals) > 1 {
+				t.Errorf("There should be only 1 validator, got %d", len(mvals))
 			}
-
+			
 			break FORLOOP2
 		case <-time.After(10 * time.Second):
 			t.Fatalf("Timeout waiting for the block")
 		}
 	}
-
+	
 	err = tmCli.UnsubscribeAll(context.TODO(), "test-client")
 	if err != nil {
 		panic(err)
@@ -434,40 +433,42 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 	validators := make([]types.Validator, len(pubkeys))
 	candidates := make([]types.Candidate, len(pubkeys))
 	addr := developers.Address
-
+	
 	for i, val := range pubkeys {
-		pkey, err := base64.StdEncoding.DecodeString(val)
+		pkeyBytes, err := base64.StdEncoding.DecodeString(val)
 		if err != nil {
 			panic(err)
 		}
-
+		
+		var pkey types.Pubkey
+		copy(pkey[:], pkeyBytes)
+		
 		validators[i] = types.Validator{
-			RewardAddress:  addr,
+			RewardAddress: addr,
 			TotalNoahStake: stake,
-			PubKey:         pkey,
-			Commission:     100,
-			AccumReward:    big.NewInt(0),
-			AbsentTimes:    types.NewBitArray(24),
+			PubKey:        pkey,
+			Commission:    100,
+			AccumReward:   big.NewInt(0),
+			AbsentTimes:   types.NewBitArray(24),
 		}
-
+		
 		candidates[i] = types.Candidate{
-			RewardAddress:  addr,
-			OwnerAddress:   addr,
+			RewardAddress: addr,
+			OwnerAddress:  addr,
 			TotalNoahStake: big.NewInt(1),
-			PubKey:         pkey,
-			Commission:     100,
+			PubKey:        pkey,
+			Commission:    100,
 			Stakes: []types.Stake{
 				{
-					Owner:     addr,
-					Coin:      types.GetBaseCoin(),
-					Value:     stake,
+					Owner:    addr,
+					Coin:     types.GetBaseCoin(),
+					Value:    stake,
 					NoahValue: stake,
 				},
 			},
-			CreatedAtBlock: 1,
-			Status:         state.CandidateStatusOnline,
+			Status: candidates2.CandidateStatusOnline,
 		}
 	}
-
+	
 	return validators, candidates
 }

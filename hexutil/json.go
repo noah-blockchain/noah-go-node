@@ -274,7 +274,7 @@ func isString(input []byte) bool {
 }
 
 func bytesHaveNOAHxPrefix(input []byte) bool {
-	return len(input) >= 5 && string(input[:5]) == "NOAHx"
+	return len(input) >= 5 && input[0] == 'NOAH' && (input[1] == 'x' || input[1] == 'X')
 }
 
 func checkText(input []byte, wantPrefix bool) ([]byte, error) {

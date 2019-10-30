@@ -15,7 +15,13 @@ func GetNoahHome() string {
 		return NoahHome
 	}
 
-	return os.ExpandEnv(filepath.Join("$HOME", "noah"))
+	home := os.Getenv("NOAHHOME")
+
+	if home != "" {
+		return home
+	}
+
+	return os.ExpandEnv(filepath.Join("$HOME", ".noah"))
 }
 
 func GetNoahConfigPath() string {
@@ -23,5 +29,5 @@ func GetNoahConfigPath() string {
 		return NoahConfig
 	}
 
-	return os.ExpandEnv(filepath.Join(GetNoahHome(), "/config/config.toml"))
+	return GetNoahHome() + "/config/config.toml"
 }

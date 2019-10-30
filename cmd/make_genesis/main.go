@@ -4,20 +4,19 @@ import (
 	"encoding/base64"
 	"encoding/csv"
 	"encoding/json"
+	"github.com/MinterTeam/go-amino"
+	"github.com/noah-blockchain/noah-go-node/core/dao"
+	"github.com/noah-blockchain/noah-go-node/core/noah"
+	candidates2 "github.com/noah-blockchain/noah-go-node/core/state/candidates"
+	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/helpers"
+	tmTypes "github.com/tendermint/tendermint/types"
 	"math"
 	"math/big"
 	"os"
 	"sort"
 	"strconv"
 	"time"
-
-	"github.com/MinterTeam/go-amino"
-	"github.com/noah-blockchain/noah-go-node/core/dao"
-	"github.com/noah-blockchain/noah-go-node/core/noah"
-	"github.com/noah-blockchain/noah-go-node/core/state"
-	"github.com/noah-blockchain/noah-go-node/core/types"
-	"github.com/noah-blockchain/noah-go-node/helpers"
-	tmTypes "github.com/tendermint/tendermint/types"
 )
 
 func main() {
@@ -147,12 +146,12 @@ func main() {
 	validators, candidates := makeValidatorsAndCandidates(validatorsPubKeys, big.NewInt(1))
 
 	jsonBytes, err := cdc.MarshalJSONIndent(types.AppState{
-		Note:         "Noah, your key to the future, powered by crypto currency\nNoah Initial Price – $0.03\nThanks for All!", // todo
+		Note:         "Noah, your key to the future, powered by crypto currency!",
 		Validators:   validators,
 		Candidates:   candidates,
 		Accounts:     bals,
 		MaxGas:       noah.DefaultMaxGas,
-		TotalSlashed: &types.BigInt{},
+		TotalSlashed: big.NewInt(0),
 		FrozenFunds:  frozenFunds,
 	}, "", "	")
 	if err != nil {
@@ -199,36 +198,38 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 	addr := dao.Address
 
 	for i, val := range pubkeys {
-		pkey, err := base64.StdEncoding.DecodeString(val)
+		pkeyBytes, err := base64.StdEncoding.DecodeString(val)
 		if err != nil {
 			panic(err)
 		}
 
+		var pkey types.Pubkey
+		copy(pkey[:], pkeyBytes)
+
 		validators[i] = types.Validator{
-			RewardAddress:  addr,
-			TotalNoahStake: &types.BigInt{Int: *stake},
-			PubKey:         pkey,
-			Commission:     100,
-			AccumReward:    &types.BigInt{Int: *big.NewInt(0)},
-			AbsentTimes:    types.NewBitArray(24),
+			RewardAddress: addr,
+			TotalBipStake: stake,
+			PubKey:        pkey,
+			Commission:    100,
+			AccumReward:   big.NewInt(0),
+			AbsentTimes:   types.NewBitArray(24),
 		}
 
 		candidates[i] = types.Candidate{
-			RewardAddress:  addr,
-			OwnerAddress:   addr,
-			TotalNoahStake: &types.BigInt{Int: *big.NewInt(1)},
-			PubKey:         pkey,
-			Commission:     100,
+			RewardAddress: addr,
+			OwnerAddress:  addr,
+			TotalBipStake: big.NewInt(1),
+			PubKey:        pkey,
+			Commission:    100,
 			Stakes: []types.Stake{
 				{
-					Owner:     addr,
-					Coin:      types.GetBaseCoin(),
-					Value:     &types.BigInt{Int: *stake},
-					NoahValue: &types.BigInt{Int: *stake},
+					Owner:    addr,
+					Coin:     types.GetBaseCoin(),
+					Value:    stake,
+					BipValue: stake,
 				},
 			},
-			CreatedAtBlock: 1,
-			Status:         state.CandidateStatusOnline,
+			Status: candidates2.CandidateStatusOnline,
 		}
 	}
 

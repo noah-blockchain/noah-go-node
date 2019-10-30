@@ -27,29 +27,29 @@ type Validator struct {
 }
 
 type Candidate struct {
-	RewardAddress  Address  `json:"reward_address"`
-	OwnerAddress   Address  `json:"owner_address"`
-	TotalNoahStake  *big.Int `json:"total_noah_stake"`
-	PubKey         Pubkey   `json:"pub_key"`
-	Commission     uint     `json:"commission"`
-	Stakes         []Stake  `json:"stakes"`
-	CreatedAtBlock uint     `json:"created_at_block"`
-	Status         byte     `json:"status"`
+	RewardAddress Address  `json:"reward_address"`
+	OwnerAddress  Address  `json:"owner_address"`
+	TotalNoahStake *big.Int `json:"total_noah_stake"`
+	PubKey        Pubkey   `json:"pub_key"`
+	Commission    uint     `json:"commission"`
+	Stakes        []Stake  `json:"stakes"`
+	Status        byte     `json:"status"`
 }
 
 type Stake struct {
-	Owner     Address    `json:"owner"`
-	Coin      CoinSymbol `json:"coin"`
-	Value     *big.Int   `json:"value"`
+	Owner    Address    `json:"owner"`
+	Coin     CoinSymbol `json:"coin"`
+	Value    *big.Int   `json:"value"`
 	NoahValue *big.Int   `json:"noah_value"`
 }
 
 type Coin struct {
-	Name           string     `json:"name"`
-	Symbol         CoinSymbol `json:"symbol"`
-	Volume         *big.Int   `json:"volume"`
-	Crr            uint       `json:"crr"`
-	ReserveBalance *big.Int   `json:"reserve_balance"`
+	Name      string     `json:"name"`
+	Symbol    CoinSymbol `json:"symbol"`
+	Volume    *big.Int   `json:"volume"`
+	Crr       uint       `json:"crr"`
+	Reserve   *big.Int   `json:"reserve"`
+	MaxSupply *big.Int   `json:"max_supply"`
 }
 
 type FrozenFund struct {

@@ -21,33 +21,31 @@ type UnbondData struct {
 	Value  *big.Int         `json:"value"`
 }
 
-func (data UnbondData) TotalSpend(tx *Transaction, context *state.StateDB) (TotalSpends, []Conversion, *big.Int, *Response) {
+func (data UnbondData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
 	panic("implement me")
 }
 
-func (data UnbondData) BasicCheck(tx *Transaction, context *state.StateDB) *Response {
-	if data.PubKey == nil || data.Value == nil {
+func (data UnbondData) BasicCheck(tx *Transaction, context *state.State) *Response {
+	if data.Value == nil {
 		return &Response{
 			Code: code.DecodeError,
 			Log:  "Incorrect tx data"}
 	}
 
-	if !context.CoinExists(data.Coin) {
+	if !context.Coins.Exists(data.Coin) {
 		return &Response{
 			Code: code.CoinNotExists,
 			Log:  fmt.Sprintf("Coin %s not exists", data.Coin)}
 	}
 
-	if !context.CandidateExists(data.PubKey) {
+	if !context.Candidates.Exists(data.PubKey) {
 		return &Response{
 			Code: code.CandidateNotFound,
 			Log:  fmt.Sprintf("Candidate with such public key not found")}
 	}
 
-	candidate := context.GetStateCandidate(data.PubKey)
-
 	sender, _ := tx.Sender()
-	stake := candidate.GetStakeOfAddress(sender, data.Coin)
+	stake := context.Candidates.GetStakeValueOfAddress(data.PubKey, sender, data.Coin)
 
 	if stake == nil {
 		return &Response{

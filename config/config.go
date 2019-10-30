@@ -249,7 +249,7 @@ type BaseConfig struct {
 
 	ValidatorMode bool `mapstructure:"validator_mode"`
 
-	KeepStateHistory bool `mapstructure:"keep_state_history"`
+	KeepLastStates int64 `mapstructure:"keep_last_states"`
 
 	APISimultaneousRequests int `mapstructure:"api_simultaneous_requests"`
 
@@ -273,7 +273,7 @@ func DefaultBaseConfig() BaseConfig {
 		GUIListenAddress:        ":3000",
 		APIListenAddress:        "tcp://0.0.0.0:8841",
 		ValidatorMode:           false,
-		KeepStateHistory:        false,
+		KeepLastStates:          120,
 		APISimultaneousRequests: 100,
 		LogPath:                 "stdout",
 		LogFormat:               LogFormatPlain,
