@@ -1,8 +1,9 @@
 package api
 
 import (
-	"github.com/noah-blockchain/noah-go-node/core/types"
 	"math/big"
+
+	"github.com/noah-blockchain/noah-go-node/core/types"
 )
 
 type AddressResponse struct {
