@@ -1,6 +1,6 @@
 package bus
 
-import compact "github.com/klim0v/compact-db"
+import eventsdb "github.com/noah-blockchain/events-db"
 
 type Bus struct {
 	coins       Coins

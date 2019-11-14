@@ -3,12 +3,13 @@ package candidates
 import (
 	"bytes"
 	"fmt"
+	eventsdb "github.com/noah-blockchain/events-db"
 	"github.com/noah-blockchain/noah-go-node/core/state/bus"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
+	"github.com/noah-blockchain/noah-go-node/helpers"
 	"github.com/noah-blockchain/noah-go-node/rlp"
 	"github.com/noah-blockchain/noah-go-node/tree"
-	compact "github.com/klim0v/compact-db"
 	"math/big"
 	"sort"
 )
@@ -288,8 +289,8 @@ func (c *Candidates) RecalculateStakes(height uint64) {
 					}
 				}
 
-				if smallestStake != nil && smallestStake.Cmp(update.NoahValue) == 1 {
-					c.bus.Events().AddEvent(uint32(height), compact.UnbondEvent{
+				if index == -1 || smallestStake.Cmp(update.NoahValue) == 1 {
+					c.bus.Events().AddEvent(uint32(height), eventsdb.UnbondEvent{
 						Address:         update.Owner,
 						Amount:          update.Value.Bytes(),
 						Coin:            update.Coin,
@@ -317,15 +318,15 @@ func (c *Candidates) RecalculateStakes(height uint64) {
 
 		candidate.clearUpdates()
 
-		totalBipValue := big.NewInt(0)
+		totalNoahValue := big.NewInt(0)
 		for _, stake := range stakes {
 			if stake == nil {
 				continue
 			}
-			totalBipValue.Add(totalBipValue, stake.BipValue)
+			totalNoahValue.Add(totalNoahValue, stake.NoahValue)
 		}
 
-		candidate.setTotalBipValue(totalBipValue)
+		candidate.setTotalNoahValue(totalNoahValue)
 		candidate.updateStakesCount()
 	}
 }
@@ -365,7 +366,7 @@ func (c *Candidates) IsDelegatorStakeSufficient(address types.Address, pubkey ty
 
 	stakeValue := c.calculateNoahValue(coin, amount, true, true)
 	for _, stake := range stakes {
-		if stakeValue.Cmp(stake.NoahValue) == -1 {
+		if stakeValue.Cmp(stake.NoahValue) == 1 || (stake.Owner == address && stake.Coin == coin) {
 			return true
 		}
 	}
@@ -377,12 +378,10 @@ func (c *Candidates) Delegate(address types.Address, pubkey types.Pubkey, coin t
 	stake := &Stake{
 		Owner:     address,
 		Coin:      coin,
-		Value:     value,
-		NoahValue:  noahValue,
+		Value:     big.NewInt(0).Set(value),
+		NoahValue:  big.NewInt(0).Set(noahValue),
 		markDirty: func(i int) {},
 	}
-
-	c.bus.Coins().AddOwnerCandidate(coin, pubkey)
 
 	candidate := c.GetCandidate(pubkey)
 	candidate.addUpdate(stake)
@@ -631,14 +630,13 @@ func (c *Candidates) Punish(height uint64, address types.TmAddress) *big.Int {
 
 			c.bus.Coins().SubCoinVolume(coin.Symbol, slashed)
 			c.bus.Coins().SubCoinReserve(coin.Symbol, ret)
-			c.bus.Coins().SanitizeCoin(stake.Coin)
 
 			c.bus.App().AddTotalSlashed(ret)
 		} else {
 			c.bus.App().AddTotalSlashed(slashed)
 		}
 
-		c.bus.Events().AddEvent(uint32(height), compact.SlashEvent{
+		c.bus.Events().AddEvent(uint32(height), eventsdb.SlashEvent{
 			Address:         stake.Owner,
 			Amount:          slashed.Bytes(),
 			Coin:            stake.Coin,
@@ -660,8 +658,8 @@ func (c *Candidates) SetStakes(pubkey types.Pubkey, stakes []types.Stake) {
 		candidate.stakes[i] = &Stake{
 			Owner:    stake.Owner,
 			Coin:     stake.Coin,
-			Value:    stake.Value,
-			NoahValue: stake.NoahValue,
+			Value:    helpers.StringToBigInt(stake.Value),
+			NoahValue: helpers.StringToBigInt(stake.NoahValue),
 			index:    i,
 			markDirty: func(index int) {
 				candidate.dirtyStakes[index] = true
@@ -679,15 +677,15 @@ func (c *Candidates) Export(state *types.AppState) {
 			stakes = append(stakes, types.Stake{
 				Owner:    s.Owner,
 				Coin:     s.Coin,
-				Value:    s.Value,
-				NoahValue: s.NoahValue,
+				Value:    s.Value.String(),
+				NoahValue: s.NoahValue.String(),
 			})
 		}
 
 		state.Candidates = append(state.Candidates, types.Candidate{
 			RewardAddress: candidate.RewardAddress,
 			OwnerAddress:  candidate.OwnerAddress,
-			TotalNoahStake: candidate.GetTotalNoahStake(),
+			TotalNoahStake: candidate.GetTotalNoahStake().String(),
 			PubKey:        candidate.PubKey,
 			Commission:    candidate.Commission,
 			Stakes:        stakes,

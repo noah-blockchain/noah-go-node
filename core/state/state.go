@@ -2,6 +2,7 @@ package state
 
 import (
 	"encoding/hex"
+	eventsdb "github.com/noah-blockchain/events-db"
 	"github.com/noah-blockchain/noah-go-node/core/state/accounts"
 	"github.com/noah-blockchain/noah-go-node/core/state/app"
 	"github.com/noah-blockchain/noah-go-node/core/state/bus"
@@ -11,10 +12,9 @@ import (
 	"github.com/noah-blockchain/noah-go-node/core/state/frozenfunds"
 	"github.com/noah-blockchain/noah-go-node/core/state/validators"
 	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/helpers"
 	"github.com/noah-blockchain/noah-go-node/tree"
-	compact "github.com/klim0v/compact-db"
 	db "github.com/tendermint/tm-db"
-	"github.com/xujiajun/nutsdb"
 )
 
 type State struct {
@@ -27,24 +27,23 @@ type State struct {
 	Checks      *checks.Checks
 
 	db             db.DB
-	nuts           *nutsdb.DB
-	events         compact.IEventsDB
+	events         eventsdb.IEventsDB
 	tree           tree.Tree
 	keepLastStates int64
 }
 
-func NewState(height uint64, db db.DB, nuts *nutsdb.DB, events compact.IEventsDB, keepLastStates int64) (*State, error) {
-	iavlTree := tree.NewMutableTree(db)
+func NewState(height uint64, db db.DB, events eventsdb.IEventsDB, keepLastStates int64, cacheSize int) (*State, error) {
+	iavlTree := tree.NewMutableTree(db, cacheSize)
 	_, err := iavlTree.LoadVersion(int64(height))
 	if err != nil {
 		return nil, err
 	}
 
-	return newStateForTree(iavlTree, nuts, events, db, keepLastStates)
+	return newStateForTree(iavlTree, events, db, keepLastStates)
 }
 
 func NewCheckState(state *State) *State {
-	s, err := newStateForTree(state.tree, state.nuts, state.events, state.db, 0)
+	s, err := newStateForTree(state.tree, state.events, state.db, 0)
 	if err != nil {
 		panic(err)
 	}
@@ -52,13 +51,13 @@ func NewCheckState(state *State) *State {
 }
 
 func NewCheckStateAtHeight(height uint64, db db.DB) (*State, error) {
-	iavlTree := tree.NewMutableTree(db)
+	iavlTree := tree.NewMutableTree(db, 1024)
 	_, err := iavlTree.LazyLoadVersion(int64(height))
 	if err != nil {
 		return nil, err
 	}
 
-	return newStateForTree(iavlTree.GetImmutable(), nil, nil, nil, 0)
+	return newStateForTree(iavlTree.GetImmutable(), nil, nil, 0)
 }
 
 func (s *State) Commit() ([]byte, error) {
@@ -104,12 +103,12 @@ func (s *State) Commit() ([]byte, error) {
 }
 
 func (s *State) CheckForInvariants() error {
-	panic("implement me")
+	return nil //todo
 }
 
 func (s *State) Import(state types.AppState) error {
 	s.App.SetMaxGas(state.MaxGas)
-	s.App.SetTotalSlashed(state.TotalSlashed)
+	s.App.SetTotalSlashed(helpers.StringToBigInt(state.TotalSlashed))
 
 	for _, a := range state.Accounts {
 		s.Accounts.SetNonce(a.Address, a.Nonce)
@@ -121,12 +120,12 @@ func (s *State) Import(state types.AppState) error {
 		//}
 
 		for _, b := range a.Balance {
-			s.Accounts.SetBalance(a.Address, b.Coin, b.Value)
+			s.Accounts.SetBalance(a.Address, b.Coin, helpers.StringToBigInt(b.Value))
 		}
 	}
 
 	for _, c := range state.Coins {
-		s.Coins.Create(c.Symbol, c.Name, c.Volume, c.Crr, c.Reserve, c.MaxSupply)
+		s.Coins.Create(c.Symbol, c.Name, helpers.StringToBigInt(c.Volume), c.Crr, helpers.StringToBigInt(c.Reserve), helpers.StringToBigInt(c.MaxSupply))
 	}
 
 	var vals []*validators.Validator
@@ -136,8 +135,8 @@ func (s *State) Import(state types.AppState) error {
 			v.PubKey,
 			v.Commission,
 			v.AbsentTimes,
-			v.TotalNoahStake,
-			v.AccumReward,
+			helpers.StringToBigInt(v.TotalNoahStake),
+			helpers.StringToBigInt(v.AccumReward),
 			true,
 			true,
 			true))
@@ -161,7 +160,7 @@ func (s *State) Import(state types.AppState) error {
 	}
 
 	for _, ff := range state.FrozenFunds {
-		s.FrozenFunds.AddFund(ff.Height, ff.Address, *ff.CandidateKey, ff.Coin, ff.Value)
+		s.FrozenFunds.AddFund(ff.Height, ff.Address, *ff.CandidateKey, ff.Coin, helpers.StringToBigInt(ff.Value))
 	}
 
 	return nil
@@ -185,7 +184,7 @@ func (s *State) Export(height uint64) types.AppState {
 	return appState
 }
 
-func newStateForTree(iavlTree tree.Tree, nuts *nutsdb.DB, events compact.IEventsDB, db db.DB, keepLastStates int64) (*State, error) {
+func newStateForTree(iavlTree tree.Tree, events eventsdb.IEventsDB, db db.DB, keepLastStates int64) (*State, error) {
 	stateBus := bus.NewBus()
 	stateBus.SetEvents(events)
 
@@ -214,7 +213,7 @@ func newStateForTree(iavlTree tree.Tree, nuts *nutsdb.DB, events compact.IEvents
 		return nil, err
 	}
 
-	coinsState, err := coins.NewCoins(stateBus, iavlTree, nuts)
+	coinsState, err := coins.NewCoins(stateBus, iavlTree)
 	if err != nil {
 		return nil, err
 	}
@@ -234,7 +233,6 @@ func newStateForTree(iavlTree tree.Tree, nuts *nutsdb.DB, events compact.IEvents
 		Checks:      checksState,
 
 		db:             db,
-		nuts:           nuts,
 		events:         events,
 		tree:           iavlTree,
 		keepLastStates: keepLastStates,

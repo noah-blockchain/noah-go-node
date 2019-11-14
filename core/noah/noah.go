@@ -2,7 +2,7 @@ package noah
 
 import (
 	"bytes"
-	"github.com/MinterTeam/go-amino"
+	eventsdb "github.com/noah-blockchain/events-db"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/appdb"
@@ -12,9 +12,10 @@ import (
 	"github.com/noah-blockchain/noah-go-node/core/transaction"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/core/validators"
+	"github.com/noah-blockchain/noah-go-node/helpers"
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/version"
-	compact "github.com/klim0v/compact-db"
+	"github.com/tendermint/go-amino"
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/encoding/amino"
@@ -22,7 +23,6 @@ import (
 	rpctypes "github.com/tendermint/tendermint/rpc/lib/types"
 	types2 "github.com/tendermint/tendermint/types"
 	"github.com/tendermint/tm-db"
-	"github.com/xujiajun/nutsdb"
 	"math/big"
 	"sync"
 	"sync/atomic"
@@ -46,10 +46,10 @@ var (
 // Main structure of noah Blockchain
 type Blockchain struct {
 	abciTypes.BaseApplication
-	
+
 	stateDB             db.DB
 	appDB               *appdb.AppDB
-	eventsDB            compact.IEventsDB
+	eventsDB            eventsdb.IEventsDB
 	stateDeliver        *state.State
 	stateCheck          *state.State
 	height              uint64 // current Blockchain height
@@ -72,41 +72,34 @@ type Blockchain struct {
 // Creates noah Blockchain instance, should be only called once
 func NewNoahBlockchain(cfg *config.Config) *Blockchain {
 	var err error
-	
+
 	dbType := db.DBBackendType(cfg.DBBackend)
 	ldb := db.NewDB("state", dbType, utils.GetNoahHome()+"/data")
-	
-	opt := nutsdb.DefaultOptions
-	opt.Dir = utils.GetNoahHome() + "/nutsdb"
-	nuts, err := nutsdb.Open(opt)
-	if err != nil {
-		panic(err)
-	}
-	
+
 	// Initiate Application DB. Used for persisting data like current block, validators, etc.
 	applicationDB := appdb.NewAppDB(cfg)
-	
+
 	blockchain = &Blockchain{
 		stateDB:             ldb,
 		appDB:               applicationDB,
 		height:              applicationDB.GetLastHeight(),
 		lastCommittedHeight: applicationDB.GetLastHeight(),
-		eventsDB:            compact.NewEventsStore(db.NewDB("events", dbType, utils.GetNoahHome()+"/data")),
+		eventsDB:            eventsdb.NewEventsStore(db.NewDB("events", dbType, utils.GetNoahHome()+"/data")),
 		currentMempool:      sync.Map{},
 	}
-	
+
 	// Set stateDeliver and stateCheck
-	blockchain.stateDeliver, err = state.NewState(blockchain.height, blockchain.stateDB, nuts, blockchain.eventsDB, cfg.KeepLastStates)
+	blockchain.stateDeliver, err = state.NewState(blockchain.height, blockchain.stateDB, blockchain.eventsDB, cfg.KeepLastStates, cfg.StateCacheSize)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	blockchain.stateCheck = state.NewCheckState(blockchain.stateDeliver)
-	
+
 	// Set start height for rewards and validators
 	rewards.SetStartHeight(applicationDB.GetStartHeight())
 	validators.SetStartHeight(applicationDB.GetStartHeight())
-	
+
 	return blockchain
 }
 
@@ -116,16 +109,16 @@ func (app *Blockchain) InitChain(req abciTypes.RequestInitChain) abciTypes.Respo
 	if err := amino.UnmarshalJSON(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
-	
+
 	if err := app.stateDeliver.Import(genesisState); err != nil {
 		panic(err)
 	}
-	
+
 	totalPower := big.NewInt(0)
 	for _, val := range genesisState.Validators {
-		totalPower.Add(totalPower, val.TotalNoahStake)
+		totalPower.Add(totalPower, helpers.StringToBigInt(val.TotalNoahStake))
 	}
-	
+
 	vals := make([]abciTypes.ValidatorUpdate, len(genesisState.Validators))
 	for i, val := range genesisState.Validators {
 		var validatorPubKey ed25519.PubKeyEd25519
@@ -134,19 +127,19 @@ func (app *Blockchain) InitChain(req abciTypes.RequestInitChain) abciTypes.Respo
 		if err != nil {
 			panic(err)
 		}
-		
+
 		vals[i] = abciTypes.ValidatorUpdate{
 			PubKey: types2.TM2PB.PubKey(pkey),
-			Power: big.NewInt(0).Div(big.NewInt(0).Mul(val.TotalNoahStake,
+			Power: big.NewInt(0).Div(big.NewInt(0).Mul(helpers.StringToBigInt(val.TotalNoahStake),
 				big.NewInt(100000000)), totalPower).Int64(),
 		}
 	}
-	
+
 	app.appDB.SetStartHeight(genesisState.StartHeight)
 	app.appDB.SaveValidators(vals)
 	rewards.SetStartHeight(genesisState.StartHeight)
 	validators.SetStartHeight(genesisState.StartHeight)
-	
+
 	return abciTypes.ResponseInitChain{
 		Validators: vals,
 	}
@@ -191,28 +184,28 @@ func (app *Blockchain) BeginBlock(req abciTypes.RequestBeginBlock) abciTypes.Res
 			app.validatorsStatuses[address] = ValidatorAbsent
 		}
 	}
-	
+
 	// give penalty to Byzantine validators
 	for _, byzVal := range req.ByzantineValidators {
 		var address types.TmAddress
 		copy(address[:], byzVal.Validator.Address)
-		
+
 		// skip already offline candidates to prevent double punishing
 		candidate := app.stateDeliver.Candidates.GetCandidateByTendermintAddress(address)
 		if candidate == nil || candidate.Status == candidates.CandidateStatusOffline {
 			continue
 		}
-		
+
 		app.stateDeliver.FrozenFunds.PunishFrozenFundsWithAddress(height, height+candidates.UnbondPeriod, address)
 		app.stateDeliver.Validators.PunishByzantineValidator(address)
 		app.stateDeliver.Candidates.PunishByzantineCandidate(height, address)
 	}
-	
+
 	// apply frozen funds (used for unbond stakes)
 	frozenFunds := app.stateDeliver.FrozenFunds.GetFrozenFunds(uint64(req.Header.Height))
 	if frozenFunds != nil {
 		for _, item := range frozenFunds.List {
-			app.eventsDB.AddEvent(uint32(req.Header.Height), compact.UnbondEvent{
+			app.eventsDB.AddEvent(uint32(req.Header.Height), eventsdb.UnbondEvent{
 				Address:         item.Address,
 				Amount:          item.Value.Bytes(),
 				Coin:            item.Coin,
@@ -255,83 +248,80 @@ func (app *Blockchain) EndBlock(req abciTypes.RequestEndBlock) abciTypes.Respons
 		if val.IsToDrop() || app.validatorsStatuses[val.GetAddress()] != ValidatorPresent {
 			continue
 		}
-		
+
 		totalPower.Add(totalPower, val.GetTotalNoahStake())
 	}
-	
+
 	if totalPower.Cmp(types.Big0) == 0 {
 		totalPower = big.NewInt(1)
 	}
-	
+
 	// accumulate rewards
 	reward := rewards.GetRewardForBlock(height)
 	reward.Add(reward, app.rewards)
-	
+
 	// compute remainder to keep total emission consist
 	remainder := big.NewInt(0).Set(reward)
-	
+
 	for i, val := range vals {
 		// skip if candidate is not present
 		if val.IsToDrop() || app.validatorsStatuses[val.GetAddress()] != ValidatorPresent {
 			continue
 		}
-		
+
 		r := big.NewInt(0).Set(reward)
 		r.Mul(r, val.GetTotalNoahStake())
 		r.Div(r, totalPower)
-		
+
 		remainder.Sub(remainder, r)
 		vals[i].AddAccumReward(r)
 	}
-	
+
 	// add remainder to total slashed
 	app.stateDeliver.App.AddTotalSlashed(remainder)
-	
-	// pay rewards
-	if height%12 == 0 {
-		app.stateDeliver.Validators.PayRewards(height)
-	}
-	
-	// update validators
+
+	// update validators & pay rewards
 	if req.Height%120 == 0 || hasDroppedValidators {
+		app.stateDeliver.Validators.PayRewards(height)
+
 		app.stateDeliver.Candidates.RecalculateStakes(height)
-		
+
 		valsCount := validators.GetValidatorsCountForBlock(height)
-		
+
 		newCandidates := app.stateDeliver.Candidates.GetNewCandidates(valsCount, req.Height)
-		
+
 		if len(newCandidates) < valsCount {
 			valsCount = len(newCandidates)
 		}
-		
+
 		newValidators := make([]abciTypes.ValidatorUpdate, valsCount)
-		
+
 		// calculate total power
 		totalPower := big.NewInt(0)
 		for _, candidate := range newCandidates {
 			totalPower.Add(totalPower, app.stateDeliver.Candidates.GetTotalStake(candidate.PubKey))
 		}
-		
+
 		for i := range newCandidates {
 			power := big.NewInt(0).Div(big.NewInt(0).Mul(app.stateDeliver.Candidates.GetTotalStake(newCandidates[i].PubKey),
 				big.NewInt(100000000)), totalPower).Int64()
-			
+
 			if power == 0 {
 				power = 1
 			}
-			
+
 			newValidators[i] = abciTypes.Ed25519ValidatorUpdate(newCandidates[i].PubKey[:], power)
 		}
-		
+
 		// update validators in state
 		app.stateDeliver.Validators.SetNewValidators(newCandidates)
-		
+
 		activeValidators := app.getCurrentValidators()
-		
+
 		app.saveCurrentValidators(newValidators)
-		
+
 		updates = newValidators
-		
+
 		for _, validator := range activeValidators {
 			persisted := false
 			for _, newValidator := range newValidators {
@@ -454,42 +444,42 @@ func (app *Blockchain) SetOption(req abciTypes.RequestSetOption) abciTypes.Respo
 	return abciTypes.ResponseSetOption{}
 }
 
-// Gracefully stopping Noah Blockchain instance
+// Gracefully stopping noah Blockchain instance
 func (app *Blockchain) Stop() {
 	atomic.StoreUint32(&app.stopped, 1)
 	app.wg.Wait()
-	
+
 	app.appDB.Close()
 	app.stateDB.Close()
 }
 
-// Get immutable state of Noah Blockchain
+// Get immutable state of noah Blockchain
 func (app *Blockchain) CurrentState() *state.State {
 	app.lock.RLock()
 	defer app.lock.RUnlock()
-	
+
 	return state.NewCheckState(app.stateCheck)
 }
 
-// Get immutable state of Noah Blockchain for given height
+// Get immutable state of noah Blockchain for given height
 func (app *Blockchain) GetStateForHeight(height uint64) (*state.State, error) {
 	app.lock.RLock()
 	defer app.lock.RUnlock()
-	
+
 	s, err := state.NewCheckStateAtHeight(height, app.stateDB)
 	if err != nil {
 		return nil, rpctypes.RPCError{Code: 404, Message: "State at given height not found", Data: err.Error()}
 	}
-	
+
 	return s, nil
 }
 
-// Get current height of Noah Blockchain
+// Get current height of noah Blockchain
 func (app *Blockchain) Height() uint64 {
 	return atomic.LoadUint64(&app.height)
 }
 
-// Get last committed height of Noah Blockchain
+// Get last committed height of noah Blockchain
 func (app *Blockchain) LastCommittedHeight() uint64 {
 	return atomic.LoadUint64(&app.lastCommittedHeight)
 }
@@ -567,35 +557,35 @@ func (app *Blockchain) GetBlocksTimeDelta(height, count uint64) (int, error) {
 func (app *Blockchain) calcMaxGas(height uint64) uint64 {
 	const targetTime = 7
 	const blockDelta = 3
-	
+
 	// skip first 20 blocks
 	if height <= 20 {
 		return DefaultMaxGas
 	}
-	
+
 	// get current max gas
 	newMaxGas := app.stateCheck.App.GetMaxGas()
-	
+
 	// check if blocks are created in time
 	if delta, _ := app.GetBlocksTimeDelta(height, blockDelta); delta > targetTime*blockDelta {
 		newMaxGas = newMaxGas * 7 / 10 // decrease by 30%
 	} else {
 		newMaxGas = newMaxGas * 105 / 100 // increase by 5%
 	}
-	
+
 	// check if max gas is too high
 	if newMaxGas > DefaultMaxGas {
 		newMaxGas = DefaultMaxGas
 	}
-	
+
 	// check if max gas is too low
 	if newMaxGas < MinMaxGas {
 		newMaxGas = MinMaxGas
 	}
-	
+
 	return newMaxGas
 }
 
-func (app *Blockchain) GetEventsDB() compact.IEventsDB {
+func (app *Blockchain) GetEventsDB() eventsdb.IEventsDB {
 	return app.eventsDB
 }

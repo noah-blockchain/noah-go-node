@@ -3,13 +3,13 @@ package frozenfunds
 import (
 	"encoding/binary"
 	"fmt"
+	eventsdb "github.com/noah-blockchain/events-db"
 	"github.com/noah-blockchain/noah-go-node/core/state/bus"
 	"github.com/noah-blockchain/noah-go-node/core/state/candidates"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/noah-blockchain/noah-go-node/rlp"
 	"github.com/noah-blockchain/noah-go-node/tree"
-	compact "github.com/klim0v/compact-db"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"math/big"
 	"sort"
@@ -87,7 +87,7 @@ func (f *FrozenFunds) PunishFrozenFundsWithAddress(fromHeight uint64, toHeight u
 					f.bus.App().AddTotalSlashed(slashed)
 				}
 
-				f.bus.Events().AddEvent(uint32(fromHeight), compact.SlashEvent{
+				f.bus.Events().AddEvent(uint32(fromHeight), eventsdb.SlashEvent{
 					Address:         item.Address,
 					Amount:          slashed.Bytes(),
 					Coin:            item.Coin,
@@ -95,7 +95,6 @@ func (f *FrozenFunds) PunishFrozenFundsWithAddress(fromHeight uint64, toHeight u
 				})
 
 				item.Value = newValue
-				f.bus.Coins().SanitizeCoin(item.Coin)
 			}
 
 			newList[i] = item
@@ -163,17 +162,12 @@ func (f *FrozenFunds) getOrderedDirty() []uint64 {
 
 func (f *FrozenFunds) AddFund(height uint64, address types.Address, pubkey types.Pubkey, coin types.CoinSymbol, value *big.Int) {
 	f.GetOrNew(height).addFund(address, pubkey, coin, value)
-	f.bus.Coins().AddOwnerFrozenFund(coin, height)
 }
 
 func (f *FrozenFunds) Delete(height uint64) {
 	ff := f.get(height)
 	if ff == nil {
 		return
-	}
-
-	for _, item := range ff.List {
-		f.bus.Coins().RemoveOwnerFrozenFund(item.Coin, height)
 	}
 
 	ff.delete()
@@ -200,7 +194,7 @@ func (f *FrozenFunds) Export(state *types.AppState, height uint64) {
 				Address:      frozenFund.Address,
 				CandidateKey: frozenFund.CandidateKey,
 				Coin:         frozenFund.Coin,
-				Value:        frozenFund.Value,
+				Value:        frozenFund.Value.String(),
 			})
 		}
 	}

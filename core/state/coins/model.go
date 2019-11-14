@@ -1,11 +1,13 @@
 package coins
 
 import (
+	"fmt"
 	"github.com/noah-blockchain/noah-go-node/core/types"
-	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/noah-blockchain/noah-go-node/helpers"
 	"math/big"
 )
+
+var minCoinReserve = helpers.NoahToQNoah(big.NewInt(10000))
 
 type Model struct {
 	CName      string
@@ -16,7 +18,6 @@ type Model struct {
 	info      *Info
 	markDirty func(symbol types.CoinSymbol)
 	isDirty   bool
-	isDeleted bool
 }
 
 func (m Model) Name() string {
@@ -75,25 +76,15 @@ func (m *Model) SetVolume(volume *big.Int) {
 	m.info.isDirty = true
 }
 
-func (m Model) IsToDelete() bool {
-	// Delete coin if reserve is less than 100 bips
-	if m.Reserve().Cmp(helpers.NoahToQNoah(big.NewInt(100))) == -1 {
-		return true
+func (m *Model) CheckReserveUnderflow(delta *big.Int) error {
+	total := big.NewInt(0).Sub(m.Reserve(), delta)
+
+	if total.Cmp(minCoinReserve) == -1 {
+		min := big.NewInt(0).Add(minCoinReserve, delta)
+		return fmt.Errorf("coin %s reserve is too small (%s, required at least %s)", m.symbol.String(), m.Reserve().String(), min.String())
 	}
 
-	// Delete coin if volume is less than 1 coin
-	if m.Volume().Cmp(helpers.NoahToQNoah(big.NewInt(1))) == -1 {
-		return true
-	}
-
-	// Delete coin if price of 1 coin is less than 0.0001 bip
-	price := formula.CalculateSaleReturn(m.Volume(), m.Reserve(), m.Crr(), helpers.NoahToQNoah(big.NewInt(1)))
-	minPrice := big.NewInt(100000000000000) // 0.0001 bip
-	if price.Cmp(minPrice) == -1 {
-		return true
-	}
-
-	return false
+	return nil
 }
 
 func (m Model) IsInfoDirty() bool {

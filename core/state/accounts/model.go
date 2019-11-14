@@ -3,13 +3,15 @@ package accounts
 import (
 	"bytes"
 	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/crypto"
+	"github.com/noah-blockchain/noah-go-node/rlp"
 	"math/big"
 	"sort"
 )
 
 type Model struct {
 	Nonce        uint64
-	MultisigData *interface{}
+	MultisigData Multisig
 
 	address  types.Address
 	coins    []types.CoinSymbol
