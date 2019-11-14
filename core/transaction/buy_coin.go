@@ -2,22 +2,36 @@ package transaction
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
-	"github.com/noah-blockchain/noah-go-node/upgrades"
 	"github.com/tendermint/tendermint/libs/common"
 	"math/big"
 )
 
 type BuyCoinData struct {
-	CoinToBuy          types.CoinSymbol `json:"coin_to_buy"`
-	ValueToBuy         *big.Int         `json:"value_to_buy"`
-	CoinToSell         types.CoinSymbol `json:"coin_to_sell"`
-	MaximumValueToSell *big.Int         `json:"maximum_value_to_sell"`
+	CoinToBuy          types.CoinSymbol
+	ValueToBuy         *big.Int
+	CoinToSell         types.CoinSymbol
+	MaximumValueToSell *big.Int
+}
+
+func (data BuyCoinData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		CoinToBuy          string `json:"coin_to_buy"`
+		ValueToBuy         string `json:"value_to_buy"`
+		CoinToSell         string `json:"coin_to_sell"`
+		MaximumValueToSell string `json:"maximum_value_to_sell"`
+	}{
+		CoinToBuy:          data.CoinToBuy.String(),
+		ValueToBuy:         data.ValueToBuy.String(),
+		CoinToSell:         data.CoinToSell.String(),
+		MaximumValueToSell: data.MaximumValueToSell.String(),
+	})
 }
 
 func (data BuyCoinData) String() string {
@@ -135,11 +149,6 @@ func (data BuyCoinData) TotalSpend(tx *Transaction, context *state.State) (Total
 		coinTo := context.Coins.GetCoin(data.CoinToBuy)
 		baseCoinNeeded := formula.CalculatePurchaseAmount(coinTo.Volume(), coinTo.Reserve(), coinTo.Crr(), valueToBuy)
 
-		if tx.GasCoin == data.CoinToSell {
-			commissionIncluded = true
-			baseCoinNeeded.Add(baseCoinNeeded, commissionInBaseCoin)
-		}
-
 		if coinFrom.Reserve().Cmp(baseCoinNeeded) < 0 {
 			return nil, nil, nil, &Response{
 				Code: code.CoinReserveNotSufficient,
@@ -163,7 +172,7 @@ func (data BuyCoinData) TotalSpend(tx *Transaction, context *state.State) (Total
 				return nil, nil, nil, &Response{
 					Code: code.CoinReserveNotSufficient,
 					Log: fmt.Sprintf("Gas coin reserve balance is not sufficient for transaction. Has: %s %s, required %s %s",
-						coinFrom.Reserve().String(),
+						coinTo.Reserve().String(),
 						types.GetBaseCoin(),
 						commissionInBaseCoin.String(),
 						types.GetBaseCoin())}
@@ -189,9 +198,42 @@ func (data BuyCoinData) TotalSpend(tx *Transaction, context *state.State) (Total
 			}
 		}
 
-		toReserve := big.NewInt(0).Set(baseCoinNeeded)
 		if tx.GasCoin == data.CoinToSell {
-			toReserve.Sub(toReserve, commissionInBaseCoin)
+			commissionIncluded = true
+
+			nVolume := big.NewInt(0).Set(coinFrom.Volume())
+			nVolume.Sub(nVolume, value)
+
+			nReserveBalance := big.NewInt(0).Set(coinFrom.Reserve())
+			nReserveBalance.Sub(nReserveBalance, baseCoinNeeded)
+
+			if nReserveBalance.Cmp(commissionInBaseCoin) == -1 {
+				return nil, nil, nil, &Response{
+					Code: code.CoinReserveNotSufficient,
+					Log: fmt.Sprintf("Gas coin reserve balance is not sufficient for transaction. Has: %s %s, required %s %s",
+						coinFrom.Reserve().String(),
+						types.GetBaseCoin(),
+						commissionInBaseCoin.String(),
+						types.GetBaseCoin())}
+			}
+
+			commission := formula.CalculateSaleAmount(nVolume, nReserveBalance, coinFrom.Crr(), commissionInBaseCoin)
+
+			total.Add(tx.GasCoin, commission)
+			conversions = append(conversions, Conversion{
+				FromCoin:    tx.GasCoin,
+				FromAmount:  commission,
+				FromReserve: commissionInBaseCoin,
+				ToCoin:      types.GetBaseCoin(),
+			})
+
+			totalValue := big.NewInt(0).Add(value, commission)
+			if totalValue.Cmp(data.MaximumValueToSell) == 1 {
+				return nil, nil, nil, &Response{
+					Code: code.MaximumValueToSellReached,
+					Log:  fmt.Sprintf("You wanted to sell maximum %s, but currently you need to spend %s to complete tx", data.MaximumValueToSell.String(), totalValue.String()),
+				}
+			}
 		}
 
 		total.Add(data.CoinToSell, value)
@@ -201,7 +243,7 @@ func (data BuyCoinData) TotalSpend(tx *Transaction, context *state.State) (Total
 			FromReserve: baseCoinNeeded,
 			ToCoin:      data.CoinToBuy,
 			ToAmount:    valueToBuy,
-			ToReserve:   toReserve,
+			ToReserve:   baseCoinNeeded,
 		})
 	}
 
@@ -288,6 +330,13 @@ func (data BuyCoinData) Run(tx *Transaction, context *state.State, isCheck bool,
 		}
 	}
 
+	err := checkConversionsReserveUnderflow(conversions, context)
+	if err != nil {
+		return Response{
+			Code: code.CoinReserveUnderflow,
+			Log:  err.Error()}
+	}
+
 	if !isCheck {
 		for _, ts := range totalSpends {
 			context.Accounts.SubBalance(sender, ts.Coin, ts.Value)
@@ -304,9 +353,6 @@ func (data BuyCoinData) Run(tx *Transaction, context *state.State, isCheck bool,
 		rewardPool.Add(rewardPool, tx.CommissionInBaseCoin())
 		context.Accounts.AddBalance(sender, data.CoinToBuy, data.ValueToBuy)
 		context.Accounts.SetNonce(sender, tx.Nonce)
-
-		context.Coins.Sanitize(data.CoinToBuy)
-		context.Coins.Sanitize(data.CoinToSell)
 	}
 
 	tags := common.KVPairs{
@@ -323,4 +369,30 @@ func (data BuyCoinData) Run(tx *Transaction, context *state.State, isCheck bool,
 		GasUsed:   tx.Gas(),
 		GasWanted: tx.Gas(),
 	}
+}
+
+func checkConversionsReserveUnderflow(conversions []Conversion, context *state.State) error {
+	var totalReserveCoins []types.CoinSymbol
+	totalReserveSub := make(map[types.CoinSymbol]*big.Int)
+	for _, conversion := range conversions {
+		if conversion.FromCoin.IsBaseCoin() {
+			continue
+		}
+
+		if totalReserveSub[conversion.FromCoin] == nil {
+			totalReserveCoins = append(totalReserveCoins, conversion.FromCoin)
+			totalReserveSub[conversion.FromCoin] = big.NewInt(0)
+		}
+
+		totalReserveSub[conversion.FromCoin].Add(totalReserveSub[conversion.FromCoin], conversion.FromReserve)
+	}
+
+	for _, coinSymbol := range totalReserveCoins {
+		err := context.Coins.GetCoin(coinSymbol).CheckReserveUnderflow(totalReserveSub[coinSymbol])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

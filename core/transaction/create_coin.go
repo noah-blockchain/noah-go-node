@@ -2,33 +2,51 @@ package transaction
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	"math/big"
-	"regexp"
-
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/noah-blockchain/noah-go-node/helpers"
 	"github.com/tendermint/tendermint/libs/common"
+	"math/big"
+	"regexp"
 )
 
 const maxCoinNameBytes = 64
 const allowedCoinSymbols = "^[A-Z0-9]{3,10}$"
 
 var (
-	minCoinSupply  = helpers.NoahToQNoah(big.NewInt(1))
-	minCoinReserve = helpers.NoahToQNoah(big.NewInt(1000))
+	minCoinSupply  = helpers.BipToPip(big.NewInt(1))
+	minCoinReserve = helpers.BipToPip(big.NewInt(10000))
 )
 
 type CreateCoinData struct {
-	Name                 string           `json:"name"`
-	Symbol               types.CoinSymbol `json:"symbol"`
-	InitialAmount        *big.Int         `json:"initial_amount"`
-	InitialReserve       *big.Int         `json:"initial_reserve"`
-	ConstantReserveRatio uint             `json:"constant_reserve_ratio"`
-	MaxSupply            *big.Int         `json:"max_supply"`
+	Name                 string
+	Symbol               types.CoinSymbol
+	InitialAmount        *big.Int
+	InitialReserve       *big.Int
+	ConstantReserveRatio uint
+	MaxSupply            *big.Int
+}
+
+func (data CreateCoinData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Name                 string `json:"name"`
+		Symbol               string `json:"symbol"`
+		InitialAmount        string `json:"initial_amount"`
+		InitialReserve       string `json:"initial_reserve"`
+		ConstantReserveRatio uint   `json:"constant_reserve_ratio"`
+		MaxSupply            string `json:"max_supply"`
+	}{
+		Name:                 data.Name,
+		Symbol:               data.Symbol.String(),
+		InitialAmount:        data.InitialAmount.String(),
+		InitialReserve:       data.InitialReserve.String(),
+		ConstantReserveRatio: data.ConstantReserveRatio,
+		MaxSupply:            data.MaxSupply.String(),
+	})
 }
 
 func (data CreateCoinData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
@@ -122,6 +140,13 @@ func (data CreateCoinData) Run(tx *Transaction, context *state.StateDB, isCheck 
 
 	if tx.GasCoin != types.GetBaseCoin() {
 		coin := context.Coins.GetCoin(tx.GasCoin)
+
+		err := coin.CheckReserveUnderflow(commissionInBaseCoin)
+		if err != nil {
+			return Response{
+				Code: code.CoinReserveUnderflow,
+				Log:  err.Error()}
+		}
 
 		if coin.Reserve().Cmp(commissionInBaseCoin) < 0 {
 			return Response{

@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
@@ -13,9 +14,21 @@ import (
 )
 
 type SellAllCoinData struct {
-	CoinToSell        types.CoinSymbol `json:"coin_to_sell"`
-	CoinToBuy         types.CoinSymbol `json:"coin_to_buy"`
-	MinimumValueToBuy *big.Int         `json:"minimum_value_to_buy"`
+	CoinToSell        types.CoinSymbol
+	CoinToBuy         types.CoinSymbol
+	MinimumValueToBuy *big.Int
+}
+
+func (data SellAllCoinData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		CoinToSell        string `json:"coin_to_sell"`
+		CoinToBuy         string `json:"coin_to_buy"`
+		MinimumValueToBuy string `json:"minimum_value_to_buy"`
+	}{
+		CoinToSell:        data.CoinToSell.String(),
+		CoinToBuy:         data.CoinToBuy.String(),
+		MinimumValueToBuy: data.MinimumValueToBuy.String(),
+	})
 }
 
 func (data SellAllCoinData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
@@ -188,6 +201,13 @@ func (data SellAllCoinData) Run(tx *Transaction, context *state.State, isCheck b
 		}
 	}
 
+	err := checkConversionsReserveUnderflow(conversions, context)
+	if err != nil {
+		return Response{
+			Code: code.CoinReserveUnderflow,
+			Log:  err.Error()}
+	}
+
 	if !isCheck {
 		for _, ts := range totalSpends {
 			context.Accounts.SubBalance(sender, ts.Coin, ts.Value)
@@ -204,9 +224,6 @@ func (data SellAllCoinData) Run(tx *Transaction, context *state.State, isCheck b
 		rewardPool.Add(rewardPool, tx.CommissionInBaseCoin())
 		context.Accounts.AddBalance(sender, data.CoinToBuy, value)
 		context.Accounts.SetNonce(sender, tx.Nonce)
-
-		context.Coins.Sanitize(data.CoinToBuy)
-		context.Coins.Sanitize(data.CoinToSell)
 	}
 
 	tags := common.KVPairs{

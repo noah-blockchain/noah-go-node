@@ -1,17 +1,16 @@
 package transaction
 
 import (
-	"bytes"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	"math/big"
-
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/tendermint/tendermint/libs/common"
+	"math/big"
 )
 
 type CandidateTx interface {
@@ -19,9 +18,21 @@ type CandidateTx interface {
 }
 
 type EditCandidateData struct {
-	PubKey        types.Pubkey  `json:"pub_key"`
-	RewardAddress types.Address `json:"reward_address"`
-	OwnerAddress  types.Address `json:"owner_address"`
+	PubKey        types.Pubkey
+	RewardAddress types.Address
+	OwnerAddress  types.Address
+}
+
+func (data EditCandidateData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		PubKey        string `json:"pub_key"`
+		RewardAddress string `json:"reward_address"`
+		OwnerAddress  string `json:"owner_address"`
+	}{
+		PubKey:        data.PubKey.String(),
+		RewardAddress: data.RewardAddress.String(),
+		OwnerAddress:  data.OwnerAddress.String(),
+	})
 }
 
 func (data EditCandidateData) GetPubKey() types.Pubkey {
@@ -58,6 +69,13 @@ func (data EditCandidateData) Run(tx *Transaction, context *state.State, isCheck
 
 	if !tx.GasCoin.IsBaseCoin() {
 		coin := context.Coins.GetCoin(tx.GasCoin)
+
+		err := coin.CheckReserveUnderflow(commissionInBaseCoin)
+		if err != nil {
+			return Response{
+				Code: code.CoinReserveUnderflow,
+				Log:  err.Error()}
+		}
 
 		if coin.Reserve().Cmp(commissionInBaseCoin) < 0 {
 			return Response{

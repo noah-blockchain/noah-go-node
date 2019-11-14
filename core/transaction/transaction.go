@@ -28,6 +28,7 @@ const (
 	TypeRedeemCheck         TxType = 0x09
 	TypeSetCandidateOnline  TxType = 0x0A
 	TypeSetCandidateOffline TxType = 0x0B
+	TypeCreateMultisig      TxType = 0x0C
 	TypeMultisend           TxType = 0x0D
 	TypeEditCandidate       TxType = 0x0E
 
@@ -266,7 +267,7 @@ func RecoverPlain(sighash types.Hash, R, S, Vb *big.Int) (types.Address, error) 
 	copy(sig[64-len(s):64], s)
 	sig[64] = V
 
-	// recover the public key from the signature
+	// recover the public key from the snature
 	pub, err := crypto.Ecrecover(sighash[:], sig)
 	if err != nil {
 		return types.Address{}, err
@@ -294,7 +295,7 @@ func CheckForCoinSupplyOverflow(current *big.Int, delta *big.Int, max *big.Int) 
 	total.Add(total, delta)
 
 	if total.Cmp(max) != -1 {
-		return errors.New("сoin supply overflow")
+		return errors.New("coin supply overflow")
 	}
 
 	return nil

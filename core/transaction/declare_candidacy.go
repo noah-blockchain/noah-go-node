@@ -2,9 +2,8 @@ package transaction
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	"math/big"
-
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
 	"github.com/noah-blockchain/noah-go-node/core/state"
@@ -12,17 +11,34 @@ import (
 	"github.com/noah-blockchain/noah-go-node/core/validators"
 	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/tendermint/tendermint/libs/common"
+	"math/big"
 )
 
 const minCommission = 0
 const maxCommission = 100
 
 type DeclareCandidacyData struct {
-	Address    types.Address    `json:"address"`
-	PubKey     types.Pubkey     `json:"pub_key"`
-	Commission uint             `json:"commission"`
-	Coin       types.CoinSymbol `json:"coin"`
-	Stake      *big.Int         `json:"stake"`
+	Address    types.Address
+	PubKey     types.Pubkey
+	Commission uint
+	Coin       types.CoinSymbol
+	Stake      *big.Int
+}
+
+func (data DeclareCandidacyData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Address    string `json:"address"`
+		PubKey     string `json:"pub_key"`
+		Commission uint   `json:"commission"`
+		Coin       string `json:"coin"`
+		Stake      string `json:"stake"`
+	}{
+		Address:    data.Address.String(),
+		PubKey:     data.PubKey.String(),
+		Commission: data.Commission,
+		Coin:       data.Coin.String(),
+		Stake:      data.Stake.String(),
+	})
 }
 
 func (data DeclareCandidacyData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
@@ -40,12 +56,6 @@ func (data DeclareCandidacyData) BasicCheck(tx *Transaction, context *state.Stat
 		return &Response{
 			Code: code.CoinNotExists,
 			Log:  fmt.Sprintf("Coin %s not exists", data.Coin)}
-	}
-
-	if len(data.PubKey) != 32 {
-		return &Response{
-			Code: code.IncorrectPubKey,
-			Log:  fmt.Sprintf("Incorrect PubKey")}
 	}
 
 	if context.Candidates.Exists(data.PubKey) {
@@ -94,6 +104,13 @@ func (data DeclareCandidacyData) Run(tx *Transaction, context *state.State, isCh
 
 	if !tx.GasCoin.IsBaseCoin() {
 		coin := context.Coins.GetCoin(tx.GasCoin)
+
+		err := coin.CheckReserveUnderflow(commissionInBaseCoin)
+		if err != nil {
+			return Response{
+				Code: code.CoinReserveUnderflow,
+				Log:  err.Error()}
+		}
 
 		if coin.Reserve().Cmp(commissionInBaseCoin) < 0 {
 			return Response{

@@ -2,34 +2,41 @@ package transaction
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	"math/big"
-
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
 	"github.com/noah-blockchain/noah-go-node/core/state"
+	"github.com/noah-blockchain/noah-go-node/core/state/accounts"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/tendermint/tendermint/libs/common"
+	"math/big"
 )
 
 type CreateMultisigData struct {
-	Threshold uint            `json:"threshold"`
-	Weights   []uint          `json:"weights"`
-	Addresses []types.Address `json:"addresses"`
+	Threshold uint
+	Weights   []uint
+	Addresses []types.Address
 }
 
-func (data CreateMultisigData) TotalSpend(tx *Transaction, context *state.StateDB) (TotalSpends, []Conversion, *big.Int, *Response) {
+func (data CreateMultisigData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Threshold uint            `json:"threshold"`
+		Weights   []uint          `json:"weights"`
+		Addresses []types.Address `json:"addresses"`
+	}{
+		Threshold: data.Threshold,
+		Weights:   data.Weights,
+		Addresses: data.Addresses,
+	})
+}
+
+func (data CreateMultisigData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
 	panic("implement me")
 }
 
-func (data CreateMultisigData) BasicCheck(tx *Transaction, context *state.StateDB) *Response {
-	if true {
-		return &Response{
-			Code: code.DecodeError,
-			Log:  fmt.Sprintf("multisig transactions are not supported yet")}
-	}
-
+func (data CreateMultisigData) BasicCheck(tx *Transaction, context *state.State) *Response {
 	if len(data.Weights) > 32 {
 		return &Response{
 			Code: code.TooLargeOwnersList,
@@ -53,7 +60,7 @@ func (data CreateMultisigData) Gas() int64 {
 	return commissions.CreateMultisig
 }
 
-func (data CreateMultisigData) Run(tx *Transaction, context *state.StateDB, isCheck bool, rewardPool *big.Int, currentBlock uint64) Response {
+func (data CreateMultisigData) Run(tx *Transaction, context *state.State, isCheck bool, rewardPool *big.Int, currentBlock uint64) Response {
 	sender, _ := tx.Sender()
 
 	response := data.BasicCheck(tx, context)
@@ -65,30 +72,37 @@ func (data CreateMultisigData) Run(tx *Transaction, context *state.StateDB, isCh
 	commission := big.NewInt(0).Set(commissionInBaseCoin)
 
 	if !tx.GasCoin.IsBaseCoin() {
-		coin := context.GetStateCoin(tx.GasCoin)
+		coin := context.Coins.GetCoin(tx.GasCoin)
 
-		if coin.ReserveBalance().Cmp(commissionInBaseCoin) < 0 {
+		err := coin.CheckReserveUnderflow(commissionInBaseCoin)
+		if err != nil {
 			return Response{
-				Code: code.CoinReserveNotSufficient,
-				Log:  fmt.Sprintf("Coin reserve balance is not sufficient for transaction. Has: %s, required %s", coin.ReserveBalance().String(), commissionInBaseCoin.String())}
+				Code: code.CoinReserveUnderflow,
+				Log:  err.Error()}
 		}
 
-		commission = formula.CalculateSaleAmount(coin.Volume(), coin.ReserveBalance(), coin.Data().Crr, commissionInBaseCoin)
+		if coin.Reserve().Cmp(commissionInBaseCoin) < 0 {
+			return Response{
+				Code: code.CoinReserveNotSufficient,
+				Log:  fmt.Sprintf("Coin reserve balance is not sufficient for transaction. Has: %s, required %s", coin.Reserve().String(), commissionInBaseCoin.String())}
+		}
+
+		commission = formula.CalculateSaleAmount(coin.Volume(), coin.Reserve(), coin.Crr(), commissionInBaseCoin)
 	}
 
-	if context.GetBalance(sender, tx.GasCoin).Cmp(commission) < 0 {
+	if context.Accounts.GetBalance(sender, tx.GasCoin).Cmp(commission) < 0 {
 		return Response{
 			Code: code.InsufficientFunds,
 			Log:  fmt.Sprintf("Insufficient funds for sender account: %s. Wanted %s %s", sender.String(), commission, tx.GasCoin)}
 	}
 
-	msigAddress := (&state.Multisig{
+	msigAddress := (&accounts.Multisig{
 		Weights:   data.Weights,
 		Threshold: data.Threshold,
 		Addresses: data.Addresses,
 	}).Address()
 
-	if context.AccountExists(msigAddress) {
+	if context.Accounts.Exists(msigAddress) {
 		return Response{
 			Code: code.MultisigExists,
 			Log:  fmt.Sprintf("Multisig %s already exists", msigAddress.String())}
@@ -97,13 +111,13 @@ func (data CreateMultisigData) Run(tx *Transaction, context *state.StateDB, isCh
 	if !isCheck {
 		rewardPool.Add(rewardPool, commissionInBaseCoin)
 
-		context.SubCoinVolume(tx.GasCoin, commission)
-		context.SubCoinReserve(tx.GasCoin, commissionInBaseCoin)
+		context.Coins.SubVolume(tx.GasCoin, commission)
+		context.Coins.SubReserve(tx.GasCoin, commissionInBaseCoin)
 
-		context.SubBalance(sender, tx.GasCoin, commission)
-		context.SetNonce(sender, tx.Nonce)
+		context.Accounts.SubBalance(sender, tx.GasCoin, commission)
+		context.Accounts.SetNonce(sender, tx.Nonce)
 
-		context.CreateMultisig(data.Weights, data.Addresses, data.Threshold)
+		context.Accounts.CreateMultisig(data.Weights, data.Addresses, data.Threshold)
 	}
 
 	tags := common.KVPairs{

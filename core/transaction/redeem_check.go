@@ -3,6 +3,7 @@ package transaction
 import (
 	"bytes"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/noah-blockchain/noah-go-node/core/check"
 	"github.com/noah-blockchain/noah-go-node/core/code"
@@ -19,8 +20,18 @@ import (
 )
 
 type RedeemCheckData struct {
-	RawCheck []byte   `json:"raw_check"`
-	Proof    [65]byte `json:"proof"`
+	RawCheck []byte
+	Proof    [65]byte
+}
+
+func (data RedeemCheckData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		RawCheck string `json:"raw_check"`
+		Proof    string `json:"proof"`
+	}{
+		RawCheck: fmt.Sprintf("%x", data.RawCheck),
+		Proof:    fmt.Sprintf("%x", data.Proof),
+	})
 }
 
 func (data RedeemCheckData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
@@ -156,6 +167,12 @@ func (data RedeemCheckData) Run(tx *Transaction, context *state.State, isCheck b
 
 	if !decodedCheck.GasCoin.IsBaseCoin() {
 		coin := context.Coins.GetCoin(decodedCheck.GasCoin)
+		err := coin.CheckReserveUnderflow(commissionInBaseCoin)
+		if err != nil {
+			return Response{
+				Code: code.CoinReserveUnderflow,
+				Log:  err.Error()}
+		}
 		commission = formula.CalculateSaleAmount(coin.Volume(), coin.Reserve(), coin.Crr(), commissionInBaseCoin)
 	}
 

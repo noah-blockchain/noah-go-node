@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
@@ -13,10 +14,24 @@ import (
 )
 
 type SellCoinData struct {
-	CoinToSell        types.CoinSymbol `json:"coin_to_sell"`
-	ValueToSell       *big.Int         `json:"value_to_sell"`
-	CoinToBuy         types.CoinSymbol `json:"coin_to_buy"`
-	MinimumValueToBuy *big.Int         `json:"minimum_value_to_buy"`
+	CoinToSell        types.CoinSymbol
+	ValueToSell       *big.Int
+	CoinToBuy         types.CoinSymbol
+	MinimumValueToBuy *big.Int
+}
+
+func (data SellCoinData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		CoinToSell        string `json:"coin_to_sell"`
+		ValueToSell       string `json:"value_to_sell"`
+		CoinToBuy         string `json:"coin_to_buy"`
+		MinimumValueToBuy string `json:"minimum_value_to_buy"`
+	}{
+		CoinToSell:        data.CoinToSell.String(),
+		ValueToSell:       data.ValueToSell.String(),
+		CoinToBuy:         data.CoinToBuy.String(),
+		MinimumValueToBuy: data.MinimumValueToBuy.String(),
+	})
 }
 
 func (data SellCoinData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
@@ -108,8 +123,13 @@ func (data SellCoinData) TotalSpend(tx *Transaction, context *state.State) (Tota
 
 			c := formula.CalculateSaleAmount(newVolume, newReserve, coin.Crr(), commissionInBaseCoin)
 
-			valueToSell.Add(valueToSell, c)
-			rValue.Add(rValue, commissionInBaseCoin)
+			total.Add(tx.GasCoin, c)
+			conversions = append(conversions, Conversion{
+				FromCoin:    tx.GasCoin,
+				FromAmount:  c,
+				FromReserve: commissionInBaseCoin,
+				ToCoin:      types.GetBaseCoin(),
+			})
 		}
 
 		total.Add(data.CoinToSell, valueToSell)
@@ -148,8 +168,13 @@ func (data SellCoinData) TotalSpend(tx *Transaction, context *state.State) (Tota
 
 			c := formula.CalculateSaleAmount(newVolume, newReserve, coinFrom.Crr(), commissionInBaseCoin)
 
-			valueToSell.Add(valueToSell, c)
-			fromReserve.Add(fromReserve, commissionInBaseCoin)
+			total.Add(tx.GasCoin, c)
+			conversions = append(conversions, Conversion{
+				FromCoin:    tx.GasCoin,
+				FromAmount:  c,
+				FromReserve: commissionInBaseCoin,
+				ToCoin:      types.GetBaseCoin(),
+			})
 		}
 
 		value = formula.CalculatePurchaseReturn(coinTo.Volume(), coinTo.Reserve(), coinTo.Crr(), basecoinValue)
@@ -292,6 +317,13 @@ func (data SellCoinData) Run(tx *Transaction, context *state.State, isCheck bool
 		}
 	}
 
+	err := checkConversionsReserveUnderflow(conversions, context)
+	if err != nil {
+		return Response{
+			Code: code.CoinReserveUnderflow,
+			Log:  err.Error()}
+	}
+
 	if !isCheck {
 		for _, ts := range totalSpends {
 			context.Accounts.SubBalance(sender, ts.Coin, ts.Value)
@@ -308,9 +340,6 @@ func (data SellCoinData) Run(tx *Transaction, context *state.State, isCheck bool
 		rewardPool.Add(rewardPool, tx.CommissionInBaseCoin())
 		context.Accounts.AddBalance(sender, data.CoinToBuy, value)
 		context.Accounts.SetNonce(sender, tx.Nonce)
-
-		context.Coins.Sanitize(data.CoinToBuy)
-		context.Coins.Sanitize(data.CoinToSell)
 	}
 
 	tags := common.KVPairs{

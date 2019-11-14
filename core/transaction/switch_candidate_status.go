@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
@@ -13,7 +14,15 @@ import (
 )
 
 type SetCandidateOnData struct {
-	PubKey types.Pubkey `json:"pub_key"`
+	PubKey types.Pubkey
+}
+
+func (data SetCandidateOnData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		PubKey string `json:"pub_key"`
+	}{
+		PubKey: data.PubKey.String(),
+	})
 }
 
 func (data SetCandidateOnData) GetPubKey() types.Pubkey {
@@ -50,6 +59,13 @@ func (data SetCandidateOnData) Run(tx *Transaction, context *state.State, isChec
 
 	if !tx.GasCoin.IsBaseCoin() {
 		coin := context.Coins.GetCoin(tx.GasCoin)
+
+		err := coin.CheckReserveUnderflow(commissionInBaseCoin)
+		if err != nil {
+			return Response{
+				Code: code.CoinReserveUnderflow,
+				Log:  err.Error()}
+		}
 
 		if coin.Reserve().Cmp(commissionInBaseCoin) < 0 {
 			return Response{
@@ -92,6 +108,14 @@ func (data SetCandidateOnData) Run(tx *Transaction, context *state.State, isChec
 
 type SetCandidateOffData struct {
 	PubKey types.Pubkey `json:"pub_key"`
+}
+
+func (data SetCandidateOffData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		PubKey string `json:"pub_key"`
+	}{
+		PubKey: data.PubKey.String(),
+	})
 }
 
 func (data SetCandidateOffData) GetPubKey() types.Pubkey {

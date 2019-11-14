@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
@@ -13,9 +14,21 @@ import (
 )
 
 type SendData struct {
-	Coin  types.CoinSymbol `json:"coin"`
-	To    types.Address    `json:"to"`
-	Value *big.Int         `json:"value"`
+	Coin  types.CoinSymbol
+	To    types.Address
+	Value *big.Int
+}
+
+func (data SendData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Coin  string `json:"coin"`
+		To    string `json:"to"`
+		Value string `json:"value"`
+	}{
+		Coin:  data.Coin.String(),
+		To:    data.To.String(),
+		Value: data.Value.String(),
+	})
 }
 
 func (data SendData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
@@ -27,6 +40,13 @@ func (data SendData) TotalSpend(tx *Transaction, context *state.State) (TotalSpe
 
 	if !tx.GasCoin.IsBaseCoin() {
 		coin := context.Coins.GetCoin(tx.GasCoin)
+
+		err := coin.CheckReserveUnderflow(commissionInBaseCoin)
+		if err != nil {
+			return nil, nil, nil, &Response{
+				Code: code.CoinReserveUnderflow,
+				Log:  err.Error()}
+		}
 
 		if coin.Reserve().Cmp(commissionInBaseCoin) < 0 {
 			return nil, nil, nil, &Response{
