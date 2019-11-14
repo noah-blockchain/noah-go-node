@@ -28,9 +28,6 @@ const (
 )
 
 var (
-	NetworkId        string
-	DefaultNetworkId = "noah-testnet-1"
-
 	defaultConfigFilePath   = filepath.Join(defaultConfigDir, defaultConfigFileName)
 	defaultGenesisJSONPath  = filepath.Join(defaultConfigDir, defaultGenesisJSONName)
 	defaultPrivValKeyPath   = filepath.Join(defaultConfigDir, defaultPrivValName)
@@ -104,7 +101,7 @@ func GetConfig() *Config {
 
 	cfg.Mempool.Recheck = false
 
-	cfg.P2P.AddrBook = "config/addrbook-" + NetworkId + ".json"
+	cfg.P2P.AddrBook = "config/addrbook.json"
 
 	cfg.SetRoot(utils.GetNoahHome())
 	EnsureRoot(utils.GetNoahHome())
@@ -241,9 +238,6 @@ type BaseConfig struct {
 	// Database directory
 	DBPath string `mapstructure:"db_dir"`
 
-	// Address to listen for GUI connections
-	GUIListenAddress string `mapstructure:"gui_listen_addr"`
-
 	// Address to listen for API connections
 	APIListenAddress string `mapstructure:"api_listen_addr"`
 
@@ -254,6 +248,8 @@ type BaseConfig struct {
 	APISimultaneousRequests int `mapstructure:"api_simultaneous_requests"`
 
 	LogPath string `mapstructure:"log_path"`
+
+	StateCacheSize int `mapstructure:"state_cache_size"`
 }
 
 // DefaultBaseConfig returns a default base configuration for a Tendermint node
@@ -268,12 +264,12 @@ func DefaultBaseConfig() BaseConfig {
 		ProfListenAddress:       "",
 		FastSync:                true,
 		FilterPeers:             false,
-		DBBackend:               "cleveldb",
+		DBBackend:               "goleveldb",
 		DBPath:                  "data",
-		GUIListenAddress:        ":3000",
 		APIListenAddress:        "tcp://0.0.0.0:8841",
 		ValidatorMode:           false,
 		KeepLastStates:          120,
+		StateCacheSize:          1000000,
 		APISimultaneousRequests: 100,
 		LogPath:                 "stdout",
 		LogFormat:               LogFormatPlain,

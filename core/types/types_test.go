@@ -170,7 +170,7 @@ func TestAppState(t *testing.T) {
 				Balance: []Balance{
 					{
 						Coin:  GetBaseCoin(),
-						Value: big.NewInt(1),
+						Value: big.NewInt(1).String(),
 					},
 				},
 				Nonce: 1,
@@ -196,7 +196,7 @@ func TestAppState(t *testing.T) {
 				Address:      testAddr,
 				CandidateKey: &pubkey,
 				Coin:         GetBaseCoin(),
-				Value:        big.NewInt(1),
+				Value:        big.NewInt(1).String(),
 			},
 		},
 		UsedChecks: []UsedCheck{

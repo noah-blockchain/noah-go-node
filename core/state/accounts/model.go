@@ -24,6 +24,34 @@ type Model struct {
 	markDirty func(types.Address)
 }
 
+type Multisig struct {
+	Weights   []uint
+	Threshold uint
+	Addresses []types.Address
+}
+
+func (m *Multisig) Address() types.Address {
+	b, err := rlp.EncodeToBytes(m)
+	if err != nil {
+		panic(err)
+	}
+
+	var addr types.Address
+	copy(addr[:], crypto.Keccak256(b)[12:])
+
+	return addr
+}
+
+func (m *Multisig) GetWeight(address types.Address) uint {
+	for i, addr := range m.Addresses {
+		if addr == address {
+			return m.Weights[i]
+		}
+	}
+
+	return 0
+}
+
 func (model *Model) setNonce(nonce uint64) {
 	model.Nonce = nonce
 	model.isDirty = true
@@ -97,4 +125,12 @@ func (model *Model) hasCoin(coin types.CoinSymbol) bool {
 	}
 
 	return false
+}
+
+func (model *Model) IsMultisig() bool {
+	return len(model.MultisigData.Weights) > 0
+}
+
+func (model *Model) Multisig() Multisig {
+	return model.MultisigData
 }

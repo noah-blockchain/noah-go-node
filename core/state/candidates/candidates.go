@@ -216,7 +216,7 @@ func (c *Candidates) PunishByzantineCandidate(height uint64, tmAddress types.TmA
 			c.bus.App().AddTotalSlashed(slashed)
 		}
 
-		c.bus.Events().AddEvent(uint32(height), compact.SlashEvent{
+		c.bus.Events().AddEvent(uint32(height), eventsdb.SlashEvent{
 			Address:         stake.Owner,
 			Amount:          slashed.Bytes(),
 			Coin:            stake.Coin,
@@ -224,7 +224,6 @@ func (c *Candidates) PunishByzantineCandidate(height uint64, tmAddress types.TmA
 		})
 
 		c.bus.FrozenFunds().AddFrozenFund(height+UnbondPeriod, stake.Owner, candidate.PubKey, stake.Coin, newValue)
-		c.bus.Coins().SanitizeCoin(stake.Coin)
 	}
 }
 
@@ -301,22 +300,32 @@ func (c *Candidates) RecalculateStakes(height uint64) {
 					continue
 				}
 
+				if stakes[index] != nil {
+					c.bus.Events().AddEvent(uint32(height), eventsdb.UnbondEvent{
+						Address:         stakes[index].Owner,
+						Amount:          stakes[index].Value.Bytes(),
+						Coin:            stakes[index].Coin,
+						ValidatorPubKey: candidate.PubKey,
+					})
+					c.bus.Accounts().AddBalance(stakes[index].Owner, stakes[index].Coin, stakes[index].Value)
+				}
+
 				candidate.SetStakeAtIndex(index, update)
 				stakes = c.GetStakes(candidate.PubKey)
 			}
 		}
 
 		candidate.clearUpdates()
-		
-		totalNoahValue := big.NewInt(0)
+
+		totalBipValue := big.NewInt(0)
 		for _, stake := range stakes {
 			if stake == nil {
 				continue
 			}
-			totalNoahValue.Add(totalNoahValue, stake.NoahValue)
+			totalBipValue.Add(totalBipValue, stake.BipValue)
 		}
 
-		candidate.setTotalNoahValue(totalNoahValue)
+		candidate.setTotalBipValue(totalBipValue)
 		candidate.updateStakesCount()
 	}
 }

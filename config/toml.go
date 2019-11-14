@@ -67,9 +67,6 @@ const defaultConfigTemplate = `# This is a TOML config file.
 # A custom human readable name for this node
 moniker = "{{ .BaseConfig.Moniker }}"
 
-# Address to listen for GUI connections
-gui_listen_addr = "{{ .BaseConfig.GUIListenAddress }}"
-
 # Address to listen for API connections
 api_listen_addr = "{{ .BaseConfig.APIListenAddress }}"
 
@@ -78,6 +75,9 @@ validator_mode = {{ .BaseConfig.ValidatorMode }}
 
 # Sets number of last stated to be saved
 keep_last_states = {{ .BaseConfig.KeepLastStates }}
+
+# State cache size 
+state_cache_size = {{ .BaseConfig.StateCacheSize }}
 
 # Limit for simultaneous requests to API
 api_simultaneous_requests = {{ .BaseConfig.APISimultaneousRequests }}

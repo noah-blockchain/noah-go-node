@@ -10,8 +10,7 @@ import (
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
-	types2 "github.com/tendermint/tendermint/types"
-	"math/big"
+	tmTypes "github.com/tendermint/tendermint/types"
 	"time"
 )
 
@@ -92,12 +91,12 @@ func Block(height int64) (*BlockResponse, error) {
 			From:        sender.String(),
 			Nonce:       tx.Nonce,
 			GasPrice:    tx.GasPrice,
-			Type:        tx.Type,
+			Type:        string(tx.Type),
 			Data:        data,
 			Payload:     tx.Payload,
 			ServiceData: tx.ServiceData,
 			Gas:         tx.Gas(),
-			GasCoin:     tx.GasCoin,
+			GasCoin:     tx.GasCoin.String(),
 			Tags:        tags,
 			Code:        blockResults.Results.DeliverTx[i].Code,
 			Log:         blockResults.Results.DeliverTx[i].Log,
@@ -105,11 +104,16 @@ func Block(height int64) (*BlockResponse, error) {
 	}
 
 	var validators []BlockValidatorResponse
-	proposer := &types.Pubkey{}
+	var proposer *string
 	if height > 1 {
-		proposer, err = getBlockProposer(block)
+		p, err := getBlockProposer(block)
 		if err != nil {
 			return nil, err
+		}
+
+		if p != nil {
+			str := p.String()
+			proposer = &str
 		}
 
 		validators = make([]BlockValidatorResponse, len(tmValidators.Validators))
@@ -130,10 +134,6 @@ func Block(height int64) (*BlockResponse, error) {
 				Pubkey: fmt.Sprintf("Np%x", tmval.PubKey.Bytes()[5:]),
 				Signed: signed,
 			}
-
-			if bytes.Equal(tmval.Address.Bytes(), block.Block.ProposerAddress.Bytes()) {
-				copy(proposer[:], tmval.PubKey.Bytes()[5:])
-			}
 		}
 	}
 
@@ -144,9 +144,9 @@ func Block(height int64) (*BlockResponse, error) {
 		NumTxs:       block.Block.NumTxs,
 		TotalTxs:     block.Block.TotalTxs,
 		Transactions: txs,
-		BlockReward:  rewards.GetRewardForBlock(uint64(height)),
+		BlockReward:  rewards.GetRewardForBlock(uint64(height)).String(),
 		Size:         len(cdc.MustMarshalBinaryLengthPrefixed(block)),
-		Proposer:     *proposer,
+		Proposer:     proposer,
 		Validators:   validators,
 		Evidence:     block.Block.Evidence,
 	}, nil

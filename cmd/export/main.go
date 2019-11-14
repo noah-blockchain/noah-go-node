@@ -2,16 +2,15 @@ package main
 
 import (
 	"encoding/json"
-	"time"
-
-	"github.com/MinterTeam/go-amino"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/appdb"
 	"github.com/noah-blockchain/noah-go-node/core/state"
+	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/types"
 	"github.com/tendermint/tm-db"
+	"time"
 )
 
 func main() {
@@ -27,7 +26,7 @@ func main() {
 
 	applicationDB := appdb.NewAppDB(config.GetConfig())
 	height := applicationDB.GetLastHeight()
-	currentState, err := state.NewState(height, ldb, nil, nil)
+	currentState, err := state.NewState(height, ldb, nil, 0, 100000)
 	if err != nil {
 		panic(err)
 	}

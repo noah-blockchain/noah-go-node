@@ -1,9 +1,5 @@
 package types
 
-import (
-	"math/big"
-)
-
 type AppState struct {
 	Note         string       `json:"note"`
 	StartHeight  uint64       `json:"start_height"`
@@ -57,7 +53,7 @@ type FrozenFund struct {
 	Address      Address    `json:"address"`
 	CandidateKey *Pubkey    `json:"candidate_key,omitempty"`
 	Coin         CoinSymbol `json:"coin"`
-	Value        *big.Int   `json:"value"`
+	Value        string     `json:"value"`
 }
 
 type UsedCheck string
@@ -71,7 +67,7 @@ type Account struct {
 
 type Balance struct {
 	Coin  CoinSymbol `json:"coin"`
-	Value *big.Int   `json:"value"`
+	Value string     `json:"value"`
 }
 
 type Multisig struct {

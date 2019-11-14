@@ -37,37 +37,33 @@ func runNode() error {
 		fmt.Printf("Start time is in the future, sleeping until %s", startTime)
 		time.Sleep(startTime.Sub(now))
 	}
-	
+
 	tmConfig := config.GetTmConfig(cfg)
-	
+
 	if err := common.EnsureDir(utils.GetNoahHome()+"/config", 0777); err != nil {
 		return err
 	}
-	
+
 	if err := common.EnsureDir(utils.GetNoahHome()+"/tmdata", 0777); err != nil {
 		return err
 	}
-	
+
 	app := noah.NewNoahBlockchain(cfg)
-	
+
 	// update BlocksTimeDelta in case it was corrupted
 	updateBlocksTimeDelta(app, tmConfig)
-	
+
 	// start TM node
 	node := startTendermintNode(app, tmConfig)
-	
+
 	client := rpc.NewLocal(node)
-	status, _ := client.Status()
-	if status.NodeInfo.Network != config.NetworkId {
-		log.Fatal("Different networks", "expected", config.NetworkId, "got", status.NodeInfo.Network)
-	}
-	
+
 	app.SetTmNode(node)
-	
+
 	if !cfg.ValidatorMode {
 		go api.RunAPI(app, client, cfg)
 	}
-	
+
 	common.TrapSignal(log.With("module", "trap"), func() {
 		// Cleanup
 		err := node.Stop()

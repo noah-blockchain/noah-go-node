@@ -2,19 +2,14 @@ package api
 
 import (
 	"fmt"
-	`net/http`
-	`net/url`
-	`strings`
-	`time`
-	
-	"github.com/MinterTeam/go-amino"
+	eventsdb "github.com/noah-blockchain/events-db"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/noah"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/rpc/lib/server"
-	compact "github.com/klim0v/compact-db"
 	"github.com/rs/cors"
+	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/multisig"
@@ -22,13 +17,17 @@ import (
 	"github.com/tendermint/tendermint/evidence"
 	rpc "github.com/tendermint/tendermint/rpc/client"
 	"github.com/tendermint/tendermint/types"
+	"net/http"
+	"net/url"
+	"strings"
+	"time"
 )
 
 var (
 	cdc        = amino.NewCodec()
 	blockchain *noah.Blockchain
 	client     *rpc.Local
-	noahCfg    *config.Config
+	noahCfg  *config.Config
 )
 
 var Routes = map[string]*rpcserver.RPCFunc{
@@ -59,7 +58,7 @@ var Routes = map[string]*rpcserver.RPCFunc{
 func RunAPI(b *noah.Blockchain, tmRPC *rpc.Local, cfg *config.Config) {
 	noahCfg = cfg
 	RegisterCryptoAmino(cdc)
-	compact.RegisterAminoEvents(cdc)
+	eventsdb.RegisterAminoEvents(cdc)
 	RegisterEvidenceMessages(cdc)
 
 	client = tmRPC
