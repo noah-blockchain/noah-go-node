@@ -16,9 +16,21 @@ import (
 const unbondPeriod = 518400
 
 type UnbondData struct {
-	PubKey types.Pubkey     `json:"pub_key"`
-	Coin   types.CoinSymbol `json:"coin"`
-	Value  *big.Int         `json:"value"`
+	PubKey types.Pubkey
+	Coin   types.CoinSymbol
+	Value  *big.Int
+}
+
+func (data UnbondData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		PubKey string `json:"pub_key"`
+		Coin   string `json:"coin"`
+		Value  string `json:"value"`
+	}{
+		PubKey: data.PubKey.String(),
+		Coin:   data.Coin.String(),
+		Value:  data.Value.String(),
+	})
 }
 
 func (data UnbondData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
@@ -84,6 +96,13 @@ func (data UnbondData) Run(tx *Transaction, context *state.State, isCheck bool, 
 
 	if !tx.GasCoin.IsBaseCoin() {
 		coin := context.Coins.GetCoin(tx.GasCoin)
+
+		err := coin.CheckReserveUnderflow(commissionInBaseCoin)
+		if err != nil {
+			return Response{
+				Code: code.CoinReserveUnderflow,
+				Log:  err.Error()}
+		}
 
 		if coin.Reserve().Cmp(commissionInBaseCoin) < 0 {
 			return Response{

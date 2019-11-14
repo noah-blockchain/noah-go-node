@@ -10,42 +10,42 @@ type AppState struct {
 	FrozenFunds  []FrozenFund `json:"frozen_funds,omitempty"`
 	UsedChecks   []UsedCheck  `json:"used_checks,omitempty"`
 	MaxGas       uint64       `json:"max_gas"`
-	TotalSlashed *big.Int     `json:"total_slashed"`
+	TotalSlashed string       `json:"total_slashed"`
 }
 
 type Validator struct {
 	RewardAddress Address   `json:"reward_address"`
-	TotalNoahStake *big.Int  `json:"total_noah_stake"`
+	TotalNoahStake string    `json:"total_noah_stake"`
 	PubKey        Pubkey    `json:"pub_key"`
 	Commission    uint      `json:"commission"`
-	AccumReward   *big.Int  `json:"accum_reward"`
+	AccumReward   string    `json:"accum_reward"`
 	AbsentTimes   *BitArray `json:"absent_times"`
 }
 
 type Candidate struct {
-	RewardAddress Address  `json:"reward_address"`
-	OwnerAddress  Address  `json:"owner_address"`
-	TotalNoahStake *big.Int `json:"total_noah_stake"`
-	PubKey        Pubkey   `json:"pub_key"`
-	Commission    uint     `json:"commission"`
-	Stakes        []Stake  `json:"stakes"`
-	Status        byte     `json:"status"`
+	RewardAddress Address `json:"reward_address"`
+	OwnerAddress  Address `json:"owner_address"`
+	TotalNoahStake string  `json:"total_noah_stake"`
+	PubKey        Pubkey  `json:"pub_key"`
+	Commission    uint    `json:"commission"`
+	Stakes        []Stake `json:"stakes"`
+	Status        byte    `json:"status"`
 }
 
 type Stake struct {
 	Owner    Address    `json:"owner"`
 	Coin     CoinSymbol `json:"coin"`
-	Value    *big.Int   `json:"value"`
-	NoahValue *big.Int   `json:"noah_value"`
+	Value    string     `json:"value"`
+	NoahValue string     `json:"noah_value"`
 }
 
 type Coin struct {
 	Name      string     `json:"name"`
 	Symbol    CoinSymbol `json:"symbol"`
-	Volume    *big.Int   `json:"volume"`
+	Volume    string     `json:"volume"`
 	Crr       uint       `json:"crr"`
-	Reserve   *big.Int   `json:"reserve"`
-	MaxSupply *big.Int   `json:"max_supply"`
+	Reserve   string     `json:"reserve"`
+	MaxSupply string     `json:"max_supply"`
 }
 
 type FrozenFund struct {
