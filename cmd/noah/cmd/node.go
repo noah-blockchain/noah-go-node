@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"github.com/noah-blockchain/noah-go-node/api"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/noah"
 	"github.com/noah-blockchain/noah-go-node/log"
+	"github.com/noah-blockchain/noah-node-cli/service"
 	"github.com/gobuffalo/packr"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/abci/types"
@@ -64,15 +66,24 @@ func runNode() error {
 		go api.RunAPI(app, client, cfg)
 	}
 
+	ctxCli, stopCli := context.WithCancel(context.Background())
+	go func() {
+		err := service.StartCLIServer(utils.GetNoahHome()+"/manager.sock", service.NewManager(app, client, cfg), ctxCli)
+		if err != nil {
+			panic(err)
+		}
+	}()
+
 	common.TrapSignal(log.With("module", "trap"), func() {
 		// Cleanup
+		stopCli()
 		err := node.Stop()
 		app.Stop()
 		if err != nil {
 			panic(err)
 		}
 	})
-	
+
 	// Run forever
 	select {}
 }
