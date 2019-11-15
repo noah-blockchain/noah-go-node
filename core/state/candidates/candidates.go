@@ -319,14 +319,14 @@ func (c *Candidates) RecalculateStakes(height uint64) {
 		candidate.clearUpdates()
 
 		totalNoahValue := big.NewInt(0)
-		for _, stake := range stakes {
+		for _, stake := range c.GetStakes(candidate.PubKey) {
 			if stake == nil {
 				continue
 			}
 			totalNoahValue.Add(totalNoahValue, stake.NoahValue)
 		}
 
-		candidate.setTotalNoahValue(totalNoahValue)
+		candidate.setTotalNoahStake(totalNoahValue)
 		candidate.updateStakesCount()
 	}
 }

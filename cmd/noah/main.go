@@ -13,6 +13,7 @@ func main() {
 		cmd.RunNode,
 		cmd.ShowNodeId,
 		cmd.ShowValidator,
+		cmd.Manager,
 		cmd.Version)
 
 	rootCmd.PersistentFlags().StringVar(&utils.NoahHome, "home-dir", "", "base dir (default is $HOME/.noah)")

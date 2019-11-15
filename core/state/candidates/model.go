@@ -50,7 +50,7 @@ func (candidate *Candidate) clearUpdates() {
 	candidate.isUpdatesDirty = true
 }
 
-func (candidate *Candidate) setTotalNoahValue(totalNoahValue *big.Int) {
+func (candidate *Candidate) setTotalNoahStake(totalNoahValue *big.Int) {
 	candidate.isTotalStakeDirty = true
 	candidate.totalNoahStake.Set(totalNoahValue)
 }

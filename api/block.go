@@ -21,28 +21,28 @@ type BlockResponse struct {
 	NumTxs       int64                      `json:"num_txs"`
 	TotalTxs     int64                      `json:"total_txs"`
 	Transactions []BlockTransactionResponse `json:"transactions"`
-	BlockReward  *big.Int                   `json:"block_reward"`
+	BlockReward  string                     `json:"block_reward"`
 	Size         int                        `json:"size"`
-	Proposer     types.Pubkey               `json:"proposer,omitempty"`
+	Proposer     *string                    `json:"proposer,omitempty"`
 	Validators   []BlockValidatorResponse   `json:"validators,omitempty"`
-	Evidence     types2.EvidenceData        `json:"evidence,omitempty"`
+	Evidence     tmTypes.EvidenceData       `json:"evidence,omitempty"`
 }
 
 type BlockTransactionResponse struct {
-	Hash        string             `json:"hash"`
-	RawTx       string             `json:"raw_tx"`
-	From        string             `json:"from"`
-	Nonce       uint64             `json:"nonce"`
-	GasPrice    uint32             `json:"gas_price"`
-	Type        transaction.TxType `json:"type"`
-	Data        json.RawMessage    `json:"data"`
-	Payload     []byte             `json:"payload"`
-	ServiceData []byte             `json:"service_data"`
-	Gas         int64              `json:"gas"`
-	GasCoin     types.CoinSymbol   `json:"gas_coin"`
-	Tags        map[string]string  `json:"tags"`
-	Code        uint32             `json:"code,omitempty"`
-	Log         string             `json:"log,omitempty"`
+	Hash        string            `json:"hash"`
+	RawTx       string            `json:"raw_tx"`
+	From        string            `json:"from"`
+	Nonce       uint64            `json:"nonce"`
+	GasPrice    uint32            `json:"gas_price"`
+	Type        uint8             `json:"type"`
+	Data        json.RawMessage   `json:"data"`
+	Payload     []byte            `json:"payload"`
+	ServiceData []byte            `json:"service_data"`
+	Gas         int64             `json:"gas"`
+	GasCoin     string            `json:"gas_coin"`
+	Tags        map[string]string `json:"tags"`
+	Code        uint32            `json:"code,omitempty"`
+	Log         string            `json:"log,omitempty"`
 }
 
 type BlockValidatorResponse struct {
@@ -91,7 +91,7 @@ func Block(height int64) (*BlockResponse, error) {
 			From:        sender.String(),
 			Nonce:       tx.Nonce,
 			GasPrice:    tx.GasPrice,
-			Type:        string(tx.Type),
+			Type:        uint8(tx.Type),
 			Data:        data,
 			Payload:     tx.Payload,
 			ServiceData: tx.ServiceData,
