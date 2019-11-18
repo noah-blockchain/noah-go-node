@@ -7,7 +7,6 @@ import (
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
 	"github.com/noah-blockchain/noah-go-node/core/state"
-	"github.com/noah-blockchain/noah-go-node/core/state/candidates"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/noah-blockchain/noah-go-node/hexutil"
@@ -63,7 +62,7 @@ func (data DelegateData) BasicCheck(tx *Transaction, context *state.State) *Resp
 	}
 
 	sender, _ := tx.Sender()
-	if context.Candidates.StakesCount(data.PubKey) >= candidates.MaxDelegatorsPerCandidate && !context.Candidates.IsDelegatorStakeSufficient(sender, data.PubKey, data.Coin, data.Value) {
+	if !context.Candidates.IsDelegatorStakeSufficient(sender, data.PubKey, data.Coin, data.Value) {
 		return &Response{
 			Code: code.TooLowStake,
 			Log:  fmt.Sprintf("Stake is too low")}
