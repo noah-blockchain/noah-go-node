@@ -14,6 +14,9 @@ RUN make create_vendor && \
     make build && \
     cp ./build/noah /usr/local/bin/noah
 
+FROM debian:buster-slim as executor
+COPY --from=builder /home/noah/build/noah /usr/local/bin/noah
+
 EXPOSE 3000 26656 8841 26657 26660
 CMD ["noah", "node"]
 STOPSIGNAL SIGTERM
