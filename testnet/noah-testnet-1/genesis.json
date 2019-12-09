@@ -109,6 +109,25 @@
           }
         ],
         "nonce": "0"
+      },
+      {
+        "address": "NOAHxDD6DD653557698cb9ad13639825A48fad435284d",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "34287800000000000000000000"
+          }
+        ],
+        "nonce": "0"
+      }, {
+        "address": "NOAHxACa1D460A862B02F8E73c0D9f6ff18810Bed8bea",
+        "balance": [
+          {
+            "coin": "NOAH",
+            "value": "34287800000000000000000000"
+          }
+        ],
+        "nonce": "0"
       }
     ],
     "frozen_funds": [
