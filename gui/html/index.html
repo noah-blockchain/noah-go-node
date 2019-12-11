@@ -15,12 +15,20 @@
 
         .card {
             margin-bottom: 20px;
+            padding: 2.5em 2em;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 22px 27px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background: rgba(0,0,0,0);
+            border: none;
         }
 
         html,body,.body,#app {
             min-height: 100%;
         }
-        
+
         .body {
             padding-top: 15px;
         }
@@ -32,6 +40,8 @@
 
         .card-header {
             font-weight: bold;
+            font-size: 20px;
+            margin-bottom: 10px;
         }
 
         .card-header {
@@ -40,8 +50,10 @@
 
         .h {
             width: 200px;
-            background-color: #f3f3f3;
-            border-right: 1px solid #ccc;
+            border: none;
+        }
+        .table td, .table th {
+            border: none;
         }
 
         .bg-success, .bg-danger {
@@ -57,19 +69,39 @@
         }
 
         .fa-check {
-            color: green;
+            color: #28a745;
         }
 
+
+        .alert-danger {
+            padding: 2.5em 2em;
+            background:#fff;
+            border-radius: 20px;
+            box-shadow: 0 22px 27px rgba(0, 0, 0, 0.1);
+            border: none;
+            margin-top: 60px;
+        }
+
+        .alert-danger p,  .alert-danger h4 {
+            color: #c0392b;
+        }
         .fa-exclamation-circle {
             color: red;
         }
+        .bg-dark {
+            background-color: #062959!important;
+            padding-top: 1em;
+            padding-bottom: 1em;
+        }
+
     </style>
 </head>
 <body style="background-color: #343a401a">
 <div id="app">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <span class="navbar-brand mb-0 h1"><i class="fas fa-terminal"></i> &nbsp; Noah Full Node Status</span>
+            <img src="http://ark-wallet.testnet.noah-blockchain.com/img/noah-logo-circle.svg"/>
+            <span class="navbar-brand mb-0 h1">&nbsp; Noah Full Node Status</span>
         </div>
     </nav>
     <div class="container body" v-if="error">
@@ -78,7 +110,7 @@
             <p class="mb-0">{{ error }}</p>
         </div>
     </div>
-    <div class="container body bg-white" v-if="status && !error">
+    <div class="container body" v-if="status && !error">
         <div class="row">
             <div class="col">
                 <div class="card">
@@ -88,7 +120,7 @@
                     <table class="table card-body">
                         <tbody>
                         <tr>
-                            <td class="h">Moniker</td>
+                            <td class="h h-b-n">Moniker</td>
                             <td>{{ status.node_info.moniker }}</td>
                         </tr>
                         <tr>
@@ -187,6 +219,7 @@
     </div>
 </div>
 <script>
+    let hostname = '176.9.116.72'
     new Vue({
         el: '#app',
         data: {
@@ -211,11 +244,10 @@
             },
             refresh() {
                 axios.all([
-                    axios.get("//" + window.location.hostname + ':8841/status'),
-                    axios.get("//" + window.location.hostname + ':8841/net_info'),
+                    axios.get("//" +  window.location.hostname + ':8841/status'),
+                    axios.get("//" +  window.location.hostname + ':8841/net_info'),
                 ]).then(axios.spread(function (status, net_info) {
-                    this.error = null
-
+                    this.error = null;
                     this.status = status.data.result.tm_status
                     this.version = status.data.result.version
                     this.net_info = net_info.data.result
@@ -251,7 +283,7 @@
                     setTimeout(this.refresh, 5000)
                 }.bind(this))
 
-                axios.get("https://noah-node-1.testnet.noah.network/status").then(function (masterStatus) {
+                axios.get("//" + window.location.hostname + ":8841/status").then(function (masterStatus) {
                     this.masterStatus = masterStatus.data.result
                 }.bind(this))
             }
