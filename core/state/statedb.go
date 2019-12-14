@@ -29,7 +29,7 @@ import (
 	dbm "github.com/tendermint/tm-db"
 )
 
-const UnbondPeriod = 518400
+const UnbondPeriod = 1555200
 const MaxDelegatorsPerCandidate = 1000
 
 var (

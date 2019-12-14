@@ -63,7 +63,7 @@ func main() {
 
 		balMainFloat, _ := strconv.ParseFloat(balMain, 64)
 		balMainInt := big.NewInt(0).Mul(big.NewInt(int64(math.Round(balMainFloat))), p)
-		if balMainInt.Cmp(helpers.NoahToQNoah(big.NewInt(100000))) != -1 || role == "pool_admin" { // todo
+		if balMainInt.Cmp(helpers.NoahToQNoah(big.NewInt(100000))) != -1 || role == "pool_admin" {
 			firstBalances[address].Add(firstBalances[address], balMainInt)
 		} else {
 			secondBalances[address].Add(secondBalances[address], balMainInt)
