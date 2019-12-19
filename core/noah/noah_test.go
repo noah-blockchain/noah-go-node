@@ -197,7 +197,6 @@ func TestSendTx(t *testing.T) {
 	}
 }
 
-// TODO: refactor
 func TestSmallStakeValidator(t *testing.T) {
 	for blockchain.Height() < 2 {
 		time.Sleep(time.Millisecond)

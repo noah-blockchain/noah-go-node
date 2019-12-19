@@ -397,7 +397,7 @@ func TestBuyCoinTxNotGasCoin(t *testing.T) {
 }
 
 func TestBuyCoinTxJSON(t *testing.T) {
-	out := []byte("{\"coin_to_buy\":\"NOAH\",\"value_to_buy\":\"1\",\"coin_to_sell\":\"TEST\",\"maximum_value_to_sell\":\"1\"}") // todo
+	out := []byte("{\"coin_to_buy\":\"NOAH\",\"value_to_buy\":\"1\",\"coin_to_sell\":\"TEST\",\"maximum_value_to_sell\":\"1\"}")
 
 	buyCoinData := BuyCoinData{
 		CoinToBuy:          types.GetBaseCoin(),
