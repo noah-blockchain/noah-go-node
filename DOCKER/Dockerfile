@@ -10,10 +10,14 @@ COPY . ${APP_PATH}
 
 WORKDIR ${APP_PATH}
 
-RUN make create_vendor && \
-    make build && \
-    cp ./build/noah /usr/local/bin/noah
+RUN set -x \
+    && make create_vendor \
+    && make build
+
+FROM debian:buster
+COPY --from=builder /home/noah/build/noah /usr/local/bin/noah
 
 EXPOSE 3000 26656 8841 26657 26660
 CMD ["noah", "node"]
 STOPSIGNAL SIGTERM
+
