@@ -3,6 +3,6 @@ package developers
 import "github.com/noah-blockchain/noah-go-node/core/types"
 
 var (
-	Address    = types.HexToAddress("NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660") // todo
+	Address    = types.HexToAddress("NOAHx28d711f68ccd493e06086928e1be10fbc73891ce") // todo
 	Commission = 10
 )

@@ -1,5 +1,5 @@
 {
-  "genesis_time": "2019-12-25T00:00:01Z",
+  "genesis_time": "2019-12-19T00:00:01Z",
   "chain_id": "noah-mainnet-1",
   "consensus_params": {
     "block": {
@@ -226,7 +226,7 @@
     ],
     "accounts": [
       {
-        "address": "NOAHxDD6DD653557698cb9ad13639825A48fad435284d",
+        "address": "NOAHxb9f45456e60c43d8186927a2d74a7aa4693880fd",
         "balance": [
           {
             "coin": "NOAH",
@@ -236,7 +236,7 @@
         "nonce": "0"
       },
       {
-        "address": "NOAHxACa1D460A862B02F8E73c0D9f6ff18810Bed8bea",
+        "address": "NOAHx673De3e9Fac743c061C126F7A8C18a4E85F3FFE3",
         "balance": [
           {
             "coin": "NOAH",
@@ -246,7 +246,7 @@
         "nonce": "0"
       },
       {
-        "address": "NOAHx327d3b9692e560b9907d263345650255c843a672",
+        "address": "NOAHxe4649e00e7d22dbdc015ed517db2702318b1daa1",
         "balance": [
           {
             "coin": "NOAH",
@@ -256,7 +256,7 @@
         "nonce": "0"
       },
       {
-        "address": "NOAHxAB649Ff49D5d0d5b51744FaaaB80C6664E97EFd0",
+        "address": "NOAHx8e6b0f4f0cbc331ea56af02eab3a547ae4ab39ff",
         "balance": [
           {
             "coin": "NOAH",
