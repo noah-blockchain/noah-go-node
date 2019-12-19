@@ -19,7 +19,7 @@ const allowedCoinSymbols = "^[A-Z0-9]{3,10}$"
 
 var (
 	minCoinSupply  = helpers.NoahToQNoah(big.NewInt(1))
-	minCoinReserve = helpers.NoahToQNoah(big.NewInt(1000))
+	minCoinReserve = helpers.NoahToQNoah(big.NewInt(250000))
 )
 
 type CreateCoinData struct {
@@ -68,13 +68,13 @@ func (data CreateCoinData) BasicCheck(tx *Transaction, context *state.StateDB) *
 	if data.InitialAmount.Cmp(minCoinSupply) == -1 || data.InitialAmount.Cmp(MaxCoinSupply) == 1 {
 		return &Response{
 			Code: code.WrongCoinSupply,
-			Log:  fmt.Sprintf("Coin supply should be between %s and %s", minCoinSupply.String(), MaxCoinSupply.String())} // todo
+			Log:  fmt.Sprintf("Coin supply should be between %s and %s", minCoinSupply.String(), MaxCoinSupply.String())}
 	}
 
 	if data.InitialReserve.Cmp(minCoinReserve) == -1 {
 		return &Response{
 			Code: code.WrongCoinSupply,
-			Log:  fmt.Sprintf("Coin reserve should be greater than or equal to %s", minCoinReserve.String())} // todo
+			Log:  fmt.Sprintf("Coin reserve should be greater than or equal to %s", minCoinReserve.String())}
 	}
 
 	return nil
@@ -88,16 +88,16 @@ func (data CreateCoinData) String() string {
 func (data CreateCoinData) Gas() int64 {
 	switch len(data.Symbol.String()) {
 	case 3:
-		return 1000000000 // 1mln noahs
+		return 250000000 // 250mln noahs
 	case 4:
-		return 100000000 // 100k noahs
+		return 25000000 // 25mln noahs
 	case 5:
-		return 10000000 // 10k noahs
+		return 2500000 // 2,5mln noahs
 	case 6:
-		return 1000000 // 1k noahs
+		return 250000 // 250k noahs
 	}
 
-	return 100000 // 100 noahs
+	return 25000 // 25k noahs
 }
 
 func (data CreateCoinData) Run(tx *Transaction, context *state.StateDB, isCheck bool, rewardPool *big.Int, currentBlock uint64) Response {

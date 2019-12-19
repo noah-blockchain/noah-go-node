@@ -18,11 +18,11 @@ func TestGetRewardForBlock(t *testing.T) {
 			Result: helpers.NoahToQNoah(big.NewInt(333)),
 		},
 		{
-			Block:  43702611, // todo
+			Block:  43702611,
 			Result: helpers.NoahToQNoah(big.NewInt(68)),
 		},
 		{
-			Block:  36600000, // todo
+			Block:  36600000,
 			Result: helpers.NoahToQNoah(big.NewInt(150)),
 		},
 	}
