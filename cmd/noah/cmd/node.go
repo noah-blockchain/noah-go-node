@@ -204,7 +204,7 @@ func getGenesis() (doc *tmTypes.GenesisDoc, e error) {
 	genesisFile := utils.GetNoahHome() + "/config/genesis.json"
 
 	if !common.FileExists(genesisFile) {
-		box := packr.NewBox("../../../testnet/")
+		box := packr.NewBox("../../../mainnet/")
 		bytes, err := box.Find(config.NetworkId + "/genesis.json")
 		if err != nil {
 			panic(err)
