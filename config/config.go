@@ -29,7 +29,7 @@ const (
 
 var (
 	NetworkId        string
-	DefaultNetworkId = "noah-testnet-1"
+	DefaultNetworkId = "noah-mainnet-1"
 
 	defaultConfigFilePath   = filepath.Join(defaultConfigDir, defaultConfigFileName)
 	defaultGenesisJSONPath  = filepath.Join(defaultConfigDir, defaultGenesisJSONName)
