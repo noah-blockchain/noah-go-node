@@ -160,7 +160,7 @@ func main() {
 	}
 
 	appHash := [32]byte{}
-	networkId := "noah-testnet-1"
+	networkId := "noah-mainnet-1"
 
 	// Compose Genesis
 	genesis := tmTypes.GenesisDoc{
@@ -188,7 +188,7 @@ func main() {
 		panic(err)
 	}
 
-	if err := genesis.SaveAs("testnet/" + networkId + "/genesis.json"); err != nil {
+	if err := genesis.SaveAs("mainnet/" + networkId + "/genesis.json"); err != nil {
 		panic(err)
 	}
 }
