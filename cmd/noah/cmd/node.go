@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/noah-blockchain/noah-go-node/mainnet"
+	"github.com/noah-blockchain/noah-go-node/testnet"
 	"io/ioutil"
-	"os"
 	"time"
 
 	"github.com/noah-blockchain/noah-go-node/api"
@@ -204,20 +205,14 @@ func getGenesis() (doc *tmTypes.GenesisDoc, e error) {
 	genesisFile := fmt.Sprintf("%s/config-%s/genesis.json", utils.GetNoahHome(), config.NetworkId)
 
 	if !common.FileExists(genesisFile) {
-		rootDir, err := os.Getwd()
-		if err != nil {
-			panic(err)
-		}
-
-		input, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s/genesis.json", rootDir, config.ChainId, config.NetworkId))
-		if err != nil {
-			panic(err)
-		}
-
-		err = ioutil.WriteFile(genesisFile, input, 0644)
-		if err != nil {
-			fmt.Println("Error creating", genesisFile)
-			panic(err)
+		if config.ChainId == "testnet" {
+			if err := testnet.GenerateStatic(genesisFile); err != nil {
+				return nil, err
+			}
+		} else {
+			if err := mainnet.GenerateStatic(genesisFile); err != nil {
+				return nil, err
+			}
 		}
 	}
 
