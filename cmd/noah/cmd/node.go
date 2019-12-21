@@ -3,9 +3,9 @@ package cmd
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"time"
 
-	"github.com/gobuffalo/packr"
 	"github.com/noah-blockchain/noah-go-node/api"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
@@ -44,11 +44,11 @@ func runNode() error {
 
 	tmConfig := config.GetTmConfig(cfg)
 
-	if err := common.EnsureDir(utils.GetNoahHome()+"/config", 0777); err != nil {
+	if err := common.EnsureDir(fmt.Sprintf("%s/config-%s", utils.GetNoahHome(), config.NetworkId), 0777); err != nil {
 		return err
 	}
 
-	if err := common.EnsureDir(utils.GetNoahHome()+"/tmdata", 0777); err != nil {
+	if err := common.EnsureDir(fmt.Sprintf("%s/tmdata-%s", utils.GetNoahHome(), config.NetworkId), 0777); err != nil {
 		return err
 	}
 
@@ -201,17 +201,23 @@ func startTendermintNode(app types.Application, cfg *tmCfg.Config) *tmNode.Node 
 }
 
 func getGenesis() (doc *tmTypes.GenesisDoc, e error) {
-	genesisFile := utils.GetNoahHome() + "/config/genesis.json"
+	genesisFile := fmt.Sprintf("%s/config-%s/genesis.json", utils.GetNoahHome(), config.NetworkId)
 
 	if !common.FileExists(genesisFile) {
-		box := packr.NewBox("../../../mainnet/")
-		bytes, err := box.Find(config.NetworkId + "/genesis.json")
+		rootDir, err := os.Getwd()
 		if err != nil {
 			panic(err)
 		}
 
-		if err := common.WriteFile(genesisFile, bytes, 0644); err != nil {
-			return nil, err
+		input, err := ioutil.ReadFile(fmt.Sprintf("%s/testnet/%s/genesis.json", rootDir, config.NetworkId))
+		if err != nil {
+			panic(err)
+		}
+
+		err = ioutil.WriteFile(genesisFile, input, 0644)
+		if err != nil {
+			fmt.Println("Error creating", genesisFile)
+			panic(err)
 		}
 	}
 

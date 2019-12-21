@@ -1,16 +1,23 @@
 package types
 
+import "github.com/noah-blockchain/noah-go-node/config"
+
 type ChainID byte
 
 const (
 	ChainTestnet = 0x02
 	ChainMainnet = 0x01
-
-	CurrentChainID = ChainMainnet
 )
 
+func GetCurrentChainID() ChainID {
+	if config.ChainId == "testnet" {
+		return ChainTestnet
+	}
+	return ChainMainnet
+}
+
 func GetBaseCoin() CoinSymbol {
-	return getBaseCoin(CurrentChainID)
+	return getBaseCoin(GetCurrentChainID())
 }
 
 func getBaseCoin(chainID ChainID) CoinSymbol {

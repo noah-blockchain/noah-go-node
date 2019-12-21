@@ -16,9 +16,6 @@ const (
 	// LogFormatJSON is a format for json output
 	LogFormatJSON = "json"
 
-	defaultConfigDir = "config"
-	defaultDataDir   = "data"
-
 	defaultConfigFileName  = "config.toml"
 	defaultGenesisJSONName = "genesis.json"
 
@@ -31,12 +28,31 @@ var (
 	NetworkId        string
 	DefaultNetworkId = "noah-mainnet-1"
 
-	defaultConfigFilePath   = filepath.Join(defaultConfigDir, defaultConfigFileName)
-	defaultGenesisJSONPath  = filepath.Join(defaultConfigDir, defaultGenesisJSONName)
-	defaultPrivValKeyPath   = filepath.Join(defaultConfigDir, defaultPrivValName)
-	defaultPrivValStatePath = filepath.Join(defaultConfigDir, defaultPrivValStateName)
-	defaultNodeKeyPath      = filepath.Join(defaultConfigDir, defaultNodeKeyName)
+	ChainId        string
+	DefaultChainId = "mainnet"
+
+	ValidatorMode bool
+
+	defaultConfigDir string
+	defaultDataDir   string
+
+	defaultConfigFilePath   string
+	defaultGenesisJSONPath  string
+	defaultPrivValKeyPath   string
+	defaultPrivValStatePath string
+	defaultNodeKeyPath      string
 )
+
+func UpdateDefaultPathAndDir() {
+	defaultConfigDir = fmt.Sprintf("config-%s", NetworkId)
+	defaultDataDir = fmt.Sprintf("data-%s", NetworkId)
+
+	defaultConfigFilePath = filepath.Join(defaultConfigDir, defaultConfigFileName)
+	defaultGenesisJSONPath = filepath.Join(defaultConfigDir, defaultGenesisJSONName)
+	defaultPrivValKeyPath = filepath.Join(defaultConfigDir, defaultPrivValName)
+	defaultPrivValStatePath = filepath.Join(defaultConfigDir, defaultPrivValStateName)
+	defaultNodeKeyPath = filepath.Join(defaultConfigDir, defaultNodeKeyName)
+}
 
 func DefaultConfig() *Config {
 	cfg := defaultConfig()
@@ -65,13 +81,13 @@ func DefaultConfig() *Config {
 		IndexAllTags: true,
 	}
 
-	cfg.DBPath = "tmdata"
+	cfg.DBPath = fmt.Sprintf("tmdata-%s", NetworkId)
 
 	cfg.Mempool.CacheSize = 100000
 	cfg.Mempool.Recheck = false
 	cfg.Mempool.Size = 10000
 
-	cfg.Consensus.WalPath = "tmdata/cs.wal/wal"
+	cfg.Consensus.WalPath = fmt.Sprintf("tmdata-%s/cs.wal/wal", NetworkId)
 	cfg.Consensus.TimeoutPropose = 2 * time.Second
 	cfg.Consensus.TimeoutProposeDelta = 500 * time.Millisecond
 	cfg.Consensus.TimeoutPrevote = 1 * time.Second
@@ -84,9 +100,9 @@ func DefaultConfig() *Config {
 	cfg.P2P.SendRate = 15360000 // 15 mB/s
 	cfg.P2P.FlushThrottleTimeout = 10 * time.Millisecond
 
-	cfg.PrivValidatorKey = "config/priv_validator.json"
-	cfg.PrivValidatorState = "config/priv_validator_state.json"
-	cfg.NodeKey = "config/node_key.json"
+	cfg.PrivValidatorKey = fmt.Sprintf("config-%s/priv_validator.json", NetworkId)
+	cfg.PrivValidatorState = fmt.Sprintf("config-%s/priv_validator_state.json", NetworkId)
+	cfg.NodeKey = fmt.Sprintf("config-%s/node_key.json", NetworkId)
 
 	return cfg
 }
@@ -104,7 +120,7 @@ func GetConfig() *Config {
 
 	cfg.Mempool.Recheck = false
 
-	cfg.P2P.AddrBook = "config/addrbook-" + NetworkId + ".json"
+	cfg.P2P.AddrBook = fmt.Sprintf("config-%s/addrbook-%s.json", NetworkId, NetworkId)
 
 	cfg.SetRoot(utils.GetNoahHome())
 	EnsureRoot(utils.GetNoahHome())
