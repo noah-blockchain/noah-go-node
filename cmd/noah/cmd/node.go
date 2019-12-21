@@ -209,7 +209,7 @@ func getGenesis() (doc *tmTypes.GenesisDoc, e error) {
 			panic(err)
 		}
 
-		input, err := ioutil.ReadFile(fmt.Sprintf("%s/testnet/%s/genesis.json", rootDir, config.NetworkId))
+		input, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s/genesis.json", rootDir, config.ChainId, config.NetworkId))
 		if err != nil {
 			panic(err)
 		}
