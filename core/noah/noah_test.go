@@ -56,7 +56,7 @@ func initNode() {
 	utils.NoahHome = os.ExpandEnv(filepath.Join("$HOME", "noah_test"))
 	_ = os.RemoveAll(utils.NoahHome)
 
-	if err := common.EnsureDir(fmt.Sprintf("%s/tmdata-%s/blockstore.db", utils.GetNoahHome(), config.NetworkId), 0777); err != nil {
+	if err := common.EnsureDir(fmt.Sprintf("%s/tmdata/blockstore.db", utils.GetNoahHome()), 0777); err != nil {
 		log.Error(err.Error())
 		os.Exit(1)
 	}

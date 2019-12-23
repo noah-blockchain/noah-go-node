@@ -28,31 +28,17 @@ var (
 	NetworkId        string
 	DefaultNetworkId = "noah-mainnet-1"
 
-	ChainId        string
-	DefaultChainId = "mainnet"
-
 	ValidatorMode bool
 
-	defaultConfigDir string
-	defaultDataDir   string
+	defaultConfigDir = "config"
+	defaultDataDir   = "data"
 
-	defaultConfigFilePath   string
-	defaultGenesisJSONPath  string
-	defaultPrivValKeyPath   string
-	defaultPrivValStatePath string
-	defaultNodeKeyPath      string
-)
-
-func UpdateDefaultPathAndDir() {
-	defaultConfigDir = fmt.Sprintf("config-%s", NetworkId)
-	defaultDataDir = fmt.Sprintf("data-%s", NetworkId)
-
-	defaultConfigFilePath = filepath.Join(defaultConfigDir, defaultConfigFileName)
-	defaultGenesisJSONPath = filepath.Join(defaultConfigDir, defaultGenesisJSONName)
-	defaultPrivValKeyPath = filepath.Join(defaultConfigDir, defaultPrivValName)
+	defaultConfigFilePath   = filepath.Join(defaultConfigDir, defaultConfigFileName)
+	defaultGenesisJSONPath  = filepath.Join(defaultConfigDir, defaultGenesisJSONName)
+	defaultPrivValKeyPath   = filepath.Join(defaultConfigDir, defaultPrivValName)
 	defaultPrivValStatePath = filepath.Join(defaultConfigDir, defaultPrivValStateName)
-	defaultNodeKeyPath = filepath.Join(defaultConfigDir, defaultNodeKeyName)
-}
+	defaultNodeKeyPath      = filepath.Join(defaultConfigDir, defaultNodeKeyName)
+)
 
 func DefaultConfig() *Config {
 	cfg := defaultConfig()
@@ -75,24 +61,26 @@ func DefaultConfig() *Config {
 		"a5b5f0296799d0a30909d1f0066355ff72808acf@7.testnet.noah-blockchain.com:26656," +
 		"4a0c6ab31de82ee1988e339cc6efbf807d35d10e@8.testnet.noah-blockchain.com:26656"
 
-	if ChainId == "mainnet" {
-		cfg.P2P.Seeds = "eb7acbf988f2183b487c9a1ee69f85050d5aa3a8@mainnet1.noah-blockchain.com:26656," +
-			"a4bbc9c38ec2cb73850109465579ed9e2c445a53@mainnet2.noah-blockchain.com:26656," +
-			"672e70fcbf0284baff0082851826c8aa37a35fb3@mainnet3.noah-blockchain.com:26656," +
-			"5a3eff103ade054d6b90b963c6a5990bed75336c@mainnet4.noah-blockchain.com:26656," +
-			"49055a20a4ac0992bd492d485efe998f6a8869b1@mainnet5.noah-blockchain.com:26656," +
-			"2c72b7408d44821de67d76daf83f62f5d65c0e7c@mainnet6.noah-blockchain.com:26656," +
-			"a5b5f0296799d0a30909d1f0066355ff72808acf@mainnet7.noah-blockchain.com:26656," +
-			"4a0c6ab31de82ee1988e339cc6efbf807d35d10e@mainnet8.noah-blockchain.com:26656"
+	if NetworkId == "noah-mainnet-1" {
+		cfg.P2P.Seeds = "a3beb81d555e181933b335b56b9967db353723ba@mainnet1.noah-blockchain.com:26656," +
+			"970449c0c2a3218e8e1a94a5e43076249fa54c81@mainnet2.noah-blockchain.com:26656," +
+			"82af4dcfab461fb2923d3c8df1640ac794765602@mainnet3.noah-blockchain.com:26656," +
+			"373c7f34bde64a400efaf120d6329a12eee7f8f0@mainnet4.noah-blockchain.com:26656," +
+			"6d9868e1f43988dbc192a5d652a58eae3d5fbafb@mainnet5.noah-blockchain.com:26656," +
+			"bda470075f5bafbda3ba95a0343ea786a59dc2b3@mainnet6.noah-blockchain.com:26656," +
+			"2eb583880f6d35e4c20558a18ab7d7ad5a3cf515@mainnet7.noah-blockchain.com:26656," +
+			"4b77488f8010d5020ca1a26cb910c4e49b0bbbd2@mainnet8.noah-blockchain.com:26656," +
+			"fe29718ffd0e9b3e6165c793cb920630af361b94@mainnet9.noah-blockchain.com:26656"
 
-		cfg.P2P.PersistentPeers = "eb7acbf988f2183b487c9a1ee69f85050d5aa3a8@mainnet1.noah-blockchain.com:26656," +
-			"a4bbc9c38ec2cb73850109465579ed9e2c445a53@mainnet2.noah-blockchain.com:26656," +
-			"672e70fcbf0284baff0082851826c8aa37a35fb3@mainnet3.noah-blockchain.com:26656," +
-			"5a3eff103ade054d6b90b963c6a5990bed75336c@mainnet4.noah-blockchain.com:26656," +
-			"49055a20a4ac0992bd492d485efe998f6a8869b1@mainnet5.noah-blockchain.com:26656," +
-			"2c72b7408d44821de67d76daf83f62f5d65c0e7c@mainnet6.noah-blockchain.com:26656," +
-			"a5b5f0296799d0a30909d1f0066355ff72808acf@mainnet7.noah-blockchain.com:26656," +
-			"4a0c6ab31de82ee1988e339cc6efbf807d35d10e@mainnet8.noah-blockchain.com:26656"
+		cfg.P2P.PersistentPeers = "a3beb81d555e181933b335b56b9967db353723ba@mainnet1.noah-blockchain.com:26656," +
+			"970449c0c2a3218e8e1a94a5e43076249fa54c81@mainnet2.noah-blockchain.com:26656," +
+			"82af4dcfab461fb2923d3c8df1640ac794765602@mainnet3.noah-blockchain.com:26656," +
+			"373c7f34bde64a400efaf120d6329a12eee7f8f0@mainnet4.noah-blockchain.com:26656," +
+			"6d9868e1f43988dbc192a5d652a58eae3d5fbafb@mainnet5.noah-blockchain.com:26656," +
+			"bda470075f5bafbda3ba95a0343ea786a59dc2b3@mainnet6.noah-blockchain.com:26656," +
+			"2eb583880f6d35e4c20558a18ab7d7ad5a3cf515@mainnet7.noah-blockchain.com:26656," +
+			"4b77488f8010d5020ca1a26cb910c4e49b0bbbd2@mainnet8.noah-blockchain.com:26656," +
+			"fe29718ffd0e9b3e6165c793cb920630af361b94@mainnet9.noah-blockchain.com:26656"
 	}
 
 	cfg.TxIndex = &tmConfig.TxIndexConfig{
@@ -101,13 +89,13 @@ func DefaultConfig() *Config {
 		IndexAllTags: true,
 	}
 
-	cfg.DBPath = fmt.Sprintf("tmdata-%s", NetworkId)
+	cfg.DBPath = "tmdata"
 
 	cfg.Mempool.CacheSize = 100000
 	cfg.Mempool.Recheck = false
 	cfg.Mempool.Size = 10000
 
-	cfg.Consensus.WalPath = fmt.Sprintf("tmdata-%s/cs.wal/wal", NetworkId)
+	cfg.Consensus.WalPath = "tmdata/cs.wal/wal"
 	cfg.Consensus.TimeoutPropose = 2 * time.Second
 	cfg.Consensus.TimeoutProposeDelta = 500 * time.Millisecond
 	cfg.Consensus.TimeoutPrevote = 1 * time.Second
@@ -120,9 +108,9 @@ func DefaultConfig() *Config {
 	cfg.P2P.SendRate = 15360000 // 15 mB/s
 	cfg.P2P.FlushThrottleTimeout = 10 * time.Millisecond
 
-	cfg.PrivValidatorKey = fmt.Sprintf("config-%s/priv_validator.json", NetworkId)
-	cfg.PrivValidatorState = fmt.Sprintf("config-%s/priv_validator_state.json", NetworkId)
-	cfg.NodeKey = fmt.Sprintf("config-%s/node_key.json", NetworkId)
+	cfg.PrivValidatorKey = "config/priv_validator.json"
+	cfg.PrivValidatorState = "config/priv_validator_state.json"
+	cfg.NodeKey = "config/node_key.json"
 
 	return cfg
 }
@@ -140,7 +128,7 @@ func GetConfig() *Config {
 
 	cfg.Mempool.Recheck = false
 
-	cfg.P2P.AddrBook = fmt.Sprintf("config-%s/addrbook-%s.json", NetworkId, NetworkId)
+	cfg.P2P.AddrBook = fmt.Sprintf("config/addrbook-%s.json", NetworkId)
 
 	cfg.SetRoot(utils.GetNoahHome())
 	EnsureRoot(utils.GetNoahHome())

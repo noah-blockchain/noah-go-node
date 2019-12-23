@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -19,10 +18,10 @@ func GetNoahHome() string {
 	return os.ExpandEnv(filepath.Join("$HOME", "noah"))
 }
 
-func GetNoahConfigPath(networkID string) string {
+func GetNoahConfigPath() string {
 	if NoahConfig != "" {
 		return NoahConfig
 	}
 
-	return os.ExpandEnv(filepath.Join(GetNoahHome(), fmt.Sprintf("/config-%s/config.toml", networkID)))
+	return os.ExpandEnv(filepath.Join(GetNoahHome(), "/config/config.toml"))
 }

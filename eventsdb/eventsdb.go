@@ -24,7 +24,7 @@ func InitDB(cfg *config.Config) {
 	if cfg.ValidatorMode {
 		edb = NOOPEventsDB{}
 	} else {
-		edb = NewEventsDB(db.NewDB("events", db.DBBackendType(cfg.DBBackend), fmt.Sprintf("%s/data-%s", utils.GetNoahHome(), config.NetworkId)))
+		edb = NewEventsDB(db.NewDB("events", db.DBBackendType(cfg.DBBackend), fmt.Sprintf("%s/data", utils.GetNoahHome())))
 	}
 }
 

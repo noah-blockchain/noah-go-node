@@ -148,6 +148,6 @@ func (appDB *AppDB) SetLastBlocksTimeDelta(height uint64, delta int) {
 
 func NewAppDB(cfg *config.Config) *AppDB {
 	return &AppDB{
-		db: db.NewDB(dbName, db.DBBackendType(cfg.DBBackend), fmt.Sprintf("%s/data-%s", utils.GetNoahHome(), config.NetworkId)),
+		db: db.NewDB(dbName, db.DBBackendType(cfg.DBBackend), fmt.Sprintf("%s/data", utils.GetNoahHome())),
 	}
 }

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/noah-blockchain/noah-go-node/version"
 	"github.com/spf13/cobra"
 )

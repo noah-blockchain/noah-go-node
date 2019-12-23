@@ -73,7 +73,7 @@ type Blockchain struct {
 // Creates Noah Blockchain instance, should be only called once
 func NewNoahBlockchain(cfg *config.Config) *Blockchain {
 	dbType := db.DBBackendType(cfg.DBBackend)
-	ldb := db.NewDB("state", dbType, fmt.Sprintf("%s/data-%s", utils.GetNoahHome(), config.NetworkId))
+	ldb := db.NewDB("state", dbType, fmt.Sprintf("%s/data", utils.GetNoahHome()))
 
 	// Initiate Application DB. Used for persisting data like current block, validators, etc.
 	applicationDB := appdb.NewAppDB(cfg)

@@ -79,7 +79,7 @@ func TestBuyCoinTx(t *testing.T) {
 	tx := Transaction{
 		Nonce:         1,
 		GasPrice:      1,
-		ChainID:       GetCurrentChainID(),
+		ChainID:       types.GetCurrentChainID(),
 		GasCoin:       coin,
 		Type:          TypeBuyCoin,
 		Data:          encodedData,

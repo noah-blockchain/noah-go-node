@@ -2,18 +2,18 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/noah-blockchain/noah-go-node/mainnet"
-	"github.com/noah-blockchain/noah-go-node/testnet"
-	"io/ioutil"
 	"time"
 
 	"github.com/noah-blockchain/noah-go-node/api"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/noah"
+	node_types "github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/eventsdb"
 	"github.com/noah-blockchain/noah-go-node/gui"
 	"github.com/noah-blockchain/noah-go-node/log"
+	"github.com/noah-blockchain/noah-go-node/mainnet"
+	"github.com/noah-blockchain/noah-go-node/testnet"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/abci/types"
 	tmCfg "github.com/tendermint/tendermint/config"
@@ -45,11 +45,11 @@ func runNode() error {
 
 	tmConfig := config.GetTmConfig(cfg)
 
-	if err := common.EnsureDir(fmt.Sprintf("%s/config-%s", utils.GetNoahHome(), config.NetworkId), 0777); err != nil {
+	if err := common.EnsureDir(fmt.Sprintf("%s/config", utils.GetNoahHome()), 0777); err != nil {
 		return err
 	}
 
-	if err := common.EnsureDir(fmt.Sprintf("%s/tmdata-%s", utils.GetNoahHome(), config.NetworkId), 0777); err != nil {
+	if err := common.EnsureDir(fmt.Sprintf("%s/tmdata", utils.GetNoahHome()), 0777); err != nil {
 		return err
 	}
 
@@ -129,12 +129,12 @@ func updateBlocksTimeDelta(app *noah.Blockchain, config *tmCfg.Config) {
 }
 
 func getNodeKey() (*p2p.NodeKey, error) {
-	nodeKeyJSON := config.GetEnv("NODE_KEY", "")
-	if len(nodeKeyJSON) > 0 {
-		if err := ioutil.WriteFile(cfg.NodeKeyFile(), []byte(nodeKeyJSON), 0600); err != nil {
-			return nil, err
-		}
-	}
+	//nodeKeyJSON := config.GetEnv("NODE_KEY", "")
+	//if len(nodeKeyJSON) > 0 {
+	//	if err := ioutil.WriteFile(cfg.NodeKeyFile(), []byte(nodeKeyJSON), 0600); err != nil {
+	//		return nil, err
+	//	}
+	//}
 
 	nodeKey, err := p2p.LoadOrGenNodeKey(cfg.NodeKeyFile())
 	if err != nil {
@@ -145,16 +145,16 @@ func getNodeKey() (*p2p.NodeKey, error) {
 }
 
 func getValidatorKey() (*privval.FilePV, error) {
-	validatorKeyJSON := config.GetEnv("VALIDATOR_KEY", "")
-	if len(validatorKeyJSON) > 0 {
-		if err := ioutil.WriteFile(cfg.PrivValidatorKeyFile(), []byte(validatorKeyJSON), 0600); err != nil {
-			return nil, err
-		}
-
-		if err := ioutil.WriteFile(cfg.PrivValidatorStateFile(), []byte("{}"), 0600); err != nil {
-			return nil, err
-		}
-	}
+	//validatorKeyJSON := config.GetEnv("VALIDATOR_KEY", "")
+	//if len(validatorKeyJSON) > 0 {
+	//	if err := ioutil.WriteFile(cfg.PrivValidatorKeyFile(), []byte(validatorKeyJSON), 0600); err != nil {
+	//		return nil, err
+	//	}
+	//
+	//	if err := ioutil.WriteFile(cfg.PrivValidatorStateFile(), []byte("{}"), 0600); err != nil {
+	//		return nil, err
+	//	}
+	//}
 
 	var pv *privval.FilePV
 	if common.FileExists(cfg.PrivValidatorKeyFile()) {
@@ -202,10 +202,10 @@ func startTendermintNode(app types.Application, cfg *tmCfg.Config) *tmNode.Node 
 }
 
 func getGenesis() (doc *tmTypes.GenesisDoc, e error) {
-	genesisFile := fmt.Sprintf("%s/config-%s/genesis.json", utils.GetNoahHome(), config.NetworkId)
+	genesisFile := fmt.Sprintf("%s/config/genesis.json", utils.GetNoahHome())
 
 	if !common.FileExists(genesisFile) {
-		if config.ChainId == "testnet" {
+		if node_types.GetCurrentChainID() == node_types.ChainTestnet {
 			if err := testnet.GenerateStatic(genesisFile); err != nil {
 				return nil, err
 			}

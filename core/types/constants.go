@@ -10,10 +10,10 @@ const (
 )
 
 func GetCurrentChainID() ChainID {
-	if config.ChainId == "testnet" {
-		return ChainTestnet
+	if config.NetworkId == "noah-mainnet-1" {
+		return ChainMainnet
 	}
-	return ChainMainnet
+	return ChainTestnet
 }
 
 func GetBaseCoin() CoinSymbol {

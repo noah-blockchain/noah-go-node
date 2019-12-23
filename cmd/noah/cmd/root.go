@@ -16,12 +16,10 @@ var RootCmd = &cobra.Command{
 	Use:   "noah",
 	Short: "Noah Go Node",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		config.UpdateDefaultPathAndDir()
-
 		cfg = config.GetConfig()
 
 		v := viper.New()
-		v.SetConfigFile(utils.GetNoahConfigPath(config.NetworkId))
+		v.SetConfigFile(utils.GetNoahConfigPath())
 		if err := v.ReadInConfig(); err != nil {
 			panic(err)
 		}
@@ -42,7 +40,7 @@ var RootCmd = &cobra.Command{
 			fmt.Println("This node working NOT in validator mode.")
 		}
 
-		fmt.Println("Current chain id", config.ChainId)
+		fmt.Println("Current network id", config.NetworkId)
 		log.InitLog(cfg)
 	},
 }
