@@ -79,7 +79,7 @@ func TestBuyCoinTx(t *testing.T) {
 	tx := Transaction{
 		Nonce:         1,
 		GasPrice:      1,
-		ChainID:       GetCurrentChainID(),
+		ChainID:       types.GetCurrentChainID(),
 		GasCoin:       coin,
 		Type:          TypeBuyCoin,
 		Data:          encodedData,
@@ -144,7 +144,7 @@ func TestBuyCoinTxInsufficientFunds(t *testing.T) {
 		Nonce:    1,
 		GasPrice: 1,
 
-		ChainID:       GetCurrentChainID(),
+		ChainID:       types.GetCurrentChainID(),
 		GasCoin:       coin,
 		Type:          TypeBuyCoin,
 		Data:          encodedData,
@@ -188,7 +188,7 @@ func TestBuyCoinTxEqualCoins(t *testing.T) {
 	tx := Transaction{
 		Nonce:         1,
 		GasPrice:      1,
-		ChainID:       GetCurrentChainID(),
+		ChainID:       types.GetCurrentChainID(),
 		GasCoin:       types.GetBaseCoin(),
 		Type:          TypeBuyCoin,
 		Data:          encodedData,
@@ -232,7 +232,7 @@ func TestBuyCoinTxNotExistsBuyCoin(t *testing.T) {
 	tx := Transaction{
 		Nonce:         1,
 		GasPrice:      1,
-		ChainID:       GetCurrentChainID(),
+		ChainID:       types.GetCurrentChainID(),
 		GasCoin:       types.GetBaseCoin(),
 		Type:          TypeBuyCoin,
 		Data:          encodedData,
@@ -276,7 +276,7 @@ func TestBuyCoinTxNotExistsSellCoin(t *testing.T) {
 	tx := Transaction{
 		Nonce:         1,
 		GasPrice:      1,
-		ChainID:       GetCurrentChainID(),
+		ChainID:       types.GetCurrentChainID(),
 		GasCoin:       types.GetBaseCoin(),
 		Type:          TypeBuyCoin,
 		Data:          encodedData,
@@ -322,7 +322,7 @@ func TestBuyCoinTxNotExistsGasCoin(t *testing.T) {
 	tx := Transaction{
 		Nonce:         1,
 		GasPrice:      1,
-		ChainID:       GetCurrentChainID(),
+		ChainID:       types.GetCurrentChainID(),
 		GasCoin:       types.CoinSymbol{},
 		Type:          TypeBuyCoin,
 		Data:          encodedData,
@@ -372,7 +372,7 @@ func TestBuyCoinTxNotGasCoin(t *testing.T) {
 	tx := Transaction{
 		Nonce:         1,
 		GasPrice:      1,
-		ChainID:       GetCurrentChainID(),
+		ChainID:       types.GetCurrentChainID(),
 		GasCoin:       getTestCoinSymbol(),
 		Type:          TypeBuyCoin,
 		Data:          encodedData,

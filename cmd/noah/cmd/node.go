@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"time"
 
 	"github.com/noah-blockchain/noah-go-node/api"
@@ -130,13 +129,6 @@ func updateBlocksTimeDelta(app *noah.Blockchain, config *tmCfg.Config) {
 }
 
 func getNodeKey() (*p2p.NodeKey, error) {
-	nodeKeyJSON := config.GetEnv("NODE_KEY", "")
-	if len(nodeKeyJSON) > 0 {
-		if err := ioutil.WriteFile(cfg.NodeKeyFile(), []byte(nodeKeyJSON), 0600); err != nil {
-			return nil, err
-		}
-	}
-
 	nodeKey, err := p2p.LoadOrGenNodeKey(cfg.NodeKeyFile())
 	if err != nil {
 		return nil, err
@@ -146,17 +138,6 @@ func getNodeKey() (*p2p.NodeKey, error) {
 }
 
 func getValidatorKey() (*privval.FilePV, error) {
-	validatorKeyJSON := config.GetEnv("VALIDATOR_KEY", "")
-	if len(validatorKeyJSON) > 0 {
-		if err := ioutil.WriteFile(cfg.PrivValidatorKeyFile(), []byte(validatorKeyJSON), 0600); err != nil {
-			return nil, err
-		}
-
-		if err := ioutil.WriteFile(cfg.PrivValidatorStateFile(), []byte("{}"), 0600); err != nil {
-			return nil, err
-		}
-	}
-
 	var pv *privval.FilePV
 	if common.FileExists(cfg.PrivValidatorKeyFile()) {
 		pv = privval.LoadFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile())

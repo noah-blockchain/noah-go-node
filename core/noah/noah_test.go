@@ -155,7 +155,7 @@ func TestSendTx(t *testing.T) {
 
 	tx := transaction.Transaction{
 		Nonce:         nonce,
-		ChainID:       GetCurrentChainID(),
+		ChainID:       types.GetCurrentChainID(),
 		GasPrice:      1,
 		GasCoin:       types.GetBaseCoin(),
 		Type:          transaction.TypeSend,
@@ -219,7 +219,7 @@ func TestSmallStakeValidator(t *testing.T) {
 
 	tx := transaction.Transaction{
 		Nonce:         nonce,
-		ChainID:       GetCurrentChainID(),
+		ChainID:       types.GetCurrentChainID(),
 		GasPrice:      1,
 		GasCoin:       types.GetBaseCoin(),
 		Type:          transaction.TypeDeclareCandidacy,
@@ -255,7 +255,7 @@ func TestSmallStakeValidator(t *testing.T) {
 	tx = transaction.Transaction{
 		Nonce:         nonce,
 		GasPrice:      1,
-		ChainID:       GetCurrentChainID(),
+		ChainID:       types.GetCurrentChainID(),
 		GasCoin:       types.GetBaseCoin(),
 		Type:          transaction.TypeSetCandidateOnline,
 		Data:          encodedData,
@@ -323,7 +323,7 @@ func TestSmallStakeValidator(t *testing.T) {
 	tx = transaction.Transaction{
 		Nonce:         nonce,
 		GasPrice:      1,
-		ChainID:       GetCurrentChainID(),
+		ChainID:       types.GetCurrentChainID(),
 		GasCoin:       types.GetBaseCoin(),
 		Type:          transaction.TypeSetCandidateOnline,
 		Data:          encodedData,
