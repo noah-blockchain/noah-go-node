@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/noah-blockchain/noah-go-node/mainnet"
-	"github.com/noah-blockchain/noah-go-node/testnet"
 	"io/ioutil"
 	"time"
 
@@ -11,9 +9,12 @@ import (
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/noah"
+	node_types "github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/eventsdb"
 	"github.com/noah-blockchain/noah-go-node/gui"
 	"github.com/noah-blockchain/noah-go-node/log"
+	"github.com/noah-blockchain/noah-go-node/mainnet"
+	"github.com/noah-blockchain/noah-go-node/testnet"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/abci/types"
 	tmCfg "github.com/tendermint/tendermint/config"
@@ -205,7 +206,7 @@ func getGenesis() (doc *tmTypes.GenesisDoc, e error) {
 	genesisFile := fmt.Sprintf("%s/config-%s/genesis.json", utils.GetNoahHome(), config.NetworkId)
 
 	if !common.FileExists(genesisFile) {
-		if config.ChainId == "testnet" {
+		if node_types.GetCurrentChainID() == node_types.ChainTestnet {
 			if err := testnet.GenerateStatic(genesisFile); err != nil {
 				return nil, err
 			}
