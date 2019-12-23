@@ -56,7 +56,7 @@ func initNode() {
 	utils.NoahHome = os.ExpandEnv(filepath.Join("$HOME", "noah_test"))
 	_ = os.RemoveAll(utils.NoahHome)
 
-	if err := common.EnsureDir(utils.GetNoahHome()+"/tmdata/blockstore.db", 0777); err != nil {
+	if err := common.EnsureDir(fmt.Sprintf("%s/tmdata-%s/blockstore.db", utils.GetNoahHome(), config.NetworkId), 0777); err != nil {
 		log.Error(err.Error())
 		os.Exit(1)
 	}
@@ -155,7 +155,7 @@ func TestSendTx(t *testing.T) {
 
 	tx := transaction.Transaction{
 		Nonce:         nonce,
-		ChainID:       types.CurrentChainID,
+		ChainID:       types.GetCurrentChainID(),
 		GasPrice:      1,
 		GasCoin:       types.GetBaseCoin(),
 		Type:          transaction.TypeSend,
@@ -219,7 +219,7 @@ func TestSmallStakeValidator(t *testing.T) {
 
 	tx := transaction.Transaction{
 		Nonce:         nonce,
-		ChainID:       types.CurrentChainID,
+		ChainID:       types.GetCurrentChainID(),
 		GasPrice:      1,
 		GasCoin:       types.GetBaseCoin(),
 		Type:          transaction.TypeDeclareCandidacy,
@@ -255,7 +255,7 @@ func TestSmallStakeValidator(t *testing.T) {
 	tx = transaction.Transaction{
 		Nonce:         nonce,
 		GasPrice:      1,
-		ChainID:       types.CurrentChainID,
+		ChainID:       types.GetCurrentChainID(),
 		GasCoin:       types.GetBaseCoin(),
 		Type:          transaction.TypeSetCandidateOnline,
 		Data:          encodedData,
@@ -323,7 +323,7 @@ func TestSmallStakeValidator(t *testing.T) {
 	tx = transaction.Transaction{
 		Nonce:         nonce,
 		GasPrice:      1,
-		ChainID:       types.CurrentChainID,
+		ChainID:       types.GetCurrentChainID(),
 		GasCoin:       types.GetBaseCoin(),
 		Type:          transaction.TypeSetCandidateOnline,
 		Data:          encodedData,

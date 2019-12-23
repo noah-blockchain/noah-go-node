@@ -78,7 +78,7 @@ func (data RedeemCheckData) Run(tx *Transaction, context *state.StateDB, isCheck
 	}
 
 	if context.Height() > upgrades.UpgradeBlock1 {
-		if decodedCheck.ChainID != types.CurrentChainID {
+		if decodedCheck.ChainID != types.GetCurrentChainID() {
 			return Response{
 				Code: code.WrongChainID,
 				Log:  "Wrong chain id"}

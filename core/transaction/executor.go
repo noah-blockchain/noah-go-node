@@ -2,13 +2,14 @@ package transaction
 
 import (
 	"fmt"
+	"math/big"
+	"sync"
+
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/tendermint/tendermint/libs/common"
-	"math/big"
-	"sync"
 )
 
 var (
@@ -54,7 +55,7 @@ func RunTx(context *state.StateDB,
 			Log:  err.Error()}
 	}
 
-	if tx.ChainID != types.CurrentChainID {
+	if tx.ChainID != types.GetCurrentChainID() {
 		return Response{
 			Code: code.WrongChainID,
 			Log:  "Wrong chain id"}
