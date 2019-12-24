@@ -421,7 +421,7 @@ func getGenesis() (*types2.GenesisDoc, error) {
 		return nil, err
 	}
 
-	genesisFile := utils.GetNoahHome() + "/config/genesis.json"
+	genesisFile := fmt.Sprintf("%s/config-%s/genesis.json", utils.GetNoahHome(), config.NetworkId)
 	if err := genesisDoc.SaveAs(genesisFile); err != nil {
 		panic(err)
 	}

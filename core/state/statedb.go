@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
+	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/check"
 	"github.com/noah-blockchain/noah-go-node/core/dao"
 	"github.com/noah-blockchain/noah-go-node/core/developers"
@@ -1976,7 +1977,7 @@ func (s *StateDB) CheckForInvariants() error {
 		return nil
 	}
 
-	genesisFile := utils.GetNoahHome() + "/config/genesis.json"
+	genesisFile := fmt.Sprintf("%s/config-%s/genesis.json", utils.GetNoahHome(), config.NetworkId)
 	genesis, err := tmTypes.GenesisDocFromFile(genesisFile)
 	if err != nil {
 		panic(err)
