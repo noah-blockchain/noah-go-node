@@ -68,30 +68,6 @@
         "commission": "100",
         "accum_reward": "0",
         "absent_times": "________________________"
-      },
-      {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-        "total_noah_stake": "1",
-        "pub_key": "Np6ae3bd832eed95e5d6283afc08e0531063f5e5006d21d717f08f6e635ee9de8f",
-        "commission": "100",
-        "accum_reward": "0",
-        "absent_times": "________________________"
-      },
-      {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-        "total_noah_stake": "1",
-        "pub_key": "Npc6369fef19d127ca79245f95c1f993c3df7e46ad480a41a62437a75e6258074b",
-        "commission": "100",
-        "accum_reward": "0",
-        "absent_times": "________________________"
-      },
-      {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-        "total_noah_stake": "1",
-        "pub_key": "Np2205547205278aecc3837aad1f20a948ed9305a35e8520814aa691c8b807777b",
-        "commission": "100",
-        "accum_reward": "0",
-        "absent_times": "________________________"
       }
     ],
     "candidates": [
@@ -185,57 +161,6 @@
         "owner_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
         "total_noah_stake": "1",
         "pub_key": "Npc975db1f277edd1c1a106119eb67b04b8232e7676b685830e90c116709c93984",
-        "commission": "100",
-        "stakes": [
-          {
-            "owner": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-            "coin": "NOAH",
-            "value": "1",
-            "noah_value": "1"
-          }
-        ],
-        "created_at_block": "1",
-        "status": 2
-      },
-      {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-        "owner_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-        "total_noah_stake": "1",
-        "pub_key": "Np6ae3bd832eed95e5d6283afc08e0531063f5e5006d21d717f08f6e635ee9de8f",
-        "commission": "100",
-        "stakes": [
-          {
-            "owner": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-            "coin": "NOAH",
-            "value": "1",
-            "noah_value": "1"
-          }
-        ],
-        "created_at_block": "1",
-        "status": 2
-      },
-      {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-        "owner_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-        "total_noah_stake": "1",
-        "pub_key": "Npc6369fef19d127ca79245f95c1f993c3df7e46ad480a41a62437a75e6258074b",
-        "commission": "100",
-        "stakes": [
-          {
-            "owner": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-            "coin": "NOAH",
-            "value": "1",
-            "noah_value": "1"
-          }
-        ],
-        "created_at_block": "1",
-        "status": 2
-      },
-      {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-        "owner_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-        "total_noah_stake": "1",
-        "pub_key": "Np2205547205278aecc3837aad1f20a948ed9305a35e8520814aa691c8b807777b",
         "commission": "100",
         "stakes": [
           {
