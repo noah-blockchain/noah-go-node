@@ -6,29 +6,35 @@
 
 # NOAH-blockchain go-node
 
-### [dev-branch](https://github.com/noah-blockchain/noah-go-node/tree/dev)
-The branch contains the most current version
-
-#### [beta-branch](https://github.com/noah-blockchain/noah-go-node/tree/beta)
-The branch contains a version for beta-testing
-
-#### [master-branch](https://github.com/noah-blockchain/noah-go-node/tree/master)
-Public release
-
 ## Sub-modules
 
-#### [Remote cluster using terraform and ansible](https://github.com/tendermint/tendermint/blob/master/docs/networks/terraform-and-ansible.md)
+#### [1) Remote cluster using terraform and ansible](https://github.com/tendermint/tendermint/blob/master/docs/networks/terraform-and-ansible.md)
+#### [2) Amino](https://github.com/tendermint/go-amino)
+#### [3) IAVL+ Tree](https://github.com/tendermint/iavl)
 
-#### [Amino](https://github.com/tendermint/go-amino)
+###[Guide how to configure and delegate your validator](https://docs.google.com/document/d/19sZeIFy6aE8xuPg1-mq-0Cah2fiyj-BpyZCSQXEZKFc/edit)
 
-#### [IAVL+ Tree](https://github.com/tendermint/iavl)
+## Quick Installation from Docker
 
-##  Install and build  node
+1) Pull docker from official docker hub
 
-###[Quick Start](https://docs.google.com/document/d/19sZeIFy6aE8xuPg1-mq-0Cah2fiyj-BpyZCSQXEZKFc/edit)
+```
+docker pull noahblockchain/node
+```
+2) Run you validator for initialization node
+```
+docker run -p 26656:26656 -p 26657:26657 -p 26660:26660 -p 8841:8841 -p 3000:3000 -v ~/node:/root/noah/ noahblockchain/node noah node --network-id=noah-mainnet-1 --chain-id=mainnet --validator-mode
+```
 
-###### 1. Download Noah
-Clone source code to your machine
+--network-id=X, where X its choose network (noah-mainnet-1 or noah-testnet-1)
+
+--chain-id=Y, where Y its choose chain (mainnet or testnet)
+
+--validator-mode if node working in Validator mode
+
+## Starting validator from source code
+
+###### 1. Clone source code to your machine
 ```
 mkdir -p $GOPATH/src/github.com/noah-blockchain or $HOME/noah
 cd $GOPATH/src/github.com/noah-blockchain
@@ -47,24 +53,13 @@ make build
 ```
 After this command compiled node will be in folder build and node configuration will be in folder **$HOME/noah.**
 
-###### 4. Configure Node Settings
-
-1) Open folder **$HOME/noah/config** and find file **config.toml**
-2) Set up db for node. For using **goleveldb** setup parameter **db_backend="goleveldb"**
-3) Set up node mode (validator or not validator). For setup node mode we using env variable **VALIDATOR_MODE=(true or false)**.
-But if the env **VALIDATOR_MODE** not exist we using parameter from **config.toml** named **validator_mode='(true or false)'**.
-Default value **validator_mode='false'**.
-4) Setup private node key for generation **Node ID**. By default, node will be generate node key automatically, 
-but if you have setup your own node key you can put them in env **NODE_KEY.**
-
-###### 5. Run node
-For running node use command **./build/noah node**.
+###### 4. Run node
+For running validator use command 
 ```
-noah version
-noah node 
+./build/noah node --network-id=noah-mainnet-1 --chain-id=mainnet --validator-mode
 ```
-
-_We recommend using our node docker._
-###### 6. Use GUI
+We recommend using our official node docker.
+###### 5. Use GUI
 Open http://localhost:3000/ in local browser to see node’s GUI.
-P.S. Available only in **not validator** mode.
+
+P.S. Available only in NOT validator mode.
