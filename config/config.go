@@ -110,13 +110,13 @@ func DefaultConfig() *Config {
 	cfg.Mempool.Size = 10000
 
 	cfg.Consensus.WalPath = fmt.Sprintf("tmdata-%s/cs.wal/wal", NetworkId)
-	cfg.Consensus.TimeoutPropose = 100 * time.Second
-	cfg.Consensus.TimeoutProposeDelta = 50000 * time.Millisecond
-	cfg.Consensus.TimeoutPrevote = 100 * time.Second
-	cfg.Consensus.TimeoutPrevoteDelta = 5000 * time.Millisecond
-	cfg.Consensus.TimeoutPrecommit = 100 * time.Second
-	cfg.Consensus.TimeoutPrecommitDelta = 5000 * time.Millisecond
-	cfg.Consensus.TimeoutCommit = 100 * time.Second
+	cfg.Consensus.TimeoutPropose = 2 * time.Second
+	cfg.Consensus.TimeoutProposeDelta = 500 * time.Millisecond
+	cfg.Consensus.TimeoutPrevote = 1 * time.Second
+	cfg.Consensus.TimeoutPrevoteDelta = 500 * time.Millisecond
+	cfg.Consensus.TimeoutPrecommit = 1 * time.Second
+	cfg.Consensus.TimeoutPrecommitDelta = 500 * time.Millisecond
+	cfg.Consensus.TimeoutCommit = 4500 * time.Millisecond
 
 	cfg.P2P.RecvRate = 15360000 // 15 mB/s
 	cfg.P2P.SendRate = 15360000 // 15 mB/s
