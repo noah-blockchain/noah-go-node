@@ -1,5 +1,5 @@
 {
-  "genesis_time": "2019-12-19T00:00:01Z",
+  "genesis_time": "2020-04-18T00:00:01Z",
   "chain_id": "noah-mainnet-1",
   "consensus_params": {
     "block": {
@@ -22,7 +22,7 @@
     "start_height": "0",
     "validators": [
       {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+        "reward_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
         "total_noah_stake": "1",
         "pub_key": "Npaad61a728373fe51da082e36b64b76d754ac6710df194b93babc20a6a92ecc70",
         "commission": "100",
@@ -30,7 +30,7 @@
         "absent_times": "________________________"
       },
       {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+        "reward_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
         "total_noah_stake": "1",
         "pub_key": "Npbd1b132ed5ae3de0ac45b71495246271abf9f1aee06877160a83444f64862a0b",
         "commission": "100",
@@ -38,7 +38,7 @@
         "absent_times": "________________________"
       },
       {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+        "reward_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
         "total_noah_stake": "1",
         "pub_key": "Np7485a44e3f8bb60fedd5102b65ac71192429f794dd890aa680eaab78b9459654",
         "commission": "100",
@@ -46,7 +46,7 @@
         "absent_times": "________________________"
       },
       {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+        "reward_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
         "total_noah_stake": "1",
         "pub_key": "Np2e7d4b497fa7eb203b7c8002d9e07fd2ddb0a9ccd89335040e7bac36c6365de5",
         "commission": "100",
@@ -54,7 +54,7 @@
         "absent_times": "________________________"
       },
       {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+        "reward_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
         "total_noah_stake": "1",
         "pub_key": "Npc3dec7c3cbabc307396b9344fbb0aed2fd989982258ac5ed5a7dcc9eeb8998e4",
         "commission": "100",
@@ -62,7 +62,7 @@
         "absent_times": "________________________"
       },
       {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+        "reward_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
         "total_noah_stake": "1",
         "pub_key": "Npc975db1f277edd1c1a106119eb67b04b8232e7676b685830e90c116709c93984",
         "commission": "100",
@@ -72,14 +72,14 @@
     ],
     "candidates": [
       {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-        "owner_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+        "reward_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
+        "owner_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
         "total_noah_stake": "1",
         "pub_key": "Npaad61a728373fe51da082e36b64b76d754ac6710df194b93babc20a6a92ecc70",
         "commission": "100",
         "stakes": [
           {
-            "owner": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+            "owner": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
             "coin": "NOAH",
             "value": "1",
             "noah_value": "1"
@@ -89,14 +89,14 @@
         "status": 2
       },
       {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-        "owner_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+        "reward_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
+        "owner_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
         "total_noah_stake": "1",
         "pub_key": "Npbd1b132ed5ae3de0ac45b71495246271abf9f1aee06877160a83444f64862a0b",
         "commission": "100",
         "stakes": [
           {
-            "owner": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+            "owner": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
             "coin": "NOAH",
             "value": "1",
             "noah_value": "1"
@@ -106,14 +106,14 @@
         "status": 2
       },
       {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-        "owner_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+        "reward_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
+        "owner_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
         "total_noah_stake": "1",
         "pub_key": "Np7485a44e3f8bb60fedd5102b65ac71192429f794dd890aa680eaab78b9459654",
         "commission": "100",
         "stakes": [
           {
-            "owner": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+            "owner": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
             "coin": "NOAH",
             "value": "1",
             "noah_value": "1"
@@ -123,14 +123,14 @@
         "status": 2
       },
       {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-        "owner_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+        "reward_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
+        "owner_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
         "total_noah_stake": "1",
         "pub_key": "Np2e7d4b497fa7eb203b7c8002d9e07fd2ddb0a9ccd89335040e7bac36c6365de5",
         "commission": "100",
         "stakes": [
           {
-            "owner": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+            "owner": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
             "coin": "NOAH",
             "value": "1",
             "noah_value": "1"
@@ -140,14 +140,14 @@
         "status": 2
       },
       {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-        "owner_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+        "reward_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
+        "owner_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
         "total_noah_stake": "1",
         "pub_key": "Npc3dec7c3cbabc307396b9344fbb0aed2fd989982258ac5ed5a7dcc9eeb8998e4",
         "commission": "100",
         "stakes": [
           {
-            "owner": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+            "owner": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
             "coin": "NOAH",
             "value": "1",
             "noah_value": "1"
@@ -157,14 +157,14 @@
         "status": 2
       },
       {
-        "reward_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
-        "owner_address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+        "reward_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
+        "owner_address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
         "total_noah_stake": "1",
         "pub_key": "Npc975db1f277edd1c1a106119eb67b04b8232e7676b685830e90c116709c93984",
         "commission": "100",
         "stakes": [
           {
-            "owner": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+            "owner": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
             "coin": "NOAH",
             "value": "1",
             "noah_value": "1"
@@ -176,7 +176,7 @@
     ],
     "accounts": [
       {
-        "address": "NOAHx30dcedfac243e19503112c4e8c29bf519cc1b660",
+        "address": "NOAHxf9ad8be291aa5dff6dfb9f2088cf0edaeb169c7e",
         "balance": [
           {
             "coin": "NOAH",
@@ -186,7 +186,7 @@
         "nonce": "0"
       },
       {
-        "address": "NOAHxb9f45456e60c43d8186927a2d74a7aa4693880fd",
+        "address": "NOAHx493609211d63950e550e72439d15e7c4dca40e82",
         "balance": [
           {
             "coin": "NOAH",
