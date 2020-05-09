@@ -13,9 +13,9 @@
 #### [3) IAVL+ Tree](https://github.com/tendermint/iavl)
 
 
-#### [ノアツールのガイド。マスターノードを開始し、バリデーターになる方法(JAPAN)](https://docs.google.com/document/d/1scR8WdMVpGO8nUVDmogiE3mQqa-ivkblBPJ6C903HxE/edit#heading=h.pxe5viz3whk6)
-#### [Noah Tools Guide: How to Launch Masternode and Become a Validator(ENG)](https://docs.google.com/document/d/1fU4DVzwsBuzonOuAlziEYfhJL-4CyT14le5wSllQfVA/edit#)
-### [Guide how to configure and delegate your validator(RUS)](https://docs.google.com/document/d/19sZeIFy6aE8xuPg1-mq-0Cah2fiyj-BpyZCSQXEZKFc/edit)
+### [ノアツールのガイド。マスターノードを開始し、バリデーターになる方法(JAPAN)](https://docs.google.com/document/d/1scR8WdMVpGO8nUVDmogiE3mQqa-ivkblBPJ6C903HxE/edit#heading=h.pxe5viz3whk6)
+### [Noah Tools Guide: How to Launch Masternode and Become a Validator(ENG)](https://docs.google.com/document/d/1fU4DVzwsBuzonOuAlziEYfhJL-4CyT14le5wSllQfVA/edit#)
+#### [Guide how to configure and delegate your validator(RUS)](https://docs.google.com/document/d/19sZeIFy6aE8xuPg1-mq-0Cah2fiyj-BpyZCSQXEZKFc/edit)
 
 ## Quick Installation from Docker
 
