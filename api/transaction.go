@@ -13,10 +13,6 @@ func Transaction(hash []byte) (*TransactionResponse, error) {
 		return nil, err
 	}
 
-	if uint64(tx.Height) > blockchain.LastCommittedHeight() {
-		return nil, rpctypes.RPCError{Code: 404, Message: "Tx not found"}
-	}
-
 	decodedTx, _ := transaction.TxDecoder.DecodeFromBytes(tx.Tx)
 	sender, _ := decodedTx.Sender()
 
@@ -31,16 +27,16 @@ func Transaction(hash []byte) (*TransactionResponse, error) {
 	}
 
 	return &TransactionResponse{
-		Hash:     common.HexBytes(tx.Tx.Hash()),
+		Hash:     bytes.HexBytes(tx.Tx.Hash()).String(),
 		RawTx:    fmt.Sprintf("%x", []byte(tx.Tx)),
 		Height:   tx.Height,
 		Index:    tx.Index,
 		From:     sender.String(),
 		Nonce:    decodedTx.Nonce,
 		GasPrice: decodedTx.GasPrice,
-		GasCoin:  decodedTx.GasCoin,
+		GasCoin:  decodedTx.GasCoin.String(),
 		Gas:      decodedTx.Gas(),
-		Type:     decodedTx.Type,
+		Type:     uint8(decodedTx.Type),
 		Data:     data,
 		Payload:  decodedTx.Payload,
 		Tags:     tags,

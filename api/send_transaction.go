@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/noah-blockchain/noah-go-node/rpc/lib/types"
-	"github.com/tendermint/tendermint/rpc/core/types"
+	"github.com/MinterTeam/minter-go-node/rpc/lib/types"
+	core_types "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 func SendTransaction(tx []byte) (*core_types.ResultBroadcastTx, error) {

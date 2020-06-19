@@ -40,7 +40,7 @@ func Transactions(query string, page, perPage int) (*[]TransactionResponse, erro
 		perPage = 100
 	}
 
-	rpcResult, err := client.TxSearch(query, false, page, perPage)
+	rpcResult, err := client.TxSearch(query, false, page, perPage, "desc")
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func Transactions(query string, page, perPage int) (*[]TransactionResponse, erro
 		}
 
 		result[i] = TransactionResponse{
-			Hash:     common.HexBytes(tx.Tx.Hash()),
+			Hash:     bytes.HexBytes(tx.Tx.Hash()).String(),
 			RawTx:    fmt.Sprintf("%x", []byte(tx.Tx)),
 			Height:   tx.Height,
 			Index:    tx.Index,
@@ -69,8 +69,8 @@ func Transactions(query string, page, perPage int) (*[]TransactionResponse, erro
 			Nonce:    decodedTx.Nonce,
 			Gas:      decodedTx.Gas(),
 			GasPrice: decodedTx.GasPrice,
-			GasCoin:  decodedTx.GasCoin,
-			Type:     decodedTx.Type,
+			GasCoin:  decodedTx.GasCoin.String(),
+			Type:     uint8(decodedTx.Type),
 			Data:     data,
 			Payload:  decodedTx.Payload,
 			Tags:     tags,
