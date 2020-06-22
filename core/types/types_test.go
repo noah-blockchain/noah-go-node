@@ -19,11 +19,10 @@ package types
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/tendermint/go-amino"
 	"math/big"
 	"strings"
 	"testing"
-
-	"github.com/tendermint/go-amino"
 )
 
 func TestBytesConversion(t *testing.T) {
@@ -138,31 +137,28 @@ func TestAppState(t *testing.T) {
 	appState := AppState{
 		Validators: []Validator{
 			{
-				RewardAddress:  testAddr,
-				TotalNoahStake: big.NewInt(1),
-				PubKey:         pubkey,
-				Commission:     1,
-				AccumReward:    big.NewInt(1),
-				AbsentTimes:    ba,
+				TotalBipStake: big.NewInt(1).String(),
+				PubKey:        pubkey,
+				AccumReward:   big.NewInt(1).String(),
+				AbsentTimes:   ba,
 			},
 		},
 		Candidates: []Candidate{
 			{
-				RewardAddress:  testAddr,
-				OwnerAddress:   testAddr,
-				TotalNoahStake: big.NewInt(1),
-				PubKey:         pubkey,
-				Commission:     1,
+				RewardAddress: testAddr,
+				OwnerAddress:  testAddr,
+				TotalBipStake: big.NewInt(1).String(),
+				PubKey:        pubkey,
+				Commission:    1,
 				Stakes: []Stake{
 					{
-						Owner:     testAddr,
-						Coin:      GetBaseCoin(),
-						Value:     big.NewInt(1),
-						NoahValue: big.NewInt(1),
+						Owner:    testAddr,
+						Coin:     GetBaseCoin(),
+						Value:    big.NewInt(1).String(),
+						BipValue: big.NewInt(1).String(),
 					},
 				},
-				CreatedAtBlock: 1,
-				Status:         1,
+				Status: 1,
 			},
 		},
 		Accounts: []Account{
@@ -171,7 +167,7 @@ func TestAppState(t *testing.T) {
 				Balance: []Balance{
 					{
 						Coin:  GetBaseCoin(),
-						Value: big.NewInt(1),
+						Value: big.NewInt(1).String(),
 					},
 				},
 				Nonce: 1,
@@ -184,20 +180,20 @@ func TestAppState(t *testing.T) {
 		},
 		Coins: []Coin{
 			{
-				Name:           "ASD",
-				Symbol:         GetBaseCoin(),
-				Volume:         big.NewInt(1),
-				Crr:            1,
-				ReserveBalance: big.NewInt(1),
+				Name:    "ASD",
+				Symbol:  GetBaseCoin(),
+				Volume:  big.NewInt(1).String(),
+				Crr:     1,
+				Reserve: big.NewInt(1).String(),
 			},
 		},
 		FrozenFunds: []FrozenFund{
 			{
 				Height:       1,
 				Address:      testAddr,
-				CandidateKey: pubkey,
+				CandidateKey: &pubkey,
 				Coin:         GetBaseCoin(),
-				Value:        big.NewInt(1),
+				Value:        big.NewInt(1).String(),
 			},
 		},
 		UsedChecks: []UsedCheck{
