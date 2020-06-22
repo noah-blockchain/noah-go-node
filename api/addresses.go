@@ -17,22 +17,25 @@ func Addresses(addresses []types.Address, height int) (*[]AddressesResponse, err
 		return nil, err
 	}
 
+	cState.RLock()
+	defer cState.RUnlock()
+
 	response := make([]AddressesResponse, len(addresses))
 
 	for i, address := range addresses {
 		data := AddressesResponse{
-			Address:          address,
+			Address:          address.String(),
 			Balance:          make(map[string]string),
-			TransactionCount: cState.GetNonce(address),
+			TransactionCount: cState.Accounts.GetNonce(address),
 		}
 
-		balances := cState.GetBalances(address)
-		for k, v := range balances.Data {
+		balances := cState.Accounts.GetBalances(address)
+		for k, v := range balances {
 			data.Balance[k.String()] = v.String()
 		}
 
 		if _, exists := data.Balance[types.GetBaseCoin().String()]; !exists {
-			data.Balance[types.GetBaseCoin().String()] = big.NewInt(0).String()
+			data.Balance[types.GetBaseCoin().String()] = "0"
 		}
 
 		response[i] = data

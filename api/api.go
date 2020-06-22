@@ -67,8 +67,8 @@ func RunAPI(b *noah.Blockchain, tmRPC *rpc.Local, cfg *config.Config) {
 	waitForTendermint()
 
 	m := http.NewServeMux()
-	logger := log.With("module", "rpc")
-	rpcserver.RegisterRPCFuncs(m, Routes, cdc, logger)
+
+	rpcserver.RegisterRPCFuncs(m, Routes, cdc, logger.With("module", "rpc"), responseTime(b))
 	listener, err := rpcserver.Listen(cfg.APIListenAddress, rpcserver.Config{
 		MaxOpenConnections: cfg.APISimultaneousRequests,
 	})
@@ -84,7 +84,7 @@ func RunAPI(b *noah.Blockchain, tmRPC *rpc.Local, cfg *config.Config) {
 	})
 
 	handler := c.Handler(m)
-	log.Error("Failed to start API", "err", rpcserver.StartHTTPServer(listener, Handler(handler), logger))
+	logger.Error("Failed to start API", "err", rpcserver.StartHTTPServer(listener, Handler(handler), logger))
 }
 
 func Handler(h http.Handler) http.Handler {
@@ -125,7 +125,7 @@ type Response struct {
 	Log    string      `json:"log,omitempty"`
 }
 
-func GetStateForHeight(height int) (*state.StateDB, error) {
+func GetStateForHeight(height int) (*state.State, error) {
 	if height > 0 {
 		cState, err := blockchain.GetStateForHeight(uint64(height))
 
@@ -154,8 +154,8 @@ func RegisterCryptoAmino(cdc *amino.Codec) {
 }
 
 func RegisterEvidenceMessages(cdc *amino.Codec) {
-	cdc.RegisterInterface((*evidence.EvidenceMessage)(nil), nil)
-	cdc.RegisterConcrete(&evidence.EvidenceListMessage{},
+	cdc.RegisterInterface((*evidence.Message)(nil), nil)
+	cdc.RegisterConcrete(&evidence.ListMessage{},
 		"tendermint/evidence/EvidenceListMessage", nil)
 	cdc.RegisterInterface((*types.Evidence)(nil), nil)
 	cdc.RegisterConcrete(&types.DuplicateVoteEvidence{}, "tendermint/DuplicateVoteEvidence", nil)

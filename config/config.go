@@ -16,6 +16,9 @@ const (
 	// LogFormatJSON is a format for json output
 	LogFormatJSON = "json"
 
+	defaultConfigDir = "config"
+	defaultDataDir   = "data"
+
 	defaultConfigFileName  = "config.toml"
 	defaultGenesisJSONName = "genesis.json"
 
