@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"reflect"
 
-	"github.com/MinterTeam/go-amino"
-	"github.com/pkg/errors"
+	"github.com/tendermint/go-amino"
+
 	tmpubsub "github.com/tendermint/tendermint/libs/pubsub"
 )
 
