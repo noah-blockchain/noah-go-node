@@ -2,11 +2,10 @@ package api
 
 import (
 	"github.com/noah-blockchain/noah-go-node/core/types"
-	"math/big"
 )
 
 type AddressesResponse struct {
-	Address          types.Address     `json:"address"`
+	Address          string            `json:"address"`
 	Balance          map[string]string `json:"balance"`
 	TransactionCount uint64            `json:"transaction_count"`
 }

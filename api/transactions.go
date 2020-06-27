@@ -4,27 +4,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/noah-blockchain/noah-go-node/core/transaction"
-	"github.com/noah-blockchain/noah-go-node/core/types"
-	"github.com/tendermint/tendermint/libs/common"
-	"github.com/tendermint/tendermint/rpc/core/types"
+	"github.com/tendermint/tendermint/libs/bytes"
+	core_types "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 type TransactionResponse struct {
-	Hash     common.HexBytes    `json:"hash"`
-	RawTx    string             `json:"raw_tx"`
-	Height   int64              `json:"height"`
-	Index    uint32             `json:"index"`
-	From     string             `json:"from"`
-	Nonce    uint64             `json:"nonce"`
-	Gas      int64              `json:"gas"`
-	GasPrice uint32             `json:"gas_price"`
-	GasCoin  types.CoinSymbol   `json:"gas_coin"`
-	Type     transaction.TxType `json:"type"`
-	Data     json.RawMessage    `json:"data"`
-	Payload  []byte             `json:"payload"`
-	Tags     map[string]string  `json:"tags"`
-	Code     uint32             `json:"code,omitempty"`
-	Log      string             `json:"log,omitempty"`
+	Hash     string            `json:"hash"`
+	RawTx    string            `json:"raw_tx"`
+	Height   int64             `json:"height"`
+	Index    uint32            `json:"index"`
+	From     string            `json:"from"`
+	Nonce    uint64            `json:"nonce"`
+	Gas      int64             `json:"gas"`
+	GasPrice uint32            `json:"gas_price"`
+	GasCoin  string            `json:"gas_coin"`
+	Type     uint8             `json:"type"`
+	Data     json.RawMessage   `json:"data"`
+	Payload  []byte            `json:"payload"`
+	Tags     map[string]string `json:"tags"`
+	Code     uint32            `json:"code,omitempty"`
+	Log      string            `json:"log,omitempty"`
 }
 
 type ResultTxSearch struct {

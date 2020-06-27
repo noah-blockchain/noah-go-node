@@ -93,43 +93,41 @@ func Block(height int64) (*BlockResponse, error) {
 			return nil, err
 		}
 
-		str := string(data)
-		fmt.Println(str)
-
 		txs[i] = BlockTransactionResponse{
-			Hash:        fmt.Sprintf("Nt%x", rawTx.Hash()),
+			Hash:        fmt.Sprintf("Mt%x", rawTx.Hash()),
 			RawTx:       fmt.Sprintf("%x", []byte(rawTx)),
 			From:        sender.String(),
 			Nonce:       tx.Nonce,
 			GasPrice:    tx.GasPrice,
-			Type:        tx.Type,
+			Type:        uint8(tx.Type),
 			Data:        data,
 			Payload:     tx.Payload,
 			ServiceData: tx.ServiceData,
 			Gas:         tx.Gas(),
-			GasCoin:     tx.GasCoin,
+			GasCoin:     tx.GasCoin.String(),
 			Tags:        tags,
-			Code:        blockResults.Results.DeliverTx[i].Code,
-			Log:         blockResults.Results.DeliverTx[i].Log,
+			Code:        blockResults.TxsResults[i].Code,
+			Log:         blockResults.TxsResults[i].Log,
 		}
 	}
 
 	var validators []BlockValidatorResponse
-	proposer := types.Pubkey{}
+	var proposer *string
 	if height > 1 {
-		proposer, err = getBlockProposer(block)
+		p, err := getBlockProposer(block, totalValidators)
 		if err != nil {
 			return nil, err
 		}
 
-		validators = make([]BlockValidatorResponse, len(tmValidators.Validators))
-		for i, tmval := range tmValidators.Validators {
-			signed := false
-			for _, vote := range block.Block.LastCommit.Precommits {
-				if vote == nil {
-					continue
-				}
+		if p != nil {
+			str := p.String()
+			proposer = &str
+		}
 
+		validators = make([]BlockValidatorResponse, len(totalValidators))
+		for i, tmval := range totalValidators {
+			signed := false
+			for _, vote := range block.Block.LastCommit.Signatures {
 				if bytes.Equal(vote.ValidatorAddress.Bytes(), tmval.Address.Bytes()) {
 					signed = true
 					break
@@ -137,12 +135,8 @@ func Block(height int64) (*BlockResponse, error) {
 			}
 
 			validators[i] = BlockValidatorResponse{
-				Pubkey: fmt.Sprintf("Np%x", tmval.PubKey.Bytes()[5:]),
+				Pubkey: fmt.Sprintf("Mp%x", tmval.PubKey.Bytes()[5:]),
 				Signed: signed,
-			}
-
-			if bytes.Equal(tmval.Address.Bytes(), block.Block.ProposerAddress.Bytes()) {
-				proposer = tmval.PubKey.Bytes()[5:]
 			}
 		}
 	}

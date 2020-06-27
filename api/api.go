@@ -2,40 +2,39 @@ package api
 
 import (
 	"fmt"
-	"net/http"
-	"net/url"
-	"strings"
-	"time"
-
-	"github.com/MinterTeam/go-amino"
+	eventsdb "github.com/noah-blockchain/events-db"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/noah"
 	"github.com/noah-blockchain/noah-go-node/core/state"
-	"github.com/noah-blockchain/noah-go-node/eventsdb/events"
-	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/rpc/lib/server"
 	"github.com/rs/cors"
+	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/multisig"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tendermint/tendermint/evidence"
+	"github.com/tendermint/tendermint/libs/log"
 	rpc "github.com/tendermint/tendermint/rpc/client"
 	"github.com/tendermint/tendermint/types"
+	"net/http"
+	"net/url"
+	"strings"
+	"time"
 )
 
 var (
 	cdc        = amino.NewCodec()
 	blockchain *noah.Blockchain
 	client     *rpc.Local
-	noahCfg    *config.Config
+	noahCfg  *config.Config
 )
 
 var Routes = map[string]*rpcserver.RPCFunc{
 	"status":                 rpcserver.NewRPCFunc(Status, ""),
 	"candidates":             rpcserver.NewRPCFunc(Candidates, "height,include_stakes"),
 	"candidate":              rpcserver.NewRPCFunc(Candidate, "pub_key,height"),
-	"validators":             rpcserver.NewRPCFunc(Validators, "height"),
+	"validators":             rpcserver.NewRPCFunc(Validators, "height,page,perPage"),
 	"address":                rpcserver.NewRPCFunc(Address, "address,height"),
 	"addresses":              rpcserver.NewRPCFunc(Addresses, "addresses,height"),
 	"send_transaction":       rpcserver.NewRPCFunc(SendTransaction, "tx"),
@@ -56,10 +55,20 @@ var Routes = map[string]*rpcserver.RPCFunc{
 	"missed_blocks":          rpcserver.NewRPCFunc(MissedBlocks, "pub_key,height"),
 }
 
-func RunAPI(b *noah.Blockchain, tmRPC *rpc.Local, cfg *config.Config) {
+func responseTime(b *noah.Blockchain) func(f func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+	return func(f func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+		return func(w http.ResponseWriter, r *http.Request) {
+			start := time.Now()
+			f(w, r)
+			go b.StatisticData().SetApiTime(time.Now().Sub(start), r.URL.Path)
+		}
+	}
+}
+
+func RunAPI(b *noah.Blockchain, tmRPC *rpc.Local, cfg *config.Config, logger log.Logger) {
 	noahCfg = cfg
 	RegisterCryptoAmino(cdc)
-	events.RegisterAminoEvents(cdc)
+	eventsdb.RegisterAminoEvents(cdc)
 	RegisterEvidenceMessages(cdc)
 
 	client = tmRPC
@@ -93,7 +102,11 @@ func Handler(h http.Handler) http.Handler {
 
 		for key, value := range query {
 			val := value[0]
-			if strings.HasPrefix(val, "NOAHx") {
+			if strings.HasPrefix(val, "Mx") {
+				query.Set(key, fmt.Sprintf("\"%s\"", val))
+			}
+
+			if strings.HasPrefix(val, "Mp") {
 				query.Set(key, fmt.Sprintf("\"%s\"", val))
 			}
 		}

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/noah-blockchain/noah-go-node/core/transaction"
 	"github.com/noah-blockchain/noah-go-node/rpc/lib/types"
-	"github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/bytes"
 )
 
 func Transaction(hash []byte) (*TransactionResponse, error) {
