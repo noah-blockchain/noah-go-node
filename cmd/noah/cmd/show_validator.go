@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"fmt"
-
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/go-amino"
-	"github.com/tendermint/tendermint/crypto/encoding/amino"
-	"github.com/tendermint/tendermint/libs/common"
+	cryptoAmino "github.com/tendermint/tendermint/crypto/encoding/amino"
+	tmos "github.com/tendermint/tendermint/libs/os"
 	"github.com/tendermint/tendermint/privval"
+	"os"
 )
 
 var ShowValidator = &cobra.Command{
@@ -22,11 +22,13 @@ func showValidator(cmd *cobra.Command, args []string) error {
 	cryptoAmino.RegisterAmino(cdc)
 
 	keyFilePath := cfg.PrivValidatorKeyFile()
-	if !common.FileExists(keyFilePath) {
-		log.Fatal("private validator file does not exist", "file", keyFilePath)
+	logger := log.NewLogger(cfg)
+	if !tmos.FileExists(keyFilePath) {
+		logger.Error("private validator file does not exist", "file", keyFilePath)
+		os.Exit(1)
 	}
 
 	pv := privval.LoadFilePV(keyFilePath, cfg.PrivValidatorStateFile())
-	fmt.Printf("Np%x\n", pv.GetPubKey().Bytes()[5:])
+	fmt.Printf("Mp%x\n", pv.GetPubKey().Bytes()[5:])
 	return nil
 }
