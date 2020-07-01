@@ -7,28 +7,20 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"math/big"
-	"os"
-	"path/filepath"
-	"sync"
-	"testing"
-	"time"
-
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/developers"
-	"github.com/noah-blockchain/noah-go-node/core/state"
+	candidates2 "github.com/noah-blockchain/noah-go-node/core/state/candidates"
 	"github.com/noah-blockchain/noah-go-node/core/transaction"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/crypto"
-	"github.com/noah-blockchain/noah-go-node/eventsdb"
 	"github.com/noah-blockchain/noah-go-node/helpers"
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/rlp"
 	"github.com/tendermint/go-amino"
 	tmConfig "github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/libs/common"
 	log2 "github.com/tendermint/tendermint/libs/log"
+	tmos "github.com/tendermint/tendermint/libs/os"
 	tmNode "github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/privval"
@@ -36,6 +28,12 @@ import (
 	rpc "github.com/tendermint/tendermint/rpc/client"
 	_ "github.com/tendermint/tendermint/types"
 	types2 "github.com/tendermint/tendermint/types"
+	"math/big"
+	"os"
+	"path/filepath"
+	"sync"
+	"testing"
+	"time"
 )
 
 var pv *privval.FilePV
@@ -53,17 +51,15 @@ func init() {
 }
 
 func initNode() {
-	utils.NoahHome = os.ExpandEnv(filepath.Join("$HOME", "noah_test"))
+	utils.NoahHome = os.ExpandEnv(filepath.Join("$HOME", ".noah_test"))
 	_ = os.RemoveAll(utils.NoahHome)
 
-	if err := common.EnsureDir(fmt.Sprintf("%s/tmdata-%s/blockstore.db", utils.GetNoahHome(), config.NetworkId), 0777); err != nil {
-		log.Error(err.Error())
-		os.Exit(1)
+	if err := tmos.EnsureDir(utils.GetNoahHome()+"/tmdata/blockstore.db", 0777); err != nil {
+		panic(err.Error())
 	}
 
 	noahCfg := config.GetConfig()
-	log.InitLog(noahCfg)
-	eventsdb.InitDB(noahCfg)
+	logger := log.NewLogger(noahCfg)
 	cfg = config.GetTmConfig(noahCfg)
 	cfg.Consensus.TimeoutPropose = 0
 	cfg.Consensus.TimeoutPrecommit = 0
@@ -73,6 +69,8 @@ func initNode() {
 	cfg.Consensus.TimeoutPrevoteDelta = 0
 	cfg.Consensus.TimeoutProposeDelta = 0
 	cfg.Consensus.SkipTimeoutCommit = true
+	cfg.RPC.ListenAddress = ""
+	cfg.P2P.ListenAddress = "0.0.0.0:25566"
 	cfg.P2P.Seeds = ""
 	cfg.P2P.PersistentPeers = ""
 	cfg.DBBackend = "memdb"
@@ -108,7 +106,7 @@ func initNode() {
 		panic(fmt.Sprintf("Failed to start node: %v", err))
 	}
 
-	log.Info("Started node", "nodeInfo", node.Switch().NodeInfo())
+	logger.Info("Started node", "nodeInfo", node.Switch().NodeInfo())
 	app.SetTmNode(node)
 	tmCli = rpc.NewLocal(node)
 	l.Unlock()
@@ -139,7 +137,7 @@ func TestSendTx(t *testing.T) {
 		time.Sleep(time.Millisecond)
 	}
 
-	value := helpers.NoahToQNoah(big.NewInt(10))
+	value := helpers.NoahToPip(big.NewInt(10))
 	to := types.Address([20]byte{1})
 
 	data := transaction.SendData{
@@ -155,7 +153,7 @@ func TestSendTx(t *testing.T) {
 
 	tx := transaction.Transaction{
 		Nonce:         nonce,
-		ChainID:       types.GetCurrentChainID(),
+		ChainID:       types.CurrentChainID,
 		GasPrice:      1,
 		GasCoin:       types.GetBaseCoin(),
 		Type:          transaction.TypeSend,
@@ -197,6 +195,7 @@ func TestSendTx(t *testing.T) {
 	}
 }
 
+// TODO: refactor
 func TestSmallStakeValidator(t *testing.T) {
 	for blockchain.Height() < 2 {
 		time.Sleep(time.Millisecond)
@@ -209,7 +208,7 @@ func TestSmallStakeValidator(t *testing.T) {
 		PubKey:     pubkey,
 		Commission: 10,
 		Coin:       types.GetBaseCoin(),
-		Stake:      big.NewInt(1),
+		Stake:      big.NewInt(0),
 	}
 
 	encodedData, err := rlp.EncodeToBytes(data)
@@ -219,7 +218,7 @@ func TestSmallStakeValidator(t *testing.T) {
 
 	tx := transaction.Transaction{
 		Nonce:         nonce,
-		ChainID:       types.GetCurrentChainID(),
+		ChainID:       types.CurrentChainID,
 		GasPrice:      1,
 		GasCoin:       types.GetBaseCoin(),
 		Type:          transaction.TypeDeclareCandidacy,
@@ -255,7 +254,7 @@ func TestSmallStakeValidator(t *testing.T) {
 	tx = transaction.Transaction{
 		Nonce:         nonce,
 		GasPrice:      1,
-		ChainID:       types.GetCurrentChainID(),
+		ChainID:       types.CurrentChainID,
 		GasCoin:       types.GetBaseCoin(),
 		Type:          transaction.TypeSetCandidateOnline,
 		Data:          encodedData,
@@ -293,14 +292,14 @@ func TestSmallStakeValidator(t *testing.T) {
 				continue
 			}
 
-			vals, _ := tmCli.Validators(&targetBlockHeight)
+			vals, _ := tmCli.Validators(&targetBlockHeight, 1, 1000)
 
 			if len(vals.Validators) > 1 {
 				t.Errorf("There are should be 1 validator (has %d)", len(vals.Validators))
 			}
 
-			if len(app.stateDeliver.GetStateValidators().Data()) > 1 {
-				t.Errorf("There are should be 1 validator (has %d)", len(app.stateDeliver.GetStateValidators().Data()))
+			if len(app.stateDeliver.Validators.GetValidators()) > 1 {
+				t.Errorf("There are should be 1 validator (has %d)", len(app.stateDeliver.Validators.GetValidators()))
 			}
 
 			ready = true
@@ -323,7 +322,7 @@ func TestSmallStakeValidator(t *testing.T) {
 	tx = transaction.Transaction{
 		Nonce:         nonce,
 		GasPrice:      1,
-		ChainID:       types.GetCurrentChainID(),
+		ChainID:       types.CurrentChainID,
 		GasCoin:       types.GetBaseCoin(),
 		Type:          transaction.TypeSetCandidateOnline,
 		Data:          encodedData,
@@ -361,14 +360,15 @@ FORLOOP2:
 				continue FORLOOP2
 			}
 
-			vals, _ := tmCli.Validators(&targetBlockHeight)
+			vals, _ := tmCli.Validators(&targetBlockHeight, 1, 100)
 
 			if len(vals.Validators) > 1 {
-				t.Errorf("There are should be only 1 validator")
+				t.Errorf("There should be only 1 validator, got %d", len(vals.Validators))
 			}
 
-			if len(app.stateDeliver.GetStateValidators().Data()) > 1 {
-				t.Errorf("There are should be only 1 validator")
+			mvals := app.stateDeliver.Validators.GetValidators()
+			if len(mvals) > 1 {
+				t.Errorf("There should be only 1 validator, got %d", len(mvals))
 			}
 
 			break FORLOOP2
@@ -389,13 +389,14 @@ func getGenesis() (*types2.GenesisDoc, error) {
 	validators, candidates := makeValidatorsAndCandidates([]string{base64.StdEncoding.EncodeToString(pv.Key.PubKey.Bytes()[5:])}, big.NewInt(10000000))
 
 	appState := types.AppState{
+		TotalSlashed: "0",
 		Accounts: []types.Account{
 			{
 				Address: crypto.PubkeyToAddress(privateKey.PublicKey),
 				Balance: []types.Balance{
 					{
 						Coin:  types.GetBaseCoin(),
-						Value: helpers.NoahToQNoah(big.NewInt(1000000)),
+						Value: helpers.NoahToPip(big.NewInt(1000000)).String(),
 					},
 				},
 			},
@@ -421,7 +422,7 @@ func getGenesis() (*types2.GenesisDoc, error) {
 		return nil, err
 	}
 
-	genesisFile := fmt.Sprintf("%s/config-%s/genesis.json", utils.GetNoahHome(), config.NetworkId)
+	genesisFile := utils.GetNoahHome() + "/config/genesis.json"
 	if err := genesisDoc.SaveAs(genesisFile); err != nil {
 		panic(err)
 	}
@@ -435,36 +436,36 @@ func makeValidatorsAndCandidates(pubkeys []string, stake *big.Int) ([]types.Vali
 	addr := developers.Address
 
 	for i, val := range pubkeys {
-		pkey, err := base64.StdEncoding.DecodeString(val)
+		pkeyBytes, err := base64.StdEncoding.DecodeString(val)
 		if err != nil {
 			panic(err)
 		}
 
+		var pkey types.Pubkey
+		copy(pkey[:], pkeyBytes)
+
 		validators[i] = types.Validator{
-			RewardAddress:  addr,
-			TotalNoahStake: stake,
-			PubKey:         pkey,
-			Commission:     100,
-			AccumReward:    big.NewInt(0),
-			AbsentTimes:    types.NewBitArray(24),
+			TotalNoahStake: stake.String(),
+			PubKey:        pkey,
+			AccumReward:   big.NewInt(0).String(),
+			AbsentTimes:   types.NewBitArray(24),
 		}
 
 		candidates[i] = types.Candidate{
-			RewardAddress:  addr,
-			OwnerAddress:   addr,
-			TotalNoahStake: big.NewInt(1),
-			PubKey:         pkey,
-			Commission:     100,
+			RewardAddress: addr,
+			OwnerAddress:  addr,
+			TotalNoahStake: big.NewInt(1).String(),
+			PubKey:        pkey,
+			Commission:    100,
 			Stakes: []types.Stake{
 				{
-					Owner:     addr,
-					Coin:      types.GetBaseCoin(),
-					Value:     stake,
-					NoahValue: stake,
+					Owner:    addr,
+					Coin:     types.GetBaseCoin(),
+					Value:    stake.String(),
+					NoahValue: stake.String(),
 				},
 			},
-			CreatedAtBlock: 1,
-			Status:         state.CandidateStatusOnline,
+			Status: candidates2.CandidateStatusOnline,
 		}
 	}
 
