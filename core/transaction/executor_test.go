@@ -15,7 +15,7 @@ import (
 func TestTooLongTx(t *testing.T) {
 	fakeTx := make([]byte, 10000)
 
-	response := RunTx(getState(), false, fakeTx, big.NewInt(0), 0, sync.Map{}, 0)
+	response := RunTx(getState(), false, fakeTx, big.NewInt(0), 0, &sync.Map{}, 0)
 
 	if response.Code != code.TxTooLarge {
 		t.Fatalf("Response code is not correct")
@@ -26,7 +26,7 @@ func TestIncorrectTx(t *testing.T) {
 	fakeTx := make([]byte, 1)
 	rand.Read(fakeTx)
 
-	response := RunTx(getState(), false, fakeTx, big.NewInt(0), 0, sync.Map{}, 0)
+	response := RunTx(getState(), false, fakeTx, big.NewInt(0), 0, &sync.Map{}, 0)
 
 	if response.Code != code.DecodeError {
 		t.Fatalf("Response code is not correct")
@@ -47,7 +47,7 @@ func TestTooLongPayloadTx(t *testing.T) {
 	tx := Transaction{
 		Nonce:         1,
 		GasPrice:      1,
-		ChainID:       types.GetCurrentChainID(),
+		ChainID:       types.CurrentChainID,
 		GasCoin:       types.GetBaseCoin(),
 		Type:          TypeSend,
 		Data:          encodedData,
@@ -66,7 +66,7 @@ func TestTooLongPayloadTx(t *testing.T) {
 
 	fakeTx, _ := rlp.EncodeToBytes(tx)
 
-	response := RunTx(getState(), false, fakeTx, big.NewInt(0), 0, sync.Map{}, 0)
+	response := RunTx(getState(), false, fakeTx, big.NewInt(0), 0, &sync.Map{}, 0)
 
 	if response.Code != code.TxPayloadTooLarge {
 		t.Fatalf("Response code is not correct. Expected %d, got %d", code.TxPayloadTooLarge, response.Code)
@@ -87,7 +87,7 @@ func TestTooLongServiceDataTx(t *testing.T) {
 	tx := Transaction{
 		Nonce:         1,
 		GasPrice:      1,
-		ChainID:       types.GetCurrentChainID(),
+		ChainID:       types.CurrentChainID,
 		GasCoin:       types.GetBaseCoin(),
 		Type:          TypeSend,
 		Data:          encodedData,
@@ -105,7 +105,7 @@ func TestTooLongServiceDataTx(t *testing.T) {
 
 	fakeTx, _ := rlp.EncodeToBytes(tx)
 
-	response := RunTx(getState(), false, fakeTx, big.NewInt(0), 0, sync.Map{}, 0)
+	response := RunTx(getState(), false, fakeTx, big.NewInt(0), 0, &sync.Map{}, 0)
 
 	if response.Code != code.TxServiceDataTooLarge {
 		t.Fatalf("Response code is not correct. Expected %d, got %d", code.TxServiceDataTooLarge, response.Code)
@@ -123,7 +123,7 @@ func TestUnexpectedNonceTx(t *testing.T) {
 	tx := Transaction{
 		Nonce:         2,
 		GasPrice:      1,
-		ChainID:       types.GetCurrentChainID(),
+		ChainID:       types.CurrentChainID,
 		GasCoin:       types.GetBaseCoin(),
 		Type:          TypeSend,
 		Data:          encodedData,
@@ -140,7 +140,7 @@ func TestUnexpectedNonceTx(t *testing.T) {
 
 	fakeTx, _ := rlp.EncodeToBytes(tx)
 
-	response := RunTx(getState(), false, fakeTx, big.NewInt(0), 0, sync.Map{}, 0)
+	response := RunTx(getState(), false, fakeTx, big.NewInt(0), 0, &sync.Map{}, 0)
 
 	if response.Code != code.WrongNonce {
 		t.Fatalf("Response code is not correct. Expected %d, got %d", code.WrongNonce, response.Code)
@@ -159,7 +159,7 @@ func TestInvalidSigTx(t *testing.T) {
 		Nonce:         1,
 		GasPrice:      1,
 		GasCoin:       types.GetBaseCoin(),
-		ChainID:       types.GetCurrentChainID(),
+		ChainID:       types.CurrentChainID,
 		Type:          TypeSend,
 		Data:          encodedData,
 		SignatureType: SigTypeSingle,
@@ -178,7 +178,7 @@ func TestInvalidSigTx(t *testing.T) {
 
 	fakeTx, _ := rlp.EncodeToBytes(tx)
 
-	response := RunTx(getState(), false, fakeTx, big.NewInt(0), 0, sync.Map{}, 0)
+	response := RunTx(getState(), false, fakeTx, big.NewInt(0), 0, &sync.Map{}, 0)
 
 	if response.Code != code.DecodeError {
 		t.Fatalf("Response code is not correct. Expected %d, got %d", code.DecodeError, response.Code)
@@ -186,10 +186,6 @@ func TestInvalidSigTx(t *testing.T) {
 }
 
 func TestNotExistMultiSigTx(t *testing.T) {
-	if true {
-		return
-	}
-
 	txData := SendData{
 		Coin:  types.GetBaseCoin(),
 		To:    types.Address{},
@@ -202,7 +198,7 @@ func TestNotExistMultiSigTx(t *testing.T) {
 		GasPrice:      1,
 		GasCoin:       types.GetBaseCoin(),
 		Type:          TypeSend,
-		ChainID:       types.GetCurrentChainID(),
+		ChainID:       types.CurrentChainID,
 		Data:          encodedData,
 		SignatureType: SigTypeMulti,
 	}
@@ -252,7 +248,7 @@ func TestMultiSigTx(t *testing.T) {
 		Nonce:         1,
 		GasPrice:      1,
 		GasCoin:       types.GetBaseCoin(),
-		ChainID:       types.GetCurrentChainID(),
+		ChainID:       types.CurrentChainID,
 		Type:          TypeSend,
 		Data:          encodedData,
 		SignatureType: SigTypeMulti,
@@ -301,7 +297,7 @@ func TestMultiSigDoubleSignTx(t *testing.T) {
 		GasPrice:      1,
 		GasCoin:       types.GetBaseCoin(),
 		Type:          TypeSend,
-		ChainID:       types.GetCurrentChainID(),
+		ChainID:       types.CurrentChainID,
 		Data:          encodedData,
 		SignatureType: SigTypeMulti,
 	}
@@ -320,7 +316,7 @@ func TestMultiSigDoubleSignTx(t *testing.T) {
 
 	txBytes, _ := rlp.EncodeToBytes(tx)
 
-	response := RunTx(cState, false, txBytes, big.NewInt(0), 0, sync.Map{}, 0)
+	response := RunTx(cState, false, txBytes, big.NewInt(0), 0, &sync.Map{}, 0)
 
 	if response.Code != code.IncorrectMultiSignature {
 		t.Fatalf("Error code is not %d, got %d", code.IncorrectMultiSignature, response.Code)
@@ -328,18 +324,14 @@ func TestMultiSigDoubleSignTx(t *testing.T) {
 }
 
 func TestMultiSigTooManySignsTx(t *testing.T) {
-	if true {
-		return
-	}
-
 	cState := getState()
 
 	privateKey, _ := crypto.GenerateKey()
 	addr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	coin := types.GetBaseCoin()
 
-	msigAddress := cState.CreateMultisig([]uint{1, 1}, []types.Address{addr, {}}, 2)
-	cState.AddBalance(msigAddress, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
+	msigAddress := cState.Accounts.CreateMultisig([]uint{1, 1}, []types.Address{addr, {}}, 2, 1)
+	cState.Accounts.AddBalance(msigAddress, coin, helpers.BipToPip(big.NewInt(1000000)))
 
 	txData := SendData{
 		Coin:  types.GetBaseCoin(),
