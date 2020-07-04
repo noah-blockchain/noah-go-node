@@ -42,13 +42,13 @@ func (data SellCoinData) TotalSpend(tx *Transaction, context *state.StateDB) (To
 		if tx.GasCoin == data.CoinToBuy {
 			commissionIncluded = true
 
-			nVolume := big.NewInt(0).Set(coin.Volume)
+			nVolume := big.NewInt(0).Set(coin.Volume())
 			nVolume.Add(nVolume, value)
 
-			nReserveBalance := big.NewInt(0).Set(coin.ReserveBalance)
+			nReserveBalance := big.NewInt(0).Set(coin.Reserve())
 			nReserveBalance.Add(nReserveBalance, data.ValueToSell)
 
-			commission := formula.CalculateSaleAmount(nVolume, nReserveBalance, coin.Crr, commissionInBaseCoin)
+			commission := formula.CalculateSaleAmount(nVolume, nReserveBalance, coin.Crr(), commissionInBaseCoin)
 
 			total.Add(tx.GasCoin, commission)
 			conversions = append(conversions, Conversion{
@@ -71,13 +71,17 @@ func (data SellCoinData) TotalSpend(tx *Transaction, context *state.StateDB) (To
 			ToReserve: data.ValueToSell,
 		})
 	case data.CoinToBuy.IsBaseCoin():
-		coin := context.GetStateCoin(data.CoinToSell).Data()
-		value = formula.CalculateSaleReturn(coin.Volume, coin.ReserveBalance, coin.Crr, data.ValueToSell)
+		coin := context.Coins.GetCoin(data.CoinToSell)
+		value = formula.CalculateSaleReturn(coin.Volume(), coin.Reserve(), coin.Crr(), data.ValueToSell)
 
 		if value.Cmp(data.MinimumValueToBuy) == -1 {
 			return nil, nil, nil, &Response{
 				Code: code.MinimumValueToBuyReached,
 				Log:  fmt.Sprintf("You wanted to get minimum %s, but currently you will get %s", data.MinimumValueToBuy.String(), value.String()),
+				Info: EncodeError(map[string]string{
+					"minimum_value_to_buy": data.MinimumValueToBuy.String(),
+					"value_to_buy":         value.String(),
+				}),
 			}
 		}
 
@@ -97,16 +101,27 @@ func (data SellCoinData) TotalSpend(tx *Transaction, context *state.StateDB) (To
 				return nil, nil, nil, &Response{
 					Code: code.CoinReserveNotSufficient,
 					Log: fmt.Sprintf("Gas coin reserve balance is not sufficient for transaction. Has: %s %s, required %s %s",
-						coin.ReserveBalance.String(),
+						coin.Reserve().String(),
 						types.GetBaseCoin(),
 						commissionInBaseCoin.String(),
-						types.GetBaseCoin())}
+						types.GetBaseCoin()),
+					Info: EncodeError(map[string]string{
+						"has_value":      coin.Reserve().String(),
+						"required_value": commissionInBaseCoin.String(),
+						"gas_coin":       fmt.Sprintf("%s", types.GetBaseCoin()),
+					}),
+				}
 			}
 
-			c := formula.CalculateSaleAmount(newVolume, newReserve, coin.Crr, commissionInBaseCoin)
+			c := formula.CalculateSaleAmount(newVolume, newReserve, coin.Crr(), commissionInBaseCoin)
 
-			valueToSell.Add(valueToSell, c)
-			rValue.Add(rValue, commissionInBaseCoin)
+			total.Add(tx.GasCoin, c)
+			conversions = append(conversions, Conversion{
+				FromCoin:    tx.GasCoin,
+				FromAmount:  c,
+				FromReserve: commissionInBaseCoin,
+				ToCoin:      types.GetBaseCoin(),
+			})
 		}
 
 		total.Add(data.CoinToSell, valueToSell)
@@ -117,18 +132,18 @@ func (data SellCoinData) TotalSpend(tx *Transaction, context *state.StateDB) (To
 			ToCoin:      data.CoinToBuy,
 		})
 	default:
-		coinFrom := context.GetStateCoin(data.CoinToSell).Data()
-		coinTo := context.GetStateCoin(data.CoinToBuy).Data()
+		coinFrom := context.Coins.GetCoin(data.CoinToSell)
+		coinTo := context.Coins.GetCoin(data.CoinToBuy)
 
 		valueToSell := big.NewInt(0).Set(data.ValueToSell)
 
-		basecoinValue := formula.CalculateSaleReturn(coinFrom.Volume, coinFrom.ReserveBalance, coinFrom.Crr, data.ValueToSell)
+		basecoinValue := formula.CalculateSaleReturn(coinFrom.Volume(), coinFrom.Reserve(), coinFrom.Crr(), data.ValueToSell)
 		fromReserve := big.NewInt(0).Set(basecoinValue)
 
 		if tx.GasCoin == data.CoinToSell {
 			commissionIncluded = true
-			newVolume := big.NewInt(0).Set(coinFrom.Volume)
-			newReserve := big.NewInt(0).Set(coinFrom.ReserveBalance)
+			newVolume := big.NewInt(0).Set(coinFrom.Volume())
+			newReserve := big.NewInt(0).Set(coinFrom.Reserve())
 
 			newVolume.Sub(newVolume, data.ValueToSell)
 			newReserve.Sub(newReserve, basecoinValue)
@@ -137,37 +152,52 @@ func (data SellCoinData) TotalSpend(tx *Transaction, context *state.StateDB) (To
 				return nil, nil, nil, &Response{
 					Code: code.CoinReserveNotSufficient,
 					Log: fmt.Sprintf("Gas coin reserve balance is not sufficient for transaction. Has: %s %s, required %s %s",
-						coinFrom.ReserveBalance.String(),
+						coinFrom.Reserve().String(),
 						types.GetBaseCoin(),
 						commissionInBaseCoin.String(),
-						types.GetBaseCoin())}
+						types.GetBaseCoin()),
+					Info: EncodeError(map[string]string{
+						"has":      coinFrom.Reserve().String(),
+						"required": commissionInBaseCoin.String(),
+						"gas_coin": fmt.Sprintf("%s", types.GetBaseCoin()),
+					}),
+				}
 			}
 
-			c := formula.CalculateSaleAmount(newVolume, newReserve, coinFrom.Crr, commissionInBaseCoin)
+			c := formula.CalculateSaleAmount(newVolume, newReserve, coinFrom.Crr(), commissionInBaseCoin)
 
-			valueToSell.Add(valueToSell, c)
-			fromReserve.Add(fromReserve, commissionInBaseCoin)
+			total.Add(tx.GasCoin, c)
+			conversions = append(conversions, Conversion{
+				FromCoin:    tx.GasCoin,
+				FromAmount:  c,
+				FromReserve: commissionInBaseCoin,
+				ToCoin:      types.GetBaseCoin(),
+			})
 		}
 
-		value = formula.CalculatePurchaseReturn(coinTo.Volume, coinTo.ReserveBalance, coinTo.Crr, basecoinValue)
+		value = formula.CalculatePurchaseReturn(coinTo.Volume(), coinTo.Reserve(), coinTo.Crr(), basecoinValue)
 
 		if value.Cmp(data.MinimumValueToBuy) == -1 {
 			return nil, nil, nil, &Response{
 				Code: code.MinimumValueToBuyReached,
 				Log:  fmt.Sprintf("You wanted to get minimum %s, but currently you will get %s", data.MinimumValueToBuy.String(), value.String()),
+				Info: EncodeError(map[string]string{
+					"minimum_value_to_buy": data.MinimumValueToBuy.String(),
+					"get_value":            value.String(),
+				}),
 			}
 		}
 
 		if tx.GasCoin == data.CoinToBuy {
 			commissionIncluded = true
 
-			nVolume := big.NewInt(0).Set(coinTo.Volume)
+			nVolume := big.NewInt(0).Set(coinTo.Volume())
 			nVolume.Add(nVolume, value)
 
-			nReserveBalance := big.NewInt(0).Set(coinTo.ReserveBalance)
+			nReserveBalance := big.NewInt(0).Set(coinTo.Reserve())
 			nReserveBalance.Add(nReserveBalance, basecoinValue)
 
-			commission := formula.CalculateSaleAmount(nVolume, nReserveBalance, coinTo.Crr, commissionInBaseCoin)
+			commission := formula.CalculateSaleAmount(nVolume, nReserveBalance, coinTo.Crr(), commissionInBaseCoin)
 
 			total.Add(tx.GasCoin, commission)
 			conversions = append(conversions, Conversion{
@@ -178,11 +208,8 @@ func (data SellCoinData) TotalSpend(tx *Transaction, context *state.StateDB) (To
 			})
 		}
 
-		if err := CheckForCoinSupplyOverflow(coinTo.Volume, value); err != nil {
-			return nil, nil, nil, &Response{
-				Code: code.CoinSupplyOverflow,
-				Log:  err.Error(),
-			}
+		if errResp := CheckForCoinSupplyOverflow(coinTo.Volume(), value, coinTo.MaxSupply()); errResp != nil {
+			return nil, nil, nil, errResp
 		}
 
 		total.Add(data.CoinToSell, valueToSell)

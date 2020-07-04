@@ -39,7 +39,7 @@ func TestUnbondTx(t *testing.T) {
 	tx := Transaction{
 		Nonce:         1,
 		GasPrice:      1,
-		ChainID:       types.GetCurrentChainID(),
+		ChainID:       types.CurrentChainID,
 		GasCoin:       coin,
 		Type:          TypeUnbond,
 		Data:          encodedData,
@@ -56,21 +56,21 @@ func TestUnbondTx(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	response := RunTx(cState, false, encodedTx, big.NewInt(0), 0, sync.Map{}, 0)
+	response := RunTx(cState, false, encodedTx, big.NewInt(0), 0, &sync.Map{}, 0)
 
 	if response.Code != 0 {
 		t.Fatalf("Response code is not 0. Error %s", response.Log)
 	}
 
+	cState.Candidates.RecalculateStakes(upgrades.UpgradeBlock3)
+
 	targetBalance, _ := big.NewInt(0).SetString("999999800000000000000000", 10)
-	balance := cState.GetBalance(addr, coin)
+	balance := cState.Accounts.GetBalance(addr, coin)
 	if balance.Cmp(targetBalance) != 0 {
 		t.Fatalf("Target %s balance is not correct. Expected %s, got %s", coin, targetBalance, balance)
 	}
 
-	candidate := cState.GetStateCandidate(pubkey)
-
-	stake := candidate.GetStakeOfAddress(addr, coin)
+	stake := cState.Candidates.GetStakeOfAddress(pubkey, addr, coin)
 
 	if stake.Value.Cmp(types.Big0) != 0 {
 		t.Fatalf("Stake value is not corrent. Expected %s, got %s", types.Big0, stake.Value)
