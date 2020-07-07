@@ -1,6 +1,7 @@
 package transaction
 
 import (
+	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/crypto"
 	"github.com/noah-blockchain/noah-go-node/helpers"
@@ -17,7 +18,7 @@ func TestSendTx(t *testing.T) {
 	addr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
+	cState.Accounts.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	value := helpers.NoahToQNoah(big.NewInt(10))
 	to := types.Address([20]byte{1})
@@ -83,9 +84,9 @@ func TestSendMultisigTx(t *testing.T) {
 
 	msig := cState.Accounts.CreateMultisig([]uint{1, 1}, []types.Address{addr1, addr2}, 1, 1)
 
-	cState.Accounts.AddBalance(msig, coin, helpers.BipToPip(big.NewInt(1000000)))
+	cState.Accounts.AddBalance(msig, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
-	value := helpers.BipToPip(big.NewInt(10))
+	value := helpers.NoahToQNoah(big.NewInt(10))
 	to := types.Address([20]byte{1})
 
 	data := SendData{
@@ -151,9 +152,9 @@ func TestSendFailedMultisigTx(t *testing.T) {
 
 	msig := cState.Accounts.CreateMultisig([]uint{1, 3}, []types.Address{addr1, addr2}, 3, 1)
 
-	cState.Accounts.AddBalance(msig, coin, helpers.BipToPip(big.NewInt(1000000)))
+	cState.Accounts.AddBalance(msig, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
-	value := helpers.BipToPip(big.NewInt(10))
+	value := helpers.NoahToQNoah(big.NewInt(10))
 	to := types.Address([20]byte{1})
 
 	data := SendData{

@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
@@ -9,45 +10,63 @@ import (
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/noah-blockchain/noah-go-node/hexutil"
-	"github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/kv"
 	"math/big"
 )
 
 const unbondPeriod = 1555200
 
 type UnbondData struct {
-	PubKey types.Pubkey     `json:"pub_key"`
-	Coin   types.CoinSymbol `json:"coin"`
-	Value  *big.Int         `json:"value"`
+	PubKey types.Pubkey
+	Coin   types.CoinSymbol
+	Value  *big.Int
 }
 
-func (data UnbondData) TotalSpend(tx *Transaction, context *state.StateDB) (TotalSpends, []Conversion, *big.Int, *Response) {
+func (data UnbondData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		PubKey string `json:"pub_key"`
+		Coin   string `json:"coin"`
+		Value  string `json:"value"`
+	}{
+		PubKey: data.PubKey.String(),
+		Coin:   data.Coin.String(),
+		Value:  data.Value.String(),
+	})
+}
+
+func (data UnbondData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
 	panic("implement me")
 }
 
-func (data UnbondData) BasicCheck(tx *Transaction, context *state.StateDB) *Response {
-	if data.PubKey == nil || data.Value == nil {
+func (data UnbondData) BasicCheck(tx *Transaction, context *state.State) *Response {
+	if data.Value == nil {
 		return &Response{
 			Code: code.DecodeError,
 			Log:  "Incorrect tx data"}
 	}
 
-	if !context.CoinExists(data.Coin) {
+	if !context.Coins.Exists(data.Coin) {
 		return &Response{
 			Code: code.CoinNotExists,
-			Log:  fmt.Sprintf("Coin %s not exists", data.Coin)}
+			Log:  fmt.Sprintf("Coin %s not exists", data.Coin),
+			Info: EncodeError(map[string]string{
+				"coin": fmt.Sprintf("%s", data.Coin),
+			}),
+		}
 	}
 
-	if !context.CandidateExists(data.PubKey) {
+	if !context.Candidates.Exists(data.PubKey) {
 		return &Response{
 			Code: code.CandidateNotFound,
-			Log:  fmt.Sprintf("Candidate with such public key not found")}
+			Log:  fmt.Sprintf("Candidate with such public key not found"),
+			Info: EncodeError(map[string]string{
+				"pub_key": data.PubKey.String(),
+			}),
+		}
 	}
 
-	candidate := context.GetStateCandidate(data.PubKey)
-
 	sender, _ := tx.Sender()
-	stake := candidate.GetStakeOfAddress(sender, data.Coin)
+	stake := context.Candidates.GetStakeValueOfAddress(data.PubKey, sender, data.Coin)
 
 	if stake == nil {
 		return &Response{

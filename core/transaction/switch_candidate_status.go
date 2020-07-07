@@ -2,29 +2,38 @@ package transaction
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
-	"github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/kv"
 	"math/big"
 )
 
 type SetCandidateOnData struct {
-	PubKey types.Pubkey `json:"pub_key"`
+	PubKey types.Pubkey
+}
+
+func (data SetCandidateOnData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		PubKey string `json:"pub_key"`
+	}{
+		PubKey: data.PubKey.String(),
+	})
 }
 
 func (data SetCandidateOnData) GetPubKey() types.Pubkey {
 	return data.PubKey
 }
 
-func (data SetCandidateOnData) TotalSpend(tx *Transaction, context *state.StateDB) (TotalSpends, []Conversion, *big.Int, *Response) {
+func (data SetCandidateOnData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
 	panic("implement me")
 }
 
-func (data SetCandidateOnData) BasicCheck(tx *Transaction, context *state.StateDB) *Response {
+func (data SetCandidateOnData) BasicCheck(tx *Transaction, context *state.State) *Response {
 	return checkCandidateOwnership(data, tx, context)
 }
 

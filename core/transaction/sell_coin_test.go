@@ -19,7 +19,7 @@ func TestSellCoinTx(t *testing.T) {
 	addr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
+	cState.Accounts.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	minValToBuy, _ := big.NewInt(0).SetString("957658277688702625", 10)
 	data := SellCoinData{
@@ -82,8 +82,8 @@ func TestSellCoinTxBaseToCustomBaseCommission(t *testing.T) {
 	coinToSell := types.GetBaseCoin()
 	coinToBuy := types.StrToCoinSymbol("TEST")
 	gasCoin := types.GetBaseCoin()
-	initialBalance := helpers.BipToPip(big.NewInt(10000000))
-	toSell := helpers.BipToPip(big.NewInt(100))
+	initialBalance := helpers.NoahToQNoah(big.NewInt(10000000))
+	toSell := helpers.NoahToQNoah(big.NewInt(100))
 
 	cState := getState()
 	initialVolume, initialReserve, crr := createTestCoinWithSymbol(cState, coinToBuy)
@@ -147,9 +147,9 @@ func TestSellCoinTxCustomToBaseBaseCommission(t *testing.T) {
 	coinToSell := types.StrToCoinSymbol("TEST")
 	coinToBuy := types.GetBaseCoin()
 	gasCoin := types.GetBaseCoin()
-	initialBalance := helpers.BipToPip(big.NewInt(10000000))
-	initialGasBalance := helpers.BipToPip(big.NewInt(1))
-	toSell := helpers.BipToPip(big.NewInt(100))
+	initialBalance := helpers.NoahToQNoah(big.NewInt(10000000))
+	initialGasBalance := helpers.NoahToQNoah(big.NewInt(1))
+	toSell := helpers.NoahToQNoah(big.NewInt(100))
 
 	cState := getState()
 	initialVolume, initialReserve, crr := createTestCoinWithSymbol(cState, coinToSell)
@@ -215,9 +215,9 @@ func TestSellCoinTxCustomToCustomBaseCommission(t *testing.T) {
 	coinToSell := types.StrToCoinSymbol("TEST1")
 	coinToBuy := types.StrToCoinSymbol("TEST2")
 	gasCoin := types.GetBaseCoin()
-	initialBalance := helpers.BipToPip(big.NewInt(10000000))
-	initialGasBalance := helpers.BipToPip(big.NewInt(1))
-	toSell := helpers.BipToPip(big.NewInt(100))
+	initialBalance := helpers.NoahToQNoah(big.NewInt(10000000))
+	initialGasBalance := helpers.NoahToQNoah(big.NewInt(1))
+	toSell := helpers.NoahToQNoah(big.NewInt(100))
 
 	cState := getState()
 	initialVolume1, initialReserve1, crr1 := createTestCoinWithSymbol(cState, coinToSell)
@@ -300,9 +300,9 @@ func TestSellCoinTxBaseToCustomCustomCommission(t *testing.T) {
 	coinToSell := types.GetBaseCoin()
 	coinToBuy := types.StrToCoinSymbol("TEST")
 	gasCoin := types.StrToCoinSymbol("TEST")
-	initialBalance := helpers.BipToPip(big.NewInt(10000000))
-	initialGasBalance := helpers.BipToPip(big.NewInt(1))
-	toSell := helpers.BipToPip(big.NewInt(100))
+	initialBalance := helpers.NoahToQNoah(big.NewInt(10000000))
+	initialGasBalance := helpers.NoahToQNoah(big.NewInt(1))
+	toSell := helpers.NoahToQNoah(big.NewInt(100))
 
 	cState := getState()
 	initialVolume, initialReserve, crr := createTestCoinWithSymbol(cState, coinToBuy)
@@ -371,8 +371,8 @@ func TestSellCoinTxCustomToBaseCustomCommission(t *testing.T) {
 	coinToSell := types.StrToCoinSymbol("TEST")
 	coinToBuy := types.GetBaseCoin()
 	gasCoin := types.StrToCoinSymbol("TEST")
-	initialBalance := helpers.BipToPip(big.NewInt(10000000))
-	toSell := helpers.BipToPip(big.NewInt(100))
+	initialBalance := helpers.NoahToQNoah(big.NewInt(10000000))
+	toSell := helpers.NoahToQNoah(big.NewInt(100))
 
 	cState := getState()
 	initialVolume, initialReserve, crr := createTestCoinWithSymbol(cState, coinToSell)
@@ -439,8 +439,8 @@ func TestSellCoinTxCustomToCustomCustom1Commission(t *testing.T) {
 	coinToSell := types.StrToCoinSymbol("TEST1")
 	coinToBuy := types.StrToCoinSymbol("TEST2")
 	gasCoin := types.StrToCoinSymbol("TEST1")
-	initialBalance := helpers.BipToPip(big.NewInt(10000000))
-	toSell := helpers.BipToPip(big.NewInt(100))
+	initialBalance := helpers.NoahToQNoah(big.NewInt(10000000))
+	toSell := helpers.NoahToQNoah(big.NewInt(100))
 
 	cState := getState()
 	initialVolume1, initialReserve1, crr1 := createTestCoinWithSymbol(cState, coinToSell)
@@ -467,8 +467,8 @@ func TestSellCoinTxCustomToCustomCustom1Commission(t *testing.T) {
 
 	// check received coins
 	buyCoinBalance := cState.Accounts.GetBalance(addr, coinToBuy)
-	bipReturn := formula.CalculateSaleReturn(initialVolume1, initialReserve1, crr1, toSell)
-	estimatedBuyBalance := formula.CalculatePurchaseReturn(initialVolume2, initialReserve2, crr2, bipReturn)
+	noahReturn := formula.CalculateSaleReturn(initialVolume1, initialReserve1, crr1, toSell)
+	estimatedBuyBalance := formula.CalculatePurchaseReturn(initialVolume2, initialReserve2, crr2, noahReturn)
 	if buyCoinBalance.Cmp(estimatedBuyBalance) != 0 {
 		t.Fatalf("Buy coin balance is not correct. Expected %s, got %s", estimatedBuyBalance.String(), buyCoinBalance.String())
 	}
@@ -477,7 +477,7 @@ func TestSellCoinTxCustomToCustomCustom1Commission(t *testing.T) {
 	sellCoinBalance := cState.Accounts.GetBalance(addr, coinToSell)
 	estimatedSellCoinBalance := big.NewInt(0).Set(initialBalance)
 	estimatedSellCoinBalance.Sub(estimatedSellCoinBalance, toSell)
-	commission := formula.CalculateSaleAmount(big.NewInt(0).Sub(initialVolume1, toSell), big.NewInt(0).Sub(initialReserve1, bipReturn), crr1, tx.CommissionInBaseCoin())
+	commission := formula.CalculateSaleAmount(big.NewInt(0).Sub(initialVolume1, toSell), big.NewInt(0).Sub(initialReserve1, noahReturn), crr1, tx.CommissionInBaseCoin())
 	estimatedSellCoinBalance.Sub(estimatedSellCoinBalance, commission)
 	if sellCoinBalance.Cmp(estimatedSellCoinBalance) != 0 {
 		t.Fatalf("Sell coin balance is not correct. Expected %s, got %s", estimatedSellCoinBalance.String(), sellCoinBalance.String())
@@ -527,9 +527,9 @@ func TestSellCoinTxCustomToCustomCustom2Commission(t *testing.T) {
 	coinToSell := types.StrToCoinSymbol("TEST1")
 	coinToBuy := types.StrToCoinSymbol("TEST2")
 	gasCoin := types.StrToCoinSymbol("TEST2")
-	initialBalance := helpers.BipToPip(big.NewInt(10000000))
-	initialGasBalance := helpers.BipToPip(big.NewInt(1))
-	toSell := helpers.BipToPip(big.NewInt(100))
+	initialBalance := helpers.NoahToQNoah(big.NewInt(10000000))
+	initialGasBalance := helpers.NoahToQNoah(big.NewInt(1))
+	toSell := helpers.NoahToQNoah(big.NewInt(100))
 
 	cState := getState()
 	initialVolume1, initialReserve1, crr1 := createTestCoinWithSymbol(cState, coinToSell)
@@ -557,9 +557,9 @@ func TestSellCoinTxCustomToCustomCustom2Commission(t *testing.T) {
 
 	// check received coins
 	buyCoinBalance := cState.Accounts.GetBalance(addr, coinToBuy)
-	bipReturn := formula.CalculateSaleReturn(initialVolume1, initialReserve1, crr1, toSell)
-	estimatedReturn := formula.CalculatePurchaseReturn(initialVolume2, initialReserve2, crr2, bipReturn)
-	commission := formula.CalculateSaleAmount(big.NewInt(0).Add(initialVolume2, estimatedReturn), big.NewInt(0).Add(initialReserve2, bipReturn), crr2, tx.CommissionInBaseCoin())
+	noahReturn := formula.CalculateSaleReturn(initialVolume1, initialReserve1, crr1, toSell)
+	estimatedReturn := formula.CalculatePurchaseReturn(initialVolume2, initialReserve2, crr2, noahReturn)
+	commission := formula.CalculateSaleAmount(big.NewInt(0).Add(initialVolume2, estimatedReturn), big.NewInt(0).Add(initialReserve2, noahReturn), crr2, tx.CommissionInBaseCoin())
 
 	estimatedBuyBalance := big.NewInt(0).Set(estimatedReturn)
 	estimatedBuyBalance.Sub(estimatedBuyBalance, commission)

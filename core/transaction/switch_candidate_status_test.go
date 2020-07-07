@@ -1,7 +1,7 @@
 package transaction
 
 import (
-	"github.com/noah-blockchain/noah-go-node/core/state"
+	"github.com/noah-blockchain/noah-go-node/core/state/candidates"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/crypto"
 	"github.com/noah-blockchain/noah-go-node/helpers"
@@ -18,12 +18,12 @@ func TestSwitchCandidateStatusTx(t *testing.T) {
 	privateKey, _ := crypto.GenerateKey()
 	addr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	coin := types.GetBaseCoin()
-	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
+	cState.Accounts.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
-	pubkey := make([]byte, 32)
-	rand.Read(pubkey)
+	pubkey := types.Pubkey{}
+	rand.Read(pubkey[:])
 
-	cState.CreateCandidate(addr, addr, pubkey, 10, 0, types.GetBaseCoin(), helpers.NoahToQNoah(big.NewInt(1)))
+	cState.Candidates.Create(addr, addr, pubkey, 10)
 
 	data := SetCandidateOnData{
 		PubKey: pubkey,

@@ -5,6 +5,7 @@ import (
 	"github.com/noah-blockchain/noah-go-node/crypto"
 	"github.com/noah-blockchain/noah-go-node/helpers"
 	"github.com/noah-blockchain/noah-go-node/rlp"
+	"github.com/noah-blockchain/noah-go-node/upgrades"
 	"math/big"
 	"sync"
 	"testing"
@@ -19,10 +20,12 @@ func TestUnbondTx(t *testing.T) {
 	addr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
+	cState.Accounts.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	value := helpers.NoahToQNoah(big.NewInt(100))
-	cState.Delegate(addr, pubkey, coin, value)
+	cState.Candidates.Delegate(addr, pubkey, coin, value, big.NewInt(0))
+
+	cState.Candidates.RecalculateStakes(upgrades.UpgradeBlock3)
 
 	data := UnbondData{
 		PubKey: pubkey,
