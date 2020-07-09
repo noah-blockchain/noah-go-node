@@ -19,7 +19,7 @@ func TestRedeemCheckTx(t *testing.T) {
 
 	senderPrivateKey, _ := crypto.GenerateKey()
 	senderAddr := crypto.PubkeyToAddress(senderPrivateKey.PublicKey)
-	cState.AddBalance(senderAddr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
+	cState.Accounts.AddBalance(senderAddr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	receiverPrivateKey, _ := crypto.GenerateKey()
 	receiverAddr := crypto.PubkeyToAddress(receiverPrivateKey.PublicKey)
@@ -36,9 +36,11 @@ func TestRedeemCheckTx(t *testing.T) {
 
 	check := c.Check{
 		Nonce:    []byte{1, 2, 3},
+		ChainID:  types.CurrentChainID,
 		DueBlock: 1,
 		Coin:     coin,
 		Value:    checkValue,
+		GasCoin:  types.GetBaseCoin(),
 	}
 
 	lock, err := crypto.Sign(check.HashWithoutLock().Bytes(), passphrasePk)

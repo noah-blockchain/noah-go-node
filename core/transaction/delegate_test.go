@@ -6,18 +6,19 @@ import (
 	"github.com/noah-blockchain/noah-go-node/crypto"
 	"github.com/noah-blockchain/noah-go-node/helpers"
 	"github.com/noah-blockchain/noah-go-node/rlp"
+	"github.com/noah-blockchain/noah-go-node/upgrades"
 	"math/big"
 	"math/rand"
 	"sync"
 	"testing"
 )
 
-func createTestCandidate(stateDB *state.StateDB) []byte {
+func createTestCandidate(stateDB *state.State) types.Pubkey {
 	address := types.Address{}
-	pubkey := make([]byte, 32)
-	rand.Read(pubkey)
+	pubkey := types.Pubkey{}
+	rand.Read(pubkey[:])
 
-	stateDB.CreateCandidate(address, address, pubkey, 10, 0, types.GetBaseCoin(), helpers.NoahToQNoah(big.NewInt(1)))
+	stateDB.Candidates.Create(address, address, pubkey, 10)
 
 	return pubkey
 }
@@ -32,7 +33,7 @@ func TestDelegateTx(t *testing.T) {
 
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
+	cState.Accounts.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	value := helpers.NoahToQNoah(big.NewInt(100))
 

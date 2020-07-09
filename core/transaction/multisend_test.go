@@ -17,7 +17,7 @@ func TestMultisendTx(t *testing.T) {
 	addr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
+	cState.Accounts.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	value := helpers.NoahToQNoah(big.NewInt(10))
 	to := types.Address([20]byte{1})

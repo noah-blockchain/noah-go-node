@@ -17,13 +17,13 @@ func TestCreateCoinTx(t *testing.T) {
 	addr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
+	cState.Accounts.AddBalance(addr, coin, helpers.BipToPip(big.NewInt(1000000)))
 
 	var toCreate types.CoinSymbol
 	copy(toCreate[:], []byte("ABCDEF"))
 
-	reserve := helpers.NoahToQNoah(big.NewInt(1000))
-	amount := helpers.NoahToQNoah(big.NewInt(100))
+	reserve := helpers.BipToPip(big.NewInt(10000))
+	amount := helpers.BipToPip(big.NewInt(100))
 	crr := uint(50)
 	name := "My Test Coin"
 

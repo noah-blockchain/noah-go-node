@@ -1,11 +1,14 @@
 package transaction
 
 import (
-	"github.com/noah-blockchain/noah-go-node/core/state"
+	"github.com/noah-blockchain/noah-go-node/core/code"
+	"github.com/noah-blockchain/noah-go-node/core/state/candidates"
 	"github.com/noah-blockchain/noah-go-node/core/types"
+	"github.com/noah-blockchain/noah-go-node/core/validators"
 	"github.com/noah-blockchain/noah-go-node/crypto"
 	"github.com/noah-blockchain/noah-go-node/helpers"
 	"github.com/noah-blockchain/noah-go-node/rlp"
+	"github.com/noah-blockchain/noah-go-node/upgrades"
 	"math/big"
 	"sync"
 	"testing"
@@ -19,10 +22,12 @@ func TestDeclareCandidacyTx(t *testing.T) {
 
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
+	cState.Accounts.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	pkey, _ := crypto.GenerateKey()
-	publicKey := crypto.FromECDSAPub(&pkey.PublicKey)[:32]
+	publicKeyBytes := crypto.FromECDSAPub(&pkey.PublicKey)[:32]
+	var publicKey types.Pubkey
+	copy(publicKey[:], publicKeyBytes)
 
 	commission := uint(10)
 
@@ -86,7 +91,7 @@ func TestDeclareCandidacyTx(t *testing.T) {
 		t.Fatalf("Reward address is not correct")
 	}
 
-	if candidate.TotalNoahStake != nil && candidate.TotalNoahStake.Cmp(types.Big0) != 0 {
+	if candidate.GetTotalBipStake() != nil && candidate.GetTotalBipStake().Cmp(types.Big0) != 0 {
 		t.Fatalf("Total stake is not correct")
 	}
 
@@ -106,7 +111,7 @@ func TestDeclareCandidacyTxOverflow(t *testing.T) {
 	for i := 0; i < maxCandidatesCount; i++ {
 		pubkey := types.Pubkey{byte(i)}
 		cState.Candidates.Create(types.Address{}, types.Address{}, pubkey, 10)
-		cState.Candidates.Delegate(types.Address{}, pubkey, types.GetBaseCoin(), helpers.BipToPip(big.NewInt(10)), helpers.BipToPip(big.NewInt(10)))
+		cState.Candidates.Delegate(types.Address{}, pubkey, types.GetBaseCoin(), helpers.NoahToQNoah(big.NewInt(10)), helpers.BipToPip(big.NewInt(10)))
 	}
 
 	cState.Candidates.RecalculateStakes(upgrades.UpgradeBlock3)
@@ -116,7 +121,7 @@ func TestDeclareCandidacyTxOverflow(t *testing.T) {
 
 	coin := types.GetBaseCoin()
 
-	cState.Accounts.AddBalance(addr, coin, helpers.BipToPip(big.NewInt(1000000)))
+	cState.Accounts.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	pkey, _ := crypto.GenerateKey()
 	publicKeyBytes := crypto.FromECDSAPub(&pkey.PublicKey)[:32]
@@ -128,7 +133,7 @@ func TestDeclareCandidacyTxOverflow(t *testing.T) {
 		PubKey:     publicKey,
 		Commission: uint(10),
 		Coin:       coin,
-		Stake:      helpers.BipToPip(big.NewInt(10)),
+		Stake:      helpers.NoahToQNoah(big.NewInt(10)),
 	}
 
 	encodedData, err := rlp.EncodeToBytes(data)
