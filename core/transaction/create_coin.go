@@ -2,16 +2,17 @@ package transaction
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	"math/big"
-	"regexp"
-
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/noah-blockchain/noah-go-node/helpers"
-	"github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/kv"
+	"math/big"
+	"regexp"
+	"strconv"
 )
 
 const maxCoinNameBytes = 64
@@ -19,23 +20,43 @@ const allowedCoinSymbols = "^[A-Z0-9]{3,10}$"
 
 var (
 	minCoinSupply  = helpers.NoahToQNoah(big.NewInt(1))
-	minCoinReserve = helpers.NoahToQNoah(big.NewInt(250000))
+	minCoinReserve = helpers.NoahToQNoah(big.NewInt(10000))
+	maxCoinSupply  = big.NewInt(0).Exp(big.NewInt(10), big.NewInt(15+18), nil)
 )
 
 type CreateCoinData struct {
-	Name                 string           `json:"name"`
-	Symbol               types.CoinSymbol `json:"symbol"`
-	InitialAmount        *big.Int         `json:"initial_amount"`
-	InitialReserve       *big.Int         `json:"initial_reserve"`
-	ConstantReserveRatio uint             `json:"constant_reserve_ratio"`
+	Name                 string
+	Symbol               types.CoinSymbol
+	InitialAmount        *big.Int
+	InitialReserve       *big.Int
+	ConstantReserveRatio uint
+	MaxSupply            *big.Int
 }
 
-func (data CreateCoinData) TotalSpend(tx *Transaction, context *state.StateDB) (TotalSpends, []Conversion, *big.Int, *Response) {
+func (data CreateCoinData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Name                 string `json:"name"`
+		Symbol               string `json:"symbol"`
+		InitialAmount        string `json:"initial_amount"`
+		InitialReserve       string `json:"initial_reserve"`
+		ConstantReserveRatio string `json:"constant_reserve_ratio"`
+		MaxSupply            string `json:"max_supply"`
+	}{
+		Name:                 data.Name,
+		Symbol:               data.Symbol.String(),
+		InitialAmount:        data.InitialAmount.String(),
+		InitialReserve:       data.InitialReserve.String(),
+		ConstantReserveRatio: strconv.Itoa(int(data.ConstantReserveRatio)),
+		MaxSupply:            data.MaxSupply.String(),
+	})
+}
+
+func (data CreateCoinData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
 	panic("implement me")
 }
 
-func (data CreateCoinData) BasicCheck(tx *Transaction, context *state.StateDB) *Response {
-	if data.InitialReserve == nil || data.InitialAmount == nil {
+func (data CreateCoinData) BasicCheck(tx *Transaction, context *state.State) *Response {
+	if data.InitialReserve == nil || data.InitialAmount == nil || data.MaxSupply == nil {
 		return &Response{
 			Code: code.DecodeError,
 			Log:  "Incorrect tx data"}
@@ -94,16 +115,16 @@ func (data CreateCoinData) String() string {
 func (data CreateCoinData) Gas() int64 {
 	switch len(data.Symbol.String()) {
 	case 3:
-		return 1000000000 // 1mln bips
+		return 1000000000 // 1mln noah
 	case 4:
-		return 100000000 // 100k bips
+		return 100000000 // 100k noah
 	case 5:
-		return 10000000 // 10k bips
+		return 10000000 // 10k noah
 	case 6:
-		return 1000000 // 1k bips
+		return 1000000 // 1k noah
 	}
 
-	return 100000 // 100 bips
+	return 100000 // 100 noah
 }
 
 func (data CreateCoinData) Run(tx *Transaction, context *state.State, isCheck bool, rewardPool *big.Int, currentBlock uint64) Response {

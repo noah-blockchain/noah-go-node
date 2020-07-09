@@ -2,62 +2,85 @@ package transaction
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	"math/big"
-
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/core/validators"
 	"github.com/noah-blockchain/noah-go-node/formula"
-	"github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/kv"
+	"math/big"
+	"strconv"
 )
 
 const minCommission = 0
 const maxCommission = 100
 
 type DeclareCandidacyData struct {
-	Address    types.Address    `json:"address"`
-	PubKey     types.Pubkey     `json:"pub_key"`
-	Commission uint             `json:"commission"`
-	Coin       types.CoinSymbol `json:"coin"`
-	Stake      *big.Int         `json:"stake"`
+	Address    types.Address
+	PubKey     types.Pubkey
+	Commission uint
+	Coin       types.CoinSymbol
+	Stake      *big.Int
 }
 
-func (data DeclareCandidacyData) TotalSpend(tx *Transaction, context *state.StateDB) (TotalSpends, []Conversion, *big.Int, *Response) {
+func (data DeclareCandidacyData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Address    string `json:"address"`
+		PubKey     string `json:"pub_key"`
+		Commission string `json:"commission"`
+		Coin       string `json:"coin"`
+		Stake      string `json:"stake"`
+	}{
+		Address:    data.Address.String(),
+		PubKey:     data.PubKey.String(),
+		Commission: strconv.Itoa(int(data.Commission)),
+		Coin:       data.Coin.String(),
+		Stake:      data.Stake.String(),
+	})
+}
+
+func (data DeclareCandidacyData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
 	panic("implement me")
 }
 
-func (data DeclareCandidacyData) BasicCheck(tx *Transaction, context *state.StateDB) *Response {
-	if data.PubKey == nil || data.Stake == nil {
+func (data DeclareCandidacyData) BasicCheck(tx *Transaction, context *state.State) *Response {
+	if data.Stake == nil {
 		return &Response{
 			Code: code.DecodeError,
 			Log:  "Incorrect tx data"}
 	}
 
-	if !context.CoinExists(data.Coin) {
+	if !context.Coins.Exists(data.Coin) {
 		return &Response{
 			Code: code.CoinNotExists,
-			Log:  fmt.Sprintf("Coin %s not exists", data.Coin)}
+			Log:  fmt.Sprintf("Coin %s not exists", data.Coin),
+			Info: EncodeError(map[string]string{
+				"coin": fmt.Sprintf("%s", data.Coin),
+			}),
+		}
 	}
 
-	if len(data.PubKey) != 32 {
-		return &Response{
-			Code: code.IncorrectPubKey,
-			Log:  fmt.Sprintf("Incorrect PubKey")}
-	}
-
-	if context.CandidateExists(data.PubKey) {
+	if context.Candidates.Exists(data.PubKey) {
 		return &Response{
 			Code: code.CandidateExists,
-			Log:  fmt.Sprintf("Candidate with such public key (%s) already exists", data.PubKey.String())}
+			Log:  fmt.Sprintf("Candidate with such public key (%s) already exists", data.PubKey.String()),
+			Info: EncodeError(map[string]string{
+				"public_key": data.PubKey.String(),
+			}),
+		}
 	}
 
 	if data.Commission < minCommission || data.Commission > maxCommission {
 		return &Response{
 			Code: code.WrongCommission,
-			Log:  fmt.Sprintf("Commission should be between 0 and 100")}
+			Log:  fmt.Sprintf("Commission should be between 0 and 100"),
+			Info: EncodeError(map[string]string{
+				"got_commission": fmt.Sprintf("%d", data.Commission),
+			}),
+		}
 	}
 
 	return nil

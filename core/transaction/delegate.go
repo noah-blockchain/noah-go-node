@@ -2,36 +2,48 @@ package transaction
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	"math/big"
-
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/noah-blockchain/noah-go-node/hexutil"
-	"github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/kv"
+	"math/big"
 )
 
 type DelegateData struct {
-	PubKey types.Pubkey     `json:"pub_key"`
-	Coin   types.CoinSymbol `json:"coin"`
-	Value  *big.Int         `json:"value"`
+	PubKey types.Pubkey
+	Coin   types.CoinSymbol
+	Value  *big.Int
 }
 
-func (data DelegateData) TotalSpend(tx *Transaction, context *state.StateDB) (TotalSpends, []Conversion, *big.Int, *Response) {
+func (data DelegateData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		PubKey string `json:"pub_key"`
+		Coin   string `json:"coin"`
+		Value  string `json:"value"`
+	}{
+		PubKey: data.PubKey.String(),
+		Coin:   data.Coin.String(),
+		Value:  data.Value.String(),
+	})
+}
+
+func (data DelegateData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
 	panic("implement me")
 }
 
-func (data DelegateData) BasicCheck(tx *Transaction, context *state.StateDB) *Response {
-	if data.PubKey == nil || data.Value == nil {
+func (data DelegateData) BasicCheck(tx *Transaction, context *state.State) *Response {
+	if data.Value == nil {
 		return &Response{
 			Code: code.DecodeError,
 			Log:  "Incorrect tx data"}
 	}
 
-	if !context.CoinExists(tx.GasCoin) {
+	if !context.Coins.Exists(tx.GasCoin) {
 		return &Response{
 			Code: code.CoinNotExists,
 			Log:  fmt.Sprintf("Coin %s not exists", tx.GasCoin)}

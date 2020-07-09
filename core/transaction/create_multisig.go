@@ -2,44 +2,83 @@ package transaction
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	"math/big"
-
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
 	"github.com/noah-blockchain/noah-go-node/core/state"
+	"github.com/noah-blockchain/noah-go-node/core/state/accounts"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
-	"github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/kv"
+	"math/big"
+	"strconv"
 )
 
 type CreateMultisigData struct {
-	Threshold uint            `json:"threshold"`
-	Weights   []uint          `json:"weights"`
-	Addresses []types.Address `json:"addresses"`
+	Threshold uint
+	Weights   []uint
+	Addresses []types.Address
 }
 
-func (data CreateMultisigData) TotalSpend(tx *Transaction, context *state.StateDB) (TotalSpends, []Conversion, *big.Int, *Response) {
+func (data CreateMultisigData) MarshalJSON() ([]byte, error) {
+	var weights []string
+	for _, weight := range data.Weights {
+		weights = append(weights, strconv.Itoa(int(weight)))
+	}
+
+	return json.Marshal(struct {
+		Threshold string          `json:"threshold"`
+		Weights   []string        `json:"weights"`
+		Addresses []types.Address `json:"addresses"`
+	}{
+		Threshold: strconv.Itoa(int(data.Threshold)),
+		Weights:   weights,
+		Addresses: data.Addresses,
+	})
+}
+
+func (data CreateMultisigData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
 	panic("implement me")
 }
 
-func (data CreateMultisigData) BasicCheck(tx *Transaction, context *state.StateDB) *Response {
-	if true {
-		return &Response{
-			Code: code.DecodeError,
-			Log:  fmt.Sprintf("multisig transactions are not supported yet")}
-	}
-
-	if len(data.Weights) > 32 {
+func (data CreateMultisigData) BasicCheck(tx *Transaction, context *state.State) *Response {
+	lenWeights := len(data.Weights)
+	if lenWeights > 32 {
 		return &Response{
 			Code: code.TooLargeOwnersList,
 			Log:  fmt.Sprintf("Owners list is limited to 32 items")}
 	}
 
-	if len(data.Addresses) != len(data.Weights) {
+	lenAddresses := len(data.Addresses)
+	if lenAddresses != lenWeights {
 		return &Response{
 			Code: code.IncorrectWeights,
-			Log:  fmt.Sprintf("Incorrect multisig weights")}
+			Log:  fmt.Sprintf("Incorrect multisig weights"),
+			Info: EncodeError(map[string]string{
+				"count_weights":   fmt.Sprintf("%d", lenWeights),
+				"count_addresses": fmt.Sprintf("%d", lenAddresses),
+			}),
+		}
+	}
+
+	for _, weight := range data.Weights {
+		if weight > 1023 {
+			return &Response{
+				Code: code.IncorrectWeights,
+				Log:  fmt.Sprintf("Incorrect multisig weights")}
+		}
+	}
+
+	usedAddresses := map[types.Address]bool{}
+	for _, address := range data.Addresses {
+		if usedAddresses[address] {
+			return &Response{
+				Code: code.DuplicatedAddresses,
+				Log:  fmt.Sprintf("Duplicated multisig addresses")}
+		}
+
+		usedAddresses[address] = true
 	}
 
 	return nil
@@ -53,7 +92,7 @@ func (data CreateMultisigData) Gas() int64 {
 	return commissions.CreateMultisig
 }
 
-func (data CreateMultisigData) Run(tx *Transaction, context *state.StateDB, isCheck bool, rewardPool *big.Int, currentBlock uint64) Response {
+func (data CreateMultisigData) Run(tx *Transaction, context *state.State, isCheck bool, rewardPool *big.Int, currentBlock uint64) Response {
 	sender, _ := tx.Sender()
 
 	response := data.BasicCheck(tx, context)

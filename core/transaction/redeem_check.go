@@ -2,7 +2,9 @@ package transaction
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/noah-blockchain/noah-go-node/core/check"
 	"github.com/noah-blockchain/noah-go-node/core/code"
@@ -13,17 +15,26 @@ import (
 	"github.com/noah-blockchain/noah-go-node/crypto/sha3"
 	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/noah-blockchain/noah-go-node/rlp"
-	"github.com/noah-blockchain/noah-go-node/upgrades"
-	"github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/kv"
 	"math/big"
 )
 
 type RedeemCheckData struct {
-	RawCheck []byte   `json:"raw_check"`
-	Proof    [65]byte `json:"proof"`
+	RawCheck []byte
+	Proof    [65]byte
 }
 
-func (data RedeemCheckData) TotalSpend(tx *Transaction, context *state.StateDB) (TotalSpends, []Conversion, *big.Int, *Response) {
+func (data RedeemCheckData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		RawCheck string `json:"raw_check"`
+		Proof    string `json:"proof"`
+	}{
+		RawCheck: base64.StdEncoding.EncodeToString(data.RawCheck),
+		Proof:    base64.StdEncoding.EncodeToString(data.Proof[:]),
+	})
+}
+
+func (data RedeemCheckData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
 	panic("implement me")
 }
 
