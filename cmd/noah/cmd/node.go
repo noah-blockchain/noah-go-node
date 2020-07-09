@@ -2,111 +2,151 @@ package cmd
 
 import (
 	"fmt"
-	"time"
-
-	"github.com/noah-blockchain/noah-go-node/api"
+	api_v1 "github.com/noah-blockchain/noah-go-node/api"
+	api_v2 "github.com/noah-blockchain/noah-go-node/api/v2"
+	service_api "github.com/noah-blockchain/noah-go-node/api/v2/service"
+	"github.com/noah-blockchain/noah-go-node/cli/service"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/noah"
-	node_types "github.com/noah-blockchain/noah-go-node/core/types"
-	"github.com/noah-blockchain/noah-go-node/eventsdb"
-	"github.com/noah-blockchain/noah-go-node/gui"
+	"github.com/noah-blockchain/noah-go-node/core/statistics"
 	"github.com/noah-blockchain/noah-go-node/log"
-	"github.com/noah-blockchain/noah-go-node/mainnet"
-	"github.com/noah-blockchain/noah-go-node/testnet"
+	"github.com/noah-blockchain/noah-go-node/version"
 	"github.com/spf13/cobra"
+	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/abci/types"
 	tmCfg "github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/libs/common"
+	tmlog "github.com/tendermint/tendermint/libs/log"
+	tmos "github.com/tendermint/tendermint/libs/os"
 	tmNode "github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/proxy"
 	rpc "github.com/tendermint/tendermint/rpc/client"
-	bc "github.com/tendermint/tendermint/store"
+	"github.com/tendermint/tendermint/store"
 	tmTypes "github.com/tendermint/tendermint/types"
+	"io"
+	"net/http"
+	_ "net/http/pprof"
+	"net/url"
+	"os"
+	"syscall"
 )
+
+const RequiredOpenFilesLimit = 10000
 
 var RunNode = &cobra.Command{
 	Use:   "node",
 	Short: "Run the Noah node",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return runNode()
+	RunE: func(cmd *cobra.Command, _ []string) error {
+		return runNode(cmd)
 	},
 }
 
-func runNode() error {
-	now := time.Now()
-	startTime := time.Date(2019, time.June, 5, 17, 0, 0, 0, time.UTC)
-	if startTime.After(now) {
-		fmt.Printf("Start time is in the future, sleeping until %s", startTime)
-		time.Sleep(startTime.Sub(now))
+func runNode(cmd *cobra.Command) error {
+	logger := log.NewLogger(cfg)
+
+	// check open files limits
+	{
+		var rLimit syscall.Rlimit
+		err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rLimit)
+		if err != nil {
+			panic(err)
+		}
+
+		required := RequiredOpenFilesLimit + uint64(cfg.StateMemAvailable)
+		if rLimit.Cur < required {
+			rLimit.Cur = required
+			err = syscall.Setrlimit(syscall.RLIMIT_NOFILE, &rLimit)
+			if err != nil {
+				panic(fmt.Errorf("cannot set RLIMIT_NOFILE to %d", rLimit.Cur))
+			}
+		}
+	}
+
+	pprofOn, err := cmd.Flags().GetBool("pprof")
+	if err != nil {
+		return err
+	}
+
+	if pprofOn {
+		pprofAddr, err := cmd.Flags().GetString("pprof-addr")
+		if err != nil {
+			return err
+		}
+
+		pprofMux := http.DefaultServeMux
+		http.DefaultServeMux = http.NewServeMux()
+		go func() {
+			logger.Error((&http.Server{
+				Addr:    pprofAddr,
+				Handler: pprofMux,
+			}).ListenAndServe().Error())
+		}()
 	}
 
 	tmConfig := config.GetTmConfig(cfg)
 
-	if err := common.EnsureDir(fmt.Sprintf("%s/config-%s", utils.GetNoahHome(), config.NetworkId), 0777); err != nil {
+	if err := tmos.EnsureDir(utils.GetNoahHome()+"/config", 0777); err != nil {
 		return err
 	}
 
-	if err := common.EnsureDir(fmt.Sprintf("%s/tmdata-%s", utils.GetNoahHome(), config.NetworkId), 0777); err != nil {
+	if err := tmos.EnsureDir(utils.GetNoahHome()+"/tmdata", 0777); err != nil {
 		return err
 	}
 
-	eventsdb.InitDB(cfg)
+	if cfg.KeepLastStates < 1 {
+		panic("keep_last_states field should be greater than 0")
+	}
 
 	app := noah.NewNoahBlockchain(cfg)
+
 	// update BlocksTimeDelta in case it was corrupted
 	updateBlocksTimeDelta(app, tmConfig)
 
 	// start TM node
-	node := startTendermintNode(app, tmConfig)
+	node := startTendermintNode(app, tmConfig, logger)
 
 	client := rpc.NewLocal(node)
-	status, _ := client.Status()
-	if status.NodeInfo.Network != config.NetworkId {
-		log.Fatal("Different networks", "expected", config.NetworkId, "got", status.NodeInfo.Network)
-	}
 
 	app.SetTmNode(node)
 
 	if !cfg.ValidatorMode {
-		go api.RunAPI(app, client, cfg)
-		go gui.Run(cfg.GUIListenAddress)
+		go func(srv *service_api.Service) {
+			grpcUrl, err := url.Parse(cfg.GRPCListenAddress)
+			if err != nil {
+				logger.Error("Failed to parse gRPC address", err)
+			}
+			apiV2url, err := url.Parse(cfg.APIv2ListenAddress)
+			if err != nil {
+				logger.Error("Failed to parse API v2 address", err)
+			}
+			logger.Error("Failed to start Api V2 in both gRPC and RESTful", api_v2.Run(srv, grpcUrl.Host, apiV2url.Host))
+		}(service_api.NewService(amino.NewCodec(), app, client, node, cfg, version.Version))
+
+		go api_v1.RunAPI(app, client, cfg, logger)
 	}
 
-	fmt.Println("Noah node successful started.")
-
-	// Recheck mempool. Currently kind a hack.
-	go recheckMempool(node, cfg)
-
-	common.TrapSignal(log.With("module", "trap"), func() {
-		// Cleanup
-		err := node.Stop()
-		app.Stop()
+	go func() {
+		err := service.StartCLIServer(utils.GetNoahHome()+"/manager.sock", service.NewManager(app, client, cfg), cmd.Context())
 		if err != nil {
 			panic(err)
 		}
-	})
+	}()
 
-	// Run forever
-	select {}
-}
-
-func recheckMempool(node *tmNode.Node, config *config.Config) {
-	ticker := time.NewTicker(time.Minute)
-	mempool := node.Mempool()
-	for {
-		select {
-		case <-ticker.C:
-			txs := mempool.ReapMaxTxs(config.Mempool.Size)
-			mempool.Flush()
-
-			for _, tx := range txs {
-				_ = mempool.CheckTx(tx, func(res *types.Response) {})
-			}
-		}
+	if cfg.Instrumentation.Prometheus {
+		data := statistics.New()
+		go app.SetStatisticData(data).Statistic(cmd.Context())
 	}
+
+	<-cmd.Context().Done()
+
+	defer app.Stop()
+	if err := node.Stop(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func updateBlocksTimeDelta(app *noah.Blockchain, config *tmCfg.Config) {
@@ -115,7 +155,7 @@ func updateBlocksTimeDelta(app *noah.Blockchain, config *tmCfg.Config) {
 		panic(err)
 	}
 
-	blockStore := bc.NewBlockStore(blockStoreDB)
+	blockStore := store.NewBlockStore(blockStoreDB)
 	height := uint64(blockStore.Height())
 	count := uint64(3)
 	if _, err := app.GetBlocksTimeDelta(height, count); height >= 20 && err != nil {
@@ -128,75 +168,69 @@ func updateBlocksTimeDelta(app *noah.Blockchain, config *tmCfg.Config) {
 	blockStoreDB.Close()
 }
 
-func getNodeKey() (*p2p.NodeKey, error) {
+func startTendermintNode(app types.Application, cfg *tmCfg.Config, logger tmlog.Logger) *tmNode.Node {
 	nodeKey, err := p2p.LoadOrGenNodeKey(cfg.NodeKeyFile())
-	if err != nil {
-		return nil, err
-	}
-
-	return nodeKey, nil
-}
-
-func getValidatorKey() (*privval.FilePV, error) {
-	var pv *privval.FilePV
-	if common.FileExists(cfg.PrivValidatorKeyFile()) {
-		pv = privval.LoadFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile())
-	} else {
-		pv = privval.GenFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile())
-		pv.Save()
-	}
-	return pv, nil
-}
-
-func startTendermintNode(app types.Application, cfg *tmCfg.Config) *tmNode.Node {
-	nodeKey, err := getNodeKey()
-	if err != nil {
-		panic(err)
-	}
-
-	validatorKey, err := getValidatorKey()
 	if err != nil {
 		panic(err)
 	}
 
 	node, err := tmNode.NewNode(
 		cfg,
-		validatorKey,
+		privval.LoadOrGenFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile()),
 		nodeKey,
 		proxy.NewLocalClientCreator(app),
 		getGenesis,
 		tmNode.DefaultDBProvider,
 		tmNode.DefaultMetricsProvider(cfg.Instrumentation),
-		log.With("module", "tendermint"),
+		logger.With("module", "tendermint"),
 	)
 
 	if err != nil {
-		log.Fatal("failed to create a node", "err", err)
+		logger.Error("failed to create a node", "err", err)
+		os.Exit(1)
 	}
 
 	if err = node.Start(); err != nil {
-		log.Fatal("failed to start node", "err", err)
+		logger.Error("failed to start node", "err", err)
+		os.Exit(1)
 	}
 
-	log.Info("Started node", "nodeInfo", node.Switch().NodeInfo())
+	logger.Info("Started node", "nodeInfo", node.Switch().NodeInfo())
 
 	return node
 }
 
 func getGenesis() (doc *tmTypes.GenesisDoc, e error) {
-	genesisFile := fmt.Sprintf("%s/config-%s/genesis.json", utils.GetNoahHome(), config.NetworkId)
-
-	if !common.FileExists(genesisFile) {
-		if node_types.GetCurrentChainID() == node_types.ChainTestnet {
-			if err := testnet.GenerateStatic(genesisFile); err != nil {
-				return nil, err
-			}
-		} else {
-			if err := mainnet.GenerateStatic(genesisFile); err != nil {
-				return nil, err
-			}
+	genDocFile := utils.GetNoahHome() + "/config/genesis.json"
+	_, err := os.Stat(genDocFile)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			panic(err)
+		}
+		if err := downloadFile(genDocFile, "https://raw.githubusercontent.com/noah-blockchain/noah-network-migrate/master/noah-mainnet-2/genesis.json"); err != nil {
+			panic(err)
 		}
 	}
+	return tmTypes.GenesisDocFromFile(genDocFile)
+}
 
-	return tmTypes.GenesisDocFromFile(genesisFile)
+func downloadFile(filepath string, url string) error {
+
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Write the body to file
+	_, err = io.Copy(out, resp.Body)
+	return err
 }

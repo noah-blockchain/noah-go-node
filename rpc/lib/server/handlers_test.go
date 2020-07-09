@@ -33,7 +33,7 @@ func testMux() *http.ServeMux {
 	mux := http.NewServeMux()
 	buf := new(bytes.Buffer)
 	logger := log.NewTMLogger(buf)
-	rs.RegisterRPCFuncs(mux, funcMap, cdc, logger)
+	rs.RegisterRPCFuncs(mux, funcMap, cdc, logger, nil)
 
 	return mux
 }

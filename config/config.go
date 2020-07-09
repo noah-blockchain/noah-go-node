@@ -16,6 +16,9 @@ const (
 	// LogFormatJSON is a format for json output
 	LogFormatJSON = "json"
 
+	defaultConfigDir = "config"
+	defaultDataDir   = "data"
+
 	defaultConfigFileName  = "config.toml"
 	defaultGenesisJSONName = "genesis.json"
 
@@ -123,8 +126,8 @@ func GetConfig() *Config {
 	cfg := DefaultConfig()
 
 	if cfg.ValidatorMode {
-		cfg.TxIndex.IndexAllTags = false
-		cfg.TxIndex.IndexTags = ""
+		cfg.TxIndex.IndexAllKeys = false
+		cfg.TxIndex.IndexKeys = ""
 
 		cfg.RPC.ListenAddress = ""
 		cfg.RPC.GRPCListenAddress = ""
@@ -150,7 +153,6 @@ type Config struct {
 	P2P             *tmConfig.P2PConfig             `mapstructure:"p2p"`
 	Mempool         *tmConfig.MempoolConfig         `mapstructure:"mempool"`
 	Consensus       *tmConfig.ConsensusConfig       `mapstructure:"consensus"`
-	FastSyncSection *tmConfig.FastSyncConfig        `mapstructure:"fastsync"`
 	TxIndex         *tmConfig.TxIndexConfig         `mapstructure:"tx_index"`
 	Instrumentation *tmConfig.InstrumentationConfig `mapstructure:"instrumentation"`
 }
@@ -163,7 +165,6 @@ func defaultConfig() *Config {
 		P2P:             tmConfig.DefaultP2PConfig(),
 		Mempool:         tmConfig.DefaultMempoolConfig(),
 		Consensus:       tmConfig.DefaultConsensusConfig(),
-		FastSyncSection: tmConfig.DefaultFastSyncConfig(),
 		TxIndex:         tmConfig.DefaultTxIndexConfig(),
 		Instrumentation: tmConfig.DefaultInstrumentationConfig(),
 	}
@@ -183,27 +184,27 @@ func GetTmConfig(cfg *Config) *tmConfig.Config {
 	return &tmConfig.Config{
 		BaseConfig: tmConfig.BaseConfig{
 			RootDir:                 cfg.RootDir,
+			ProxyApp:                cfg.ProxyApp,
+			Moniker:                 cfg.Moniker,
+			FastSyncMode:            cfg.FastSync,
+			DBBackend:               cfg.DBBackend,
+			DBPath:                  cfg.DBPath,
+			LogLevel:                cfg.LogLevel,
+			LogFormat:               cfg.LogFormat,
 			Genesis:                 cfg.Genesis,
 			PrivValidatorKey:        cfg.PrivValidatorKey,
 			PrivValidatorState:      cfg.PrivValidatorState,
-			NodeKey:                 cfg.NodeKey,
-			Moniker:                 cfg.Moniker,
 			PrivValidatorListenAddr: cfg.PrivValidatorListenAddr,
-			ProxyApp:                cfg.ProxyApp,
+			NodeKey:                 cfg.NodeKey,
 			ABCI:                    cfg.ABCI,
-			LogLevel:                cfg.LogLevel,
-			LogFormat:               cfg.LogFormat,
 			ProfListenAddress:       cfg.ProfListenAddress,
-			FastSyncMode:            cfg.FastSync,
 			FilterPeers:             cfg.FilterPeers,
-			DBBackend:               cfg.DBBackend,
-			DBPath:                  cfg.DBPath,
 		},
 		RPC:             cfg.RPC,
 		P2P:             cfg.P2P,
 		Mempool:         cfg.Mempool,
+		FastSync:        &tmConfig.FastSyncConfig{Version: "v0"},
 		Consensus:       cfg.Consensus,
-		FastSync:        cfg.FastSyncSection,
 		TxIndex:         cfg.TxIndex,
 		Instrumentation: cfg.Instrumentation,
 	}
@@ -271,19 +272,28 @@ type BaseConfig struct {
 	// Database directory
 	DBPath string `mapstructure:"db_dir"`
 
-	// Address to listen for GUI connections
-	GUIListenAddress string `mapstructure:"gui_listen_addr"`
-
 	// Address to listen for API connections
 	APIListenAddress string `mapstructure:"api_listen_addr"`
 
+	// Address to listen for gRPC connections
+	GRPCListenAddress string `mapstructure:"grpc_listen_addr"`
+
+	// Address to listen for API v2 connections
+	APIv2ListenAddress string `mapstructure:"api_v2_listen_addr"`
+
 	ValidatorMode bool `mapstructure:"validator_mode"`
 
-	KeepStateHistory bool `mapstructure:"keep_state_history"`
+	KeepLastStates int64 `mapstructure:"keep_last_states"`
 
 	APISimultaneousRequests int `mapstructure:"api_simultaneous_requests"`
 
 	LogPath string `mapstructure:"log_path"`
+
+	StateCacheSize int `mapstructure:"state_cache_size"`
+
+	StateMemAvailable int `mapstructure:"state_mem_available"`
+
+	HaltHeight int `mapstructure:"halt_height"`
 }
 
 // DefaultBaseConfig returns a default base configuration for a Tendermint node
@@ -300,10 +310,13 @@ func DefaultBaseConfig() BaseConfig {
 		FilterPeers:             false,
 		DBBackend:               "goleveldb",
 		DBPath:                  "data",
-		GUIListenAddress:        ":3000",
 		APIListenAddress:        "tcp://0.0.0.0:8841",
-		ValidatorMode:           true,
-		KeepStateHistory:        false,
+		GRPCListenAddress:       "tcp://0.0.0.0:8842",
+		APIv2ListenAddress:      "tcp://0.0.0.0:8843",
+		ValidatorMode:           false,
+		KeepLastStates:          120,
+		StateCacheSize:          1000000,
+		StateMemAvailable:       1024,
 		APISimultaneousRequests: 100,
 		LogPath:                 "stdout",
 		LogFormat:               LogFormatPlain,
@@ -346,7 +359,7 @@ func DefaultLogLevel() string {
 // DefaultPackageLogLevels returns a default log level setting so all packages
 // log at "error", while the `state` and `main` packages log at "info"
 func DefaultPackageLogLevels() string {
-	return fmt.Sprintf("consensus:info,main:info,blockchain:info,state:info,*:%s", DefaultLogLevel())
+	return fmt.Sprintf("consensus:info,main:info,state:info,*:%s", DefaultLogLevel())
 }
 
 //-----------------------------------------------------------------------------

@@ -42,26 +42,5 @@ func InitLog(cfg *config.Config) {
 		panic(err)
 	}
 
-	SetLogger(l)
-}
-
-func SetLogger(l log.Logger) {
-	logger = l
-}
-
-func Info(msg string, ctx ...interface{}) {
-	logger.Info(msg, ctx...)
-}
-
-func Error(msg string, ctx ...interface{}) {
-	logger.Error(msg, ctx...)
-}
-
-func Fatal(msg string, ctx ...interface{}) {
-	logger.Error(msg, ctx...)
-	os.Exit(1)
-}
-
-func With(keyvals ...interface{}) log.Logger {
-	return logger.With(keyvals...)
+	return l
 }

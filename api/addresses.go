@@ -2,11 +2,10 @@ package api
 
 import (
 	"github.com/noah-blockchain/noah-go-node/core/types"
-	"math/big"
 )
 
 type AddressesResponse struct {
-	Address          types.Address     `json:"address"`
+	Address          string            `json:"address"`
 	Balance          map[string]string `json:"balance"`
 	TransactionCount uint64            `json:"transaction_count"`
 }
@@ -17,22 +16,25 @@ func Addresses(addresses []types.Address, height int) (*[]AddressesResponse, err
 		return nil, err
 	}
 
+	cState.RLock()
+	defer cState.RUnlock()
+
 	response := make([]AddressesResponse, len(addresses))
 
 	for i, address := range addresses {
 		data := AddressesResponse{
-			Address:          address,
+			Address:          address.String(),
 			Balance:          make(map[string]string),
-			TransactionCount: cState.GetNonce(address),
+			TransactionCount: cState.Accounts.GetNonce(address),
 		}
 
-		balances := cState.GetBalances(address)
-		for k, v := range balances.Data {
+		balances := cState.Accounts.GetBalances(address)
+		for k, v := range balances {
 			data.Balance[k.String()] = v.String()
 		}
 
 		if _, exists := data.Balance[types.GetBaseCoin().String()]; !exists {
-			data.Balance[types.GetBaseCoin().String()] = big.NewInt(0).String()
+			data.Balance[types.GetBaseCoin().String()] = "0"
 		}
 
 		response[i] = data

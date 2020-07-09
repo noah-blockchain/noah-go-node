@@ -6,8 +6,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/tendermint/tendermint/libs/service"
 	"io/ioutil"
-	"math/big"
 	"net/http"
 	"reflect"
 	"runtime/debug"
@@ -15,20 +15,24 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MinterTeam/go-amino"
 	"github.com/gorilla/websocket"
-	types "github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 	"github.com/pkg/errors"
-	cmn "github.com/tendermint/tendermint/libs/common"
+
+	types "github.com/MinterTeam/minter-go-node/rpc/lib/types"
+	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/log"
 )
 
 // RegisterRPCFuncs adds a route for each function in the funcMap, as well as general jsonrpc and websocket handlers for all functions.
 // "result" is the interface on which the result objects are registered, and is popualted with every RPCResponse
-func RegisterRPCFuncs(mux *http.ServeMux, funcMap map[string]*RPCFunc, cdc *amino.Codec, logger log.Logger) {
+func RegisterRPCFuncs(mux *http.ServeMux, funcMap map[string]*RPCFunc, cdc *amino.Codec, logger log.Logger, middleware func(f func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request)) {
 	// HTTP endpoints
 	for funcName, rpcFunc := range funcMap {
-		mux.HandleFunc("/"+funcName, makeHTTPHandler(rpcFunc, cdc, logger))
+		handler := makeHTTPHandler(rpcFunc, cdc, logger)
+		if middleware != nil {
+			handler = middleware(handler)
+		}
+		mux.HandleFunc("/"+funcName, handler)
 	}
 
 	// JSONRPC endpoints
@@ -313,10 +317,6 @@ func httpParamsToArgs(rpcFunc *RPCFunc, cdc *amino.Codec, r *http.Request) ([]re
 }
 
 func jsonStringToArg(cdc *amino.Codec, rt reflect.Type, arg string) (reflect.Value, error) {
-	if rt == reflect.TypeOf(&big.Int{}) {
-		arg = fmt.Sprintf(`"%s"`, arg)
-	}
-
 	rv := reflect.New(rt)
 	err := cdc.UnmarshalJSON([]byte(arg), rv.Interface())
 	if err != nil {
@@ -422,7 +422,7 @@ const (
 //
 // In case of an error, the connection is stopped.
 type wsConnection struct {
-	cmn.BaseService
+	service.BaseService
 
 	remoteAddr string
 	baseConn   *websocket.Conn
@@ -473,7 +473,7 @@ func NewWSConnection(
 	for _, option := range options {
 		option(wsc)
 	}
-	wsc.BaseService = *cmn.NewBaseService(nil, "wsConnection", wsc)
+	wsc.BaseService = *service.NewBaseService(nil, "wsConnection", wsc)
 	return wsc
 }
 

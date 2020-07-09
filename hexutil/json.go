@@ -273,16 +273,16 @@ func isString(input []byte) bool {
 	return len(input) >= 2 && input[0] == '"' && input[len(input)-1] == '"'
 }
 
-func bytesHaveNOAHxPrefix(input []byte) bool {
-	return len(input) >= 5 && string(input[:5]) == "NOAHx"
+func bytesHave0xPrefix(input []byte) bool {
+	return len(input) >= 2 && input[0] == 'M' && (input[1] == 'x' || input[1] == 'X')
 }
 
 func checkText(input []byte, wantPrefix bool) ([]byte, error) {
 	if len(input) == 0 {
 		return nil, nil // empty strings are allowed
 	}
-	if bytesHaveNOAHxPrefix(input) {
-		input = input[5:]
+	if bytesHave0xPrefix(input) {
+		input = input[2:]
 	} else if wantPrefix {
 		return nil, ErrMissingPrefix
 	}
@@ -296,10 +296,10 @@ func checkNumberText(input []byte) (raw []byte, err error) {
 	if len(input) == 0 {
 		return nil, nil // empty strings are allowed
 	}
-	if !bytesHaveNOAHxPrefix(input) {
+	if !bytesHave0xPrefix(input) {
 		return nil, ErrMissingPrefix
 	}
-	input = input[5:]
+	input = input[2:]
 	if len(input) == 0 {
 		return nil, ErrEmptyNumber
 	}

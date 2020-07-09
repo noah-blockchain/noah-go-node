@@ -3,31 +3,39 @@ package noah
 import (
 	"bytes"
 	"fmt"
-	"math/big"
-	"sync"
-	"sync/atomic"
-
+	eventsdb "github.com/noah-blockchain/events-db"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/appdb"
 	"github.com/noah-blockchain/noah-go-node/core/rewards"
 	"github.com/noah-blockchain/noah-go-node/core/state"
+	"github.com/noah-blockchain/noah-go-node/core/state/candidates"
+	"github.com/noah-blockchain/noah-go-node/core/statistics"
 	"github.com/noah-blockchain/noah-go-node/core/transaction"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/core/validators"
-	"github.com/noah-blockchain/noah-go-node/eventsdb"
-	"github.com/noah-blockchain/noah-go-node/eventsdb/events"
-	"github.com/noah-blockchain/noah-go-node/log"
+	"github.com/noah-blockchain/noah-go-node/helpers"
+	"github.com/noah-blockchain/noah-go-node/upgrades"
 	"github.com/noah-blockchain/noah-go-node/version"
+	"github.com/syndtr/goleveldb/leveldb/filter"
+	"github.com/syndtr/goleveldb/leveldb/opt"
+	"github.com/tendermint/go-amino"
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/tendermint/tendermint/crypto/encoding/amino"
+	cryptoAmino "github.com/tendermint/tendermint/crypto/encoding/amino"
+	"github.com/tendermint/tendermint/evidence"
 	tmNode "github.com/tendermint/tendermint/node"
-	"github.com/tendermint/tendermint/rpc/lib/types"
+	rpctypes "github.com/tendermint/tendermint/rpc/lib/types"
 	types2 "github.com/tendermint/tendermint/types"
 	"github.com/tendermint/tm-db"
-
-	"github.com/MinterTeam/go-amino"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"math/big"
+	"sort"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
 )
 
 const (
@@ -45,59 +53,72 @@ var (
 	blockchain *Blockchain
 )
 
-// Main structure of NOAH Blockchain
+// Main structure of NOah Blockchain
 type Blockchain struct {
 	abciTypes.BaseApplication
 
-	stateDB             db.DB
-	appDB               *appdb.AppDB
-	stateDeliver        *state.StateDB
-	stateCheck          *state.StateDB
-	height              uint64 // current Blockchain height
-	lastCommittedHeight uint64 // Blockchain.height updated in the at begin of block processing, while
-	// lastCommittedHeight updated at the end of block processing
+	statisticData *statistics.Data
+
+	stateDB            db.DB
+	appDB              *appdb.AppDB
+	eventsDB           eventsdb.IEventsDB
+	stateDeliver       *state.State
+	stateCheck         *state.State
+	height             uint64   // current Blockchain height
 	rewards            *big.Int // Rewards pool
-	validatorsStatuses map[[20]byte]int8
+	validatorsStatuses map[types.TmAddress]int8
 
 	// local rpc client for Tendermint
 	tmNode *tmNode.Node
 
 	// currentMempool is responsive for prevent sending multiple transactions from one address in one block
-	currentMempool sync.Map
+	currentMempool *sync.Map
 
-	lock    sync.RWMutex
-	wg      sync.WaitGroup // wg is used for graceful node shutdown
-	stopped uint32
+	lock sync.RWMutex
+
+	haltHeight uint64
+	cfg        *config.Config
 }
 
-// Creates Noah Blockchain instance, should be only called once
+// Creates NOah Blockchain instance, should be only called once
 func NewNoahBlockchain(cfg *config.Config) *Blockchain {
-	dbType := db.DBBackendType(cfg.DBBackend)
-	ldb := db.NewDB("state", dbType, fmt.Sprintf("%s/data-%s", utils.GetNoahHome(), config.NetworkId))
-
-	// Initiate Application DB. Used for persisting data like current block, validators, etc.
-	applicationDB := appdb.NewAppDB(cfg)
-
-	blockchain = &Blockchain{
-		stateDB:             ldb,
-		appDB:               applicationDB,
-		height:              applicationDB.GetLastHeight(),
-		lastCommittedHeight: applicationDB.GetLastHeight(),
-		currentMempool:      sync.Map{},
-	}
-
-	// Set stateDeliver and stateCheck
 	var err error
-	blockchain.stateDeliver, err = state.New(blockchain.height, blockchain.stateDB, cfg.KeepStateHistory)
+
+	ldb, err := db.NewGoLevelDBWithOpts("state", utils.GetNoahHome()+"/data", getDbOpts(cfg.StateMemAvailable))
 	if err != nil {
 		panic(err)
 	}
 
-	blockchain.stateCheck = state.NewForCheckFromDeliver(blockchain.stateDeliver)
+	// Initiate Application DB. Used for persisting data like current block, validators, etc.
+	applicationDB := appdb.NewAppDB(cfg)
+
+	edb, err := db.NewGoLevelDBWithOpts("events", utils.GetNoahHome()+"/data", getDbOpts(1024))
+	if err != nil {
+		panic(err)
+	}
+
+	blockchain = &Blockchain{
+		stateDB:        ldb,
+		appDB:          applicationDB,
+		height:         applicationDB.GetLastHeight(),
+		eventsDB:       eventsdb.NewEventsStore(edb),
+		currentMempool: &sync.Map{},
+		cfg:            cfg,
+	}
+
+	// Set stateDeliver and stateCheck
+	blockchain.stateDeliver, err = state.NewState(blockchain.height, blockchain.stateDB, blockchain.eventsDB, cfg.KeepLastStates, cfg.StateCacheSize)
+	if err != nil {
+		panic(err)
+	}
+
+	blockchain.stateCheck = state.NewCheckState(blockchain.stateDeliver)
 
 	// Set start height for rewards and validators
 	rewards.SetStartHeight(applicationDB.GetStartHeight())
 	validators.SetStartHeight(applicationDB.GetStartHeight())
+
+	blockchain.haltHeight = uint64(cfg.HaltHeight)
 
 	return blockchain
 }
@@ -109,17 +130,19 @@ func (app *Blockchain) InitChain(req abciTypes.RequestInitChain) abciTypes.Respo
 		panic(err)
 	}
 
-	app.stateDeliver.Import(genesisState)
+	if err := app.stateDeliver.Import(genesisState); err != nil {
+		panic(err)
+	}
 
 	totalPower := big.NewInt(0)
 	for _, val := range genesisState.Validators {
-		totalPower.Add(totalPower, val.TotalNoahStake)
+		totalPower.Add(totalPower, helpers.StringToBigInt(val.TotalNoahStake))
 	}
 
 	vals := make([]abciTypes.ValidatorUpdate, len(genesisState.Validators))
 	for i, val := range genesisState.Validators {
 		var validatorPubKey ed25519.PubKeyEd25519
-		copy(validatorPubKey[:], val.PubKey)
+		copy(validatorPubKey[:], val.PubKey[:])
 		pkey, err := cryptoAmino.PubKeyFromBytes(validatorPubKey.Bytes())
 		if err != nil {
 			panic(err)
@@ -127,7 +150,8 @@ func (app *Blockchain) InitChain(req abciTypes.RequestInitChain) abciTypes.Respo
 
 		vals[i] = abciTypes.ValidatorUpdate{
 			PubKey: types2.TM2PB.PubKey(pkey),
-			Power:  big.NewInt(0).Div(big.NewInt(0).Mul(val.TotalNoahStake, big.NewInt(100000000)), totalPower).Int64(),
+			Power: big.NewInt(0).Div(big.NewInt(0).Mul(helpers.StringToBigInt(val.TotalNoahStake),
+				big.NewInt(100000000)), totalPower).Int64(),
 		}
 	}
 
@@ -143,74 +167,83 @@ func (app *Blockchain) InitChain(req abciTypes.RequestInitChain) abciTypes.Respo
 
 // Signals the beginning of a block.
 func (app *Blockchain) BeginBlock(req abciTypes.RequestBeginBlock) abciTypes.ResponseBeginBlock {
-	app.wg.Add(1)
-	if atomic.LoadUint32(&app.stopped) == 1 {
-		panic("Application stopped")
+	height := uint64(req.Header.Height)
+
+	app.StatisticData().PushStartBlock(statistics.StartRequest{Height: int64(height), Now: time.Now(), HeaderTime: req.Header.Time})
+
+	if app.haltHeight > 0 && height >= app.haltHeight {
+		panic(fmt.Sprintf("Application halted at height %d", height))
 	}
 
-	height := uint64(req.Header.Height)
-	// Check invariants
-	if height%720 == 0 {
-		if err := state.NewForCheckFromDeliver(app.stateCheck).CheckForInvariants(); err != nil {
-			log.With("module", "invariants").Error("Invariants error", "msg", err.Error(), "height", app.height)
+	if upgrades.IsUpgradeBlock(height) {
+		var err error
+		app.stateDeliver, err = state.NewState(app.height, app.stateDB, app.eventsDB, app.cfg.KeepLastStates, app.cfg.StateCacheSize)
+		if err != nil {
+			panic(err)
 		}
+		app.stateCheck = state.NewCheckState(app.stateDeliver)
 	}
+
+	app.stateDeliver.Lock()
 
 	// compute max gas
 	app.updateBlocksTimeDelta(height, 3)
 	maxGas := app.calcMaxGas(height)
-	app.stateDeliver.SetMaxGas(maxGas)
+	app.stateDeliver.App.SetMaxGas(maxGas)
 
 	atomic.StoreUint64(&app.height, height)
 	app.rewards = big.NewInt(0)
 
 	// clear absent candidates
-	app.validatorsStatuses = map[[20]byte]int8{}
+	app.lock.Lock()
+	app.validatorsStatuses = map[types.TmAddress]int8{}
 
 	// give penalty to absent validators
 	for _, v := range req.LastCommitInfo.Votes {
-		var address [20]byte
+		var address types.TmAddress
 		copy(address[:], v.Validator.Address)
 
 		if v.SignedLastBlock {
-			app.stateDeliver.SetValidatorPresent(address)
+			app.stateDeliver.Validators.SetValidatorPresent(height, address)
 			app.validatorsStatuses[address] = ValidatorPresent
 		} else {
-			app.stateDeliver.SetValidatorAbsent(address)
+			app.stateDeliver.Validators.SetValidatorAbsent(height, address)
 			app.validatorsStatuses[address] = ValidatorAbsent
 		}
 	}
+	app.lock.Unlock()
 
 	// give penalty to Byzantine validators
 	for _, byzVal := range req.ByzantineValidators {
-		var address [20]byte
+		var address types.TmAddress
 		copy(address[:], byzVal.Validator.Address)
 
 		// skip already offline candidates to prevent double punishing
-		candidate := app.stateDeliver.GetStateCandidateByTmAddress(address)
-		if candidate == nil || candidate.Status == state.CandidateStatusOffline {
+		candidate := app.stateDeliver.Candidates.GetCandidateByTendermintAddress(address)
+		if candidate == nil || candidate.Status == candidates.CandidateStatusOffline {
 			continue
 		}
 
-		app.stateDeliver.PunishFrozenFundsWithAddress(height, height+state.UnbondPeriod, address)
-		app.stateDeliver.PunishByzantineValidator(address)
+		app.stateDeliver.FrozenFunds.PunishFrozenFundsWithAddress(height, height+candidates.UnbondPeriod, address)
+		app.stateDeliver.Validators.PunishByzantineValidator(address)
+		app.stateDeliver.Candidates.PunishByzantineCandidate(height, address)
 	}
 
 	// apply frozen funds (used for unbond stakes)
-	frozenFunds := app.stateDeliver.GetStateFrozenFunds(uint64(req.Header.Height))
+	frozenFunds := app.stateDeliver.FrozenFunds.GetFrozenFunds(uint64(req.Header.Height))
 	if frozenFunds != nil {
-		for _, item := range frozenFunds.List() {
-			eventsdb.GetCurrent().AddEvent(uint64(req.Header.Height), events.UnbondEvent{
+		for _, item := range frozenFunds.List {
+			app.eventsDB.AddEvent(uint32(req.Header.Height), eventsdb.UnbondEvent{
 				Address:         item.Address,
-				Amount:          item.Value.Bytes(),
+				Amount:          item.Value.String(),
 				Coin:            item.Coin,
-				ValidatorPubKey: item.CandidateKey,
+				ValidatorPubKey: *item.CandidateKey,
 			})
-			app.stateDeliver.AddBalance(item.Address, item.Coin, item.Value)
+			app.stateDeliver.Accounts.AddBalance(item.Address, item.Coin, item.Value)
 		}
 
 		// delete from db
-		frozenFunds.Delete()
+		app.stateDeliver.FrozenFunds.Delete(frozenFunds.Height())
 	}
 
 	return abciTypes.ResponseBeginBlock{}
@@ -220,10 +253,13 @@ func (app *Blockchain) BeginBlock(req abciTypes.RequestBeginBlock) abciTypes.Res
 func (app *Blockchain) EndBlock(req abciTypes.RequestEndBlock) abciTypes.ResponseEndBlock {
 	height := uint64(req.Height)
 
+	if height == upgrades.UpgradeBlock3 {
+		ApplyUpgrade3(app.stateDeliver, app.eventsDB)
+	}
+
 	var updates []abciTypes.ValidatorUpdate
 
-	stateValidators := app.stateDeliver.GetStateValidators()
-	vals := stateValidators.Data()
+	vals := app.stateDeliver.Validators.GetValidators()
 
 	hasDroppedValidators := false
 	for _, val := range vals {
@@ -231,8 +267,8 @@ func (app *Blockchain) EndBlock(req abciTypes.RequestEndBlock) abciTypes.Respons
 			hasDroppedValidators = true
 
 			// Move dropped validator's accum rewards back to pool
-			app.rewards.Add(app.rewards, val.AccumReward)
-			val.AccumReward.SetInt64(0)
+			app.rewards.Add(app.rewards, val.GetAccumReward())
+			val.SetAccumReward(big.NewInt(0))
 			break
 		}
 	}
@@ -241,11 +277,11 @@ func (app *Blockchain) EndBlock(req abciTypes.RequestEndBlock) abciTypes.Respons
 	totalPower := big.NewInt(0)
 	for _, val := range vals {
 		// skip if candidate is not present
-		if val.IsToDrop() || app.validatorsStatuses[val.GetAddress()] != ValidatorPresent {
+		if val.IsToDrop() || app.GetValidatorStatus(val.GetAddress()) != ValidatorPresent {
 			continue
 		}
 
-		totalPower.Add(totalPower, val.TotalNoahStake)
+		totalPower.Add(totalPower, val.GetTotalNoahStake())
 	}
 
 	if totalPower.Cmp(types.Big0) == 0 {
@@ -254,6 +290,7 @@ func (app *Blockchain) EndBlock(req abciTypes.RequestEndBlock) abciTypes.Respons
 
 	// accumulate rewards
 	reward := rewards.GetRewardForBlock(height)
+	app.stateDeliver.Checker.AddCoinVolume(types.GetBaseCoin(), reward)
 	reward.Add(reward, app.rewards)
 
 	// compute remainder to keep total emission consist
@@ -261,51 +298,32 @@ func (app *Blockchain) EndBlock(req abciTypes.RequestEndBlock) abciTypes.Respons
 
 	for i, val := range vals {
 		// skip if candidate is not present
-		if val.IsToDrop() || app.validatorsStatuses[val.GetAddress()] != ValidatorPresent {
+		if val.IsToDrop() || app.GetValidatorStatus(val.GetAddress()) != ValidatorPresent {
 			continue
 		}
 
 		r := big.NewInt(0).Set(reward)
-		r.Mul(r, val.TotalNoahStake)
+		r.Mul(r, val.GetTotalNoahStake())
 		r.Div(r, totalPower)
 
 		remainder.Sub(remainder, r)
-		vals[i].AccumReward.Add(vals[i].AccumReward, r)
+		vals[i].AddAccumReward(r)
 	}
 
 	// add remainder to total slashed
-	app.stateDeliver.AddTotalSlashed(remainder)
-
-	stateValidators.SetData(vals)
-	app.stateDeliver.SetStateValidators(stateValidators)
+	app.stateDeliver.App.AddTotalSlashed(remainder)
 
 	// pay rewards
-	if req.Height%12 == 0 {
-		app.stateDeliver.PayRewards()
+	if req.Height%120 == 0 {
+		app.stateDeliver.Validators.PayRewards(height)
 	}
 
 	// update validators
 	if req.Height%120 == 0 || hasDroppedValidators {
-		app.stateDeliver.RecalculateTotalStakeValues()
-
-		app.stateDeliver.ClearCandidates()
-		app.stateDeliver.ClearStakes()
+		app.stateDeliver.Candidates.RecalculateStakes(height)
 
 		valsCount := validators.GetValidatorsCountForBlock(height)
-
-		newCandidates := app.stateDeliver.GetCandidates(valsCount, req.Height)
-
-		// remove candidates with 0 total stake
-		var tempCandidates []state.Candidate
-		for _, candidate := range newCandidates {
-			if candidate.TotalNoahStake.Cmp(big.NewInt(0)) != 1 {
-				continue
-			}
-
-			tempCandidates = append(tempCandidates, candidate)
-		}
-		newCandidates = tempCandidates
-
+		newCandidates := app.stateDeliver.Candidates.GetNewCandidates(valsCount)
 		if len(newCandidates) < valsCount {
 			valsCount = len(newCandidates)
 		}
@@ -315,22 +333,26 @@ func (app *Blockchain) EndBlock(req abciTypes.RequestEndBlock) abciTypes.Respons
 		// calculate total power
 		totalPower := big.NewInt(0)
 		for _, candidate := range newCandidates {
-			totalPower.Add(totalPower, candidate.TotalNoahStake)
+			totalPower.Add(totalPower, app.stateDeliver.Candidates.GetTotalStake(candidate.PubKey))
 		}
 
 		for i := range newCandidates {
-			power := big.NewInt(0).Div(big.NewInt(0).Mul(newCandidates[i].TotalNoahStake,
+			power := big.NewInt(0).Div(big.NewInt(0).Mul(app.stateDeliver.Candidates.GetTotalStake(newCandidates[i].PubKey),
 				big.NewInt(100000000)), totalPower).Int64()
 
 			if power == 0 {
 				power = 1
 			}
 
-			newValidators[i] = abciTypes.Ed25519ValidatorUpdate(newCandidates[i].PubKey, power)
+			newValidators[i] = abciTypes.Ed25519ValidatorUpdate(newCandidates[i].PubKey[:], power)
 		}
 
+		sort.SliceStable(newValidators, func(i, j int) bool {
+			return newValidators[i].Power > newValidators[j].Power
+		})
+
 		// update validators in state
-		app.stateDeliver.SetNewValidators(newCandidates)
+		app.stateDeliver.Validators.SetNewValidators(newCandidates)
 
 		activeValidators := app.getCurrentValidators()
 
@@ -357,18 +379,22 @@ func (app *Blockchain) EndBlock(req abciTypes.RequestEndBlock) abciTypes.Respons
 		}
 	}
 
+	defer func() {
+		app.StatisticData().PushEndBlock(statistics.EndRequest{TimeEnd: time.Now(), Height: int64(app.height)})
+	}()
+
 	return abciTypes.ResponseEndBlock{
 		ValidatorUpdates: updates,
 		ConsensusParamUpdates: &abciTypes.ConsensusParams{
 			Block: &abciTypes.BlockParams{
 				MaxBytes: BlockMaxBytes,
-				MaxGas:   int64(app.stateDeliver.GetMaxGas()),
+				MaxGas:   int64(app.stateDeliver.App.GetMaxGas()),
 			},
 		},
 	}
 }
 
-// Return application info. Used for synchronization between Tendermint and NOAH
+// Return application info. Used for synchronization between Tendermint and Noah
 func (app *Blockchain) Info(req abciTypes.RequestInfo) (resInfo abciTypes.ResponseInfo) {
 	return abciTypes.ResponseInfo{
 		Version:          version.Version,
@@ -380,7 +406,7 @@ func (app *Blockchain) Info(req abciTypes.RequestInfo) (resInfo abciTypes.Respon
 
 // Deliver a tx for full processing
 func (app *Blockchain) DeliverTx(req abciTypes.RequestDeliverTx) abciTypes.ResponseDeliverTx {
-	response := transaction.RunTx(app.stateDeliver, false, req.Tx, app.rewards, app.height, sync.Map{}, 0)
+	response := transaction.RunTx(app.stateDeliver, false, req.Tx, app.rewards, app.height, &sync.Map{}, 0)
 
 	return abciTypes.ResponseDeliverTx{
 		Code:      response.Code,
@@ -420,14 +446,20 @@ func (app *Blockchain) CheckTx(req abciTypes.RequestCheckTx) abciTypes.ResponseC
 
 // Commit the state and return the application Merkle root hash
 func (app *Blockchain) Commit() abciTypes.ResponseCommit {
-	// Committing NOAH Blockchain state
-	hash, _, err := app.stateDeliver.Commit()
+	if app.height > app.appDB.GetStartHeight()+1 {
+		if err := app.stateDeliver.Check(); err != nil {
+			panic(err)
+		}
+	}
+
+	// Committing Noah Blockchain state
+	hash, err := app.stateDeliver.Commit()
 	if err != nil {
 		panic(err)
 	}
 
 	// Flush events db
-	_ = eventsdb.GetCurrent().FlushEvents()
+	_ = app.eventsDB.CommitEvents()
 
 	// Persist application hash and height
 	app.appDB.SetLastBlockHash(hash)
@@ -436,14 +468,10 @@ func (app *Blockchain) Commit() abciTypes.ResponseCommit {
 	// Resetting check state to be consistent with current height
 	app.resetCheckState()
 
-	// Update LastCommittedHeight
-	atomic.StoreUint64(&app.lastCommittedHeight, app.Height())
-
 	// Clear mempool
-	app.currentMempool = sync.Map{}
+	app.currentMempool = &sync.Map{}
 
-	// Releasing wg
-	app.wg.Done()
+	app.stateDeliver.Unlock()
 
 	return abciTypes.ResponseCommit{
 		Data: hash,
@@ -460,45 +488,66 @@ func (app *Blockchain) SetOption(req abciTypes.RequestSetOption) abciTypes.Respo
 	return abciTypes.ResponseSetOption{}
 }
 
-// Gracefully stopping NOAH Blockchain instance
+// Gracefully stopping noah Blockchain instance
 func (app *Blockchain) Stop() {
-	atomic.StoreUint32(&app.stopped, 1)
-	app.wg.Wait()
-
 	app.appDB.Close()
 	app.stateDB.Close()
-	fmt.Println("Noah node successful stopped")
 }
 
-// Get immutable state of NOAH Blockchain
-func (app *Blockchain) CurrentState() *state.StateDB {
+// Get immutable state of Noah Blockchain
+func (app *Blockchain) CurrentState() *state.State {
 	app.lock.RLock()
 	defer app.lock.RUnlock()
 
-	return state.NewForCheckFromDeliver(app.stateCheck)
+	return state.NewCheckState(app.stateCheck)
 }
 
-// Get immutable state of NOAH Blockchain for given height
-func (app *Blockchain) GetStateForHeight(height uint64) (*state.StateDB, error) {
+// Get immutable state of Noah Blockchain for given height
+func (app *Blockchain) GetStateForHeight(height uint64) (*state.State, error) {
 	app.lock.RLock()
 	defer app.lock.RUnlock()
 
-	s, err := state.NewForCheck(height, app.stateDB)
-	if err != nil {
-		return nil, rpctypes.RPCError{Code: 404, Message: "State at given height not found", Data: err.Error()}
+	if height != 0 {
+		s, err := state.NewCheckStateAtHeight(height, app.stateDB)
+		if err != nil {
+			return nil, rpctypes.RPCError{Code: 404, Message: "State at given height not found", Data: err.Error()}
+		}
+		return s, nil
+	}
+	return blockchain.CurrentState(), nil
+}
+
+func (app *Blockchain) MissedBlocks(pubKey string, height uint64) (missedBlocks string, missedBlocksCount int, err error) {
+	if !strings.HasPrefix(pubKey, "Mp") {
+		return "", 0, status.Error(codes.InvalidArgument, "public key don't has prefix 'Mp'")
 	}
 
-	return s, nil
+	cState, err := blockchain.GetStateForHeight(height)
+	if err != nil {
+		return "", 0, status.Error(codes.NotFound, err.Error())
+	}
+
+	if height != 0 {
+		cState.Lock()
+		cState.Validators.LoadValidators()
+		cState.Unlock()
+	}
+
+	cState.RLock()
+	defer cState.RUnlock()
+
+	val := cState.Validators.GetByPublicKey(types.HexToPubkey(pubKey))
+	if val == nil {
+		return "", 0, status.Error(codes.NotFound, "Validator not found")
+	}
+
+	return val.AbsentTimes.String(), val.CountAbsentTimes(), nil
+
 }
 
-// Get current height of NOAH Blockchain
+// Get current height of Noah Blockchain
 func (app *Blockchain) Height() uint64 {
 	return atomic.LoadUint64(&app.height)
-}
-
-// Get last committed height of NOAH Blockchain
-func (app *Blockchain) LastCommittedHeight() uint64 {
-	return atomic.LoadUint64(&app.lastCommittedHeight)
 }
 
 // Set Tendermint node
@@ -533,7 +582,7 @@ func (app *Blockchain) resetCheckState() {
 	app.lock.Lock()
 	defer app.lock.Unlock()
 
-	app.stateCheck = state.NewForCheckFromDeliver(app.stateDeliver)
+	app.stateCheck = state.NewCheckState(app.stateDeliver)
 }
 
 func (app *Blockchain) getCurrentValidators() abciTypes.ValidatorUpdates {
@@ -581,7 +630,7 @@ func (app *Blockchain) calcMaxGas(height uint64) uint64 {
 	}
 
 	// get current max gas
-	newMaxGas := app.stateCheck.GetCurrentMaxGas()
+	newMaxGas := app.stateCheck.App.GetMaxGas()
 
 	// check if blocks are created in time
 	if delta, _ := app.GetBlocksTimeDelta(height, blockDelta); delta > targetTime*blockDelta {
@@ -601,4 +650,45 @@ func (app *Blockchain) calcMaxGas(height uint64) uint64 {
 	}
 
 	return newMaxGas
+}
+
+func (app *Blockchain) GetEventsDB() eventsdb.IEventsDB {
+	return app.eventsDB
+}
+
+func (app *Blockchain) SetStatisticData(statisticData *statistics.Data) *statistics.Data {
+	app.statisticData = statisticData
+	return app.statisticData
+}
+
+func (app *Blockchain) StatisticData() *statistics.Data {
+	return app.statisticData
+}
+
+func (app *Blockchain) GetValidatorStatus(address types.TmAddress) int8 {
+	app.lock.RLock()
+	defer app.lock.RUnlock()
+	return app.validatorsStatuses[address]
+}
+func (app *Blockchain) MaxPeerHeight() int64 {
+	var max int64
+	for _, peer := range app.tmNode.Switch().Peers().List() {
+		height := peer.Get(types2.PeerStateKey).(evidence.PeerState).GetHeight()
+		if height > max {
+			max = height
+		}
+	}
+	return max
+}
+
+func getDbOpts(memLimit int) *opt.Options {
+	if memLimit < 1024 {
+		panic(fmt.Sprintf("Not enough memory given to StateDB. Expected >1024M, given %d", memLimit))
+	}
+	return &opt.Options{
+		OpenFilesCacheCapacity: memLimit,
+		BlockCacheCapacity:     memLimit / 2 * opt.MiB,
+		WriteBuffer:            memLimit / 4 * opt.MiB, // Two of these are used internally
+		Filter:                 filter.NewBloomFilter(10),
+	}
 }

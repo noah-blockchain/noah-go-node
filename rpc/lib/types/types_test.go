@@ -2,8 +2,9 @@ package rpctypes
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
+
+	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"

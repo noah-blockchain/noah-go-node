@@ -1,35 +1,19 @@
-// Copyright 2015 The go-ethereum Authors
-// This file is part of the go-ethereum library.
-//
-// The go-ethereum library is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// The go-ethereum library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
-
 package types
 
 import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"github.com/MinterTeam/minter-go-node/hexutil"
 	"math/big"
 	"math/rand"
 	"reflect"
-
-	"github.com/noah-blockchain/noah-go-node/hexutil"
 )
 
 const (
 	HashLength       = 32
 	AddressLength    = 20
+	PubKeyLength     = 32
 	CoinSymbolLength = 10
 )
 
@@ -37,12 +21,6 @@ var (
 	hashT    = reflect.TypeOf(Hash{})
 	addressT = reflect.TypeOf(Address{})
 )
-
-func ReplaceAtIndex(in string, r byte, i int) string {
-	out := []byte(in)
-	out[i] = r
-	return string(out)
-}
 
 // Hash represents the 32 byte Keccak256 hash of arbitrary data.
 type Hash [HashLength]byte
@@ -77,7 +55,7 @@ func (h Hash) String() string {
 // Format implements fmt.Formatter, forcing the byte slice to be formatted as is,
 // without going through the stringer interface used for logging.
 func (h Hash) Format(s fmt.State, c rune) {
-	_, _ = fmt.Fprintf(s, "%"+string(c), h[:])
+	fmt.Fprintf(s, "%"+string(c), h[:])
 }
 
 // UnmarshalText parses a hash in hex syntax.
@@ -177,7 +155,6 @@ func StrToCoinSymbol(s string) CoinSymbol {
 
 /////////// Address
 
-// Address represents the 20 byte address of an Ethereum account.
 type Address [AddressLength]byte
 
 func BytesToAddress(b []byte) Address {
@@ -278,10 +255,27 @@ func (a UnprefixedAddress) MarshalText() ([]byte, error) {
 	return []byte(hex.EncodeToString(a[:])), nil
 }
 
-type Pubkey []byte
+type Pubkey [32]byte
+
+func HexToPubkey(s string) Pubkey { return BytesToPubkey(FromHex(s, "Mp")) }
+
+func BytesToPubkey(b []byte) Pubkey {
+	var p Pubkey
+	p.SetBytes(b)
+	return p
+}
+
+func (p *Pubkey) SetBytes(b []byte) {
+	if len(b) > len(p) {
+		b = b[len(b)-PubKeyLength:]
+	}
+	copy(p[PubKeyLength-len(b):], b)
+}
+
+func (p Pubkey) Bytes() []byte { return p[:] }
 
 func (p Pubkey) String() string {
-	return fmt.Sprintf("Np%x", []byte(p))
+	return fmt.Sprintf("Mp%x", p[:])
 }
 
 func (p Pubkey) MarshalText() ([]byte, error) {
@@ -294,11 +288,13 @@ func (p Pubkey) MarshalJSON() ([]byte, error) {
 
 func (p *Pubkey) UnmarshalJSON(input []byte) error {
 	b, err := hex.DecodeString(string(input)[3 : len(input)-1])
-	*p = Pubkey(b)
+	copy(p[:], b)
 
 	return err
 }
 
-func (p Pubkey) Compare(p2 Pubkey) int {
-	return bytes.Compare(p, p2)
+func (p Pubkey) Equals(p2 Pubkey) bool {
+	return p == p2
 }
+
+type TmAddress [20]byte
