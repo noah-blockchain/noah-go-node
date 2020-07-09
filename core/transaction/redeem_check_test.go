@@ -86,7 +86,7 @@ func TestRedeemCheckTx(t *testing.T) {
 	tx := Transaction{
 		Nonce:         1,
 		GasPrice:      1,
-		ChainID:       types.GetCurrentChainID(),
+		ChainID:       types.CurrentChainID,
 		GasCoin:       coin,
 		Type:          TypeRedeemCheck,
 		Data:          encodedData,
@@ -103,13 +103,13 @@ func TestRedeemCheckTx(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	response := RunTx(cState, false, encodedTx, big.NewInt(0), 0, sync.Map{}, 0)
+	response := RunTx(cState, false, encodedTx, big.NewInt(0), 0, &sync.Map{}, 0)
 
 	if response.Code != 0 {
 		t.Fatalf("Response code is not 0. Error %s", response.Log)
 	}
 
-	balance := cState.GetBalance(receiverAddr, coin)
+	balance := cState.Accounts.GetBalance(receiverAddr, coin)
 	if balance.Cmp(checkValue) != 0 {
 		t.Fatalf("Target %s balance is not correct. Expected %s, got %s", coin, checkValue, balance)
 	}

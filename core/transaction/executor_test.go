@@ -398,7 +398,7 @@ func TestMultiSigNotEnoughTx(t *testing.T) {
 	tx := Transaction{
 		Nonce:         1,
 		GasPrice:      1,
-		ChainID:       types.GetCurrentChainID(),
+		ChainID:       types.CurrentChainID,
 		GasCoin:       types.GetBaseCoin(),
 		Type:          TypeSend,
 		Data:          encodedData,
@@ -446,7 +446,7 @@ func TestMultiSigIncorrectSignsTx(t *testing.T) {
 	tx := Transaction{
 		Nonce:         1,
 		GasPrice:      1,
-		ChainID:       types.GetCurrentChainID(),
+		ChainID:       types.CurrentChainID,
 		GasCoin:       types.GetBaseCoin(),
 		Type:          TypeSend,
 		Data:          encodedData,
@@ -464,7 +464,7 @@ func TestMultiSigIncorrectSignsTx(t *testing.T) {
 
 	txBytes, _ := rlp.EncodeToBytes(tx)
 
-	response := RunTx(cState, false, txBytes, big.NewInt(0), 0, sync.Map{}, 0)
+	response := RunTx(cState, false, txBytes, big.NewInt(0), 0, &sync.Map{}, 0)
 
 	if response.Code != code.IncorrectMultiSignature {
 		t.Fatalf("Error code is not %d, got %d", code.IncorrectMultiSignature, response.Code)
