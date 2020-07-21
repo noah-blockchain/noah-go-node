@@ -15,7 +15,7 @@ import (
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tendermint/tendermint/evidence"
 	"github.com/tendermint/tendermint/libs/log"
-	rpc "github.com/tendermint/tendermint/rpc/client"
+	rpc "github.com/tendermint/tendermint/rpc/client/local"
 	"github.com/tendermint/tendermint/types"
 	"net/http"
 	"net/url"
@@ -138,7 +138,7 @@ type Response struct {
 	Log    string      `json:"log,omitempty"`
 }
 
-func GetStateForHeight(height int) (*state.State, error) {
+func GetStateForHeight(height int) (*state.CheckState, error) {
 	if height > 0 {
 		cState, err := blockchain.GetStateForHeight(uint64(height))
 
