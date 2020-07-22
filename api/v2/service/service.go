@@ -63,3 +63,20 @@ func (s *Service) createError(statusErr *status.Status, data string) error {
 
 	return withDetails.Err()
 }
+
+func (s *Service) TimeoutDuration() time.Duration {
+	return time.Duration(s.minterCfg.APIv2TimeoutDuration)
+}
+
+func (s *Service) checkTimeout(ctx context.Context) *status.Status {
+	select {
+	case <-ctx.Done():
+		if ctx.Err() != context.DeadlineExceeded {
+			return status.New(codes.Canceled, ctx.Err().Error())
+		}
+
+		return status.New(codes.DeadlineExceeded, ctx.Err().Error())
+	default:
+		return nil
+	}
+}
