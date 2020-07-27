@@ -1,9 +1,9 @@
-noah-blockchainpackage service
+package service
 
 import (
 	"context"
 	"fmt"
-	pb "github.com/noah-blockchain/node-grpc-gateway/api_pb"
+	pb "github.com/MinterTeam/node-grpc-gateway/api_pb"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -22,7 +22,8 @@ func (s *Service) Status(context.Context, *empty.Empty) (*pb.StatusResponse, err
 		LatestAppHash:     fmt.Sprintf("%X", result.SyncInfo.LatestAppHash),
 		LatestBlockHeight: fmt.Sprintf("%d", result.SyncInfo.LatestBlockHeight),
 		LatestBlockTime:   result.SyncInfo.LatestBlockTime.Format(time.RFC3339Nano),
-		KeepLastStates:    fmt.Sprintf("%d", s.noahCfg.BaseConfig.KeepLastStates),
+		KeepLastStates:    fmt.Sprintf("%d", s.minterCfg.BaseConfig.KeepLastStates),
+		TotalSlashed:      s.blockchain.CurrentState().App().GetTotalSlashed().String(),
 		CatchingUp:        result.SyncInfo.CatchingUp,
 		PublicKey:         fmt.Sprintf("Mp%x", result.ValidatorInfo.PubKey.Bytes()[5:]),
 		NodeId:            string(result.NodeInfo.ID()),
