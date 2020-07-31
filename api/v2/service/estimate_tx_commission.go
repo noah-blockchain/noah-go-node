@@ -4,16 +4,19 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"github.com/noah-blockchain/noaj-go-node/core/transaction"
+	"github.com/noah-blockchain/noah-go-node/core/commissions"
+	"github.com/noah-blockchain/noah-go-node/core/state"
+	"github.com/noah-blockchain/noah-go-node/core/transaction"
+	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
-	pb "github.com/Minnoah-blockchainterTeam/node-grpc-gateway/api_pb"
+	pb "github.com/noah-blockchain/node-grpc-gateway/api_pb"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"math/big"
 )
 
-func (s *Service) EstimateTxCommission(_ context.Context, req *pb.EstimateTxCommissionRequest) (*pb.EstimateTxCommissionResponse, error) {
-	cState, err := s.getStateForHeight(req.Height)
+func (s *Service) EstimateTxCommission(ctx context.Context, req *pb.EstimateTxCommissionRequest) (*pb.EstimateTxCommissionResponse, error) {
+	cState, err := s.blockchain.GetStateForHeight(req.Height)
 	if err != nil {
 		return new(pb.EstimateTxCommissionResponse), status.Error(codes.NotFound, err.Error())
 	}
