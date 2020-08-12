@@ -17,6 +17,7 @@ import (
 	"github.com/noah-blockchain/noah-go-node/helpers"
 	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/rlp"
+	"github.com/noah-blockchain/noah-go-node/upgrades"
 	"github.com/tendermint/go-amino"
 	tmConfig "github.com/tendermint/tendermint/config"
 	log2 "github.com/tendermint/tendermint/libs/log"
@@ -25,10 +26,11 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/proxy"
-	rpc "github.com/tendermint/tendermint/rpc/client"
+	rpc "github.com/tendermint/tendermint/rpc/client/local"
 	_ "github.com/tendermint/tendermint/types"
 	types2 "github.com/tendermint/tendermint/types"
 	"math/big"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"sync"
@@ -108,7 +110,7 @@ func initNode() {
 
 	logger.Info("Started node", "nodeInfo", node.Switch().NodeInfo())
 	app.SetTmNode(node)
-	tmCli = rpc.NewLocal(node)
+	tmCli = rpc.New(node)
 	l.Unlock()
 }
 
@@ -137,7 +139,7 @@ func TestSendTx(t *testing.T) {
 		time.Sleep(time.Millisecond)
 	}
 
-	value := helpers.NoahToPip(big.NewInt(10))
+	value := helpers.NoahToQNoah(big.NewInt(10))
 	to := types.Address([20]byte{1})
 
 	data := transaction.SendData{
@@ -383,6 +385,44 @@ FORLOOP2:
 	}
 }
 
+func TestStopNetworkByHaltBlocks(t *testing.T) {
+	haltHeight := upgrades.UpgradeBlock4 + uint64(5)
+
+	v1Pubkey := [32]byte{}
+	v2Pubkey := [32]byte{}
+	v3Pubkey := [32]byte{}
+
+	rand.Read(v1Pubkey[:])
+	rand.Read(v2Pubkey[:])
+	rand.Read(v3Pubkey[:])
+
+	app.stateDeliver.Validators.Create(v1Pubkey, helpers.NoahToQNoah(big.NewInt(3)))
+	app.stateDeliver.Validators.Create(v2Pubkey, helpers.NoahToQNoah(big.NewInt(5)))
+	app.stateDeliver.Validators.Create(v3Pubkey, helpers.NoahToQNoah(big.NewInt(3)))
+
+	v1Address := app.stateDeliver.Validators.GetValidators()[1].GetAddress()
+	v2Address := app.stateDeliver.Validators.GetValidators()[2].GetAddress()
+	v3Address := app.stateDeliver.Validators.GetValidators()[3].GetAddress()
+
+	app.validatorsStatuses = map[types.TmAddress]int8{}
+	app.validatorsStatuses[v1Address] = ValidatorPresent
+	app.validatorsStatuses[v2Address] = ValidatorPresent
+	app.validatorsStatuses[v3Address] = ValidatorPresent
+
+	app.stateDeliver.Halts.AddHaltBlock(haltHeight, v1Pubkey)
+	app.stateDeliver.Halts.AddHaltBlock(haltHeight, v3Pubkey)
+	if app.isApplicationHalted(haltHeight) {
+		t.Fatalf("Application halted at height %d", haltHeight)
+	}
+
+	haltHeight++
+	app.stateDeliver.Halts.AddHaltBlock(haltHeight, v1Pubkey)
+	app.stateDeliver.Halts.AddHaltBlock(haltHeight, v2Pubkey)
+	if !app.isApplicationHalted(haltHeight) {
+		t.Fatalf("Application not halted at height %d", haltHeight)
+	}
+}
+
 func getGenesis() (*types2.GenesisDoc, error) {
 	appHash := [32]byte{}
 
@@ -396,7 +436,7 @@ func getGenesis() (*types2.GenesisDoc, error) {
 				Balance: []types.Balance{
 					{
 						Coin:  types.GetBaseCoin(),
-						Value: helpers.NoahToPip(big.NewInt(1000000)).String(),
+						Value: helpers.NoahToQNoah(big.NewInt(1000000)).String(),
 					},
 				},
 			},
