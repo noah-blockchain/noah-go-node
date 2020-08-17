@@ -1,17 +1,16 @@
 package transaction
 
 import (
-	"bytes"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	"math/big"
-
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
-	"github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/kv"
+	"math/big"
 )
 
 type CandidateTx interface {
