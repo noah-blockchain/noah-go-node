@@ -9,54 +9,67 @@ import (
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
+	"github.com/noah-blockchain/noah-go-node/hexutil"
+	"github.com/noah-blockchain/noah-go-node/upgrades"
 	"github.com/tendermint/tendermint/libs/kv"
 	"math/big"
+	"strconv"
 )
 
-type CandidateTx interface {
-	GetPubKey() types.Pubkey
+type SetHaltBlockData struct {
+	PubKey types.Pubkey
+	Height uint64
 }
 
-type EditCandidateData struct {
-	PubKey        types.Pubkey
-	RewardAddress types.Address
-	OwnerAddress  types.Address
-}
-
-func (data EditCandidateData) MarshalJSON() ([]byte, error) {
+func (data SetHaltBlockData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		PubKey        string `json:"pub_key"`
-		RewardAddress string `json:"reward_address"`
-		OwnerAddress  string `json:"owner_address"`
+		PubKey string `json:"pub_key"`
+		Height string `json:"height"`
 	}{
-		PubKey:        data.PubKey.String(),
-		RewardAddress: data.RewardAddress.String(),
-		OwnerAddress:  data.OwnerAddress.String(),
+		PubKey: data.PubKey.String(),
+		Height: strconv.FormatUint(data.Height, 10),
 	})
 }
 
-func (data EditCandidateData) GetPubKey() types.Pubkey {
+func (data SetHaltBlockData) GetPubKey() types.Pubkey {
 	return data.PubKey
 }
 
-func (data EditCandidateData) TotalSpend(tx *Transaction, context *state.CheckState) (TotalSpends, []Conversion, *big.Int, *Response) {
+func (data SetHaltBlockData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
 	panic("implement me")
 }
 
-func (data EditCandidateData) BasicCheck(tx *Transaction, context *state.CheckState) *Response {
+func (data SetHaltBlockData) BasicCheck(tx *Transaction, context *state.CheckState) *Response {
+	if !context.Candidates().Exists(data.PubKey) {
+		return &Response{
+			Code: code.CandidateNotFound,
+			Log:  fmt.Sprintf("Candidate with such public key not found"),
+			Info: EncodeError(map[string]string{
+				"pub_key": data.PubKey.String(),
+			}),
+		}
+	}
+
 	return checkCandidateOwnership(data, tx, context)
 }
 
-func (data EditCandidateData) String() string {
-	return fmt.Sprintf("EDIT CANDIDATE pubkey: %x",
-		data.PubKey)
+func (data SetHaltBlockData) String() string {
+	return fmt.Sprintf("SET HALT BLOCK pubkey:%s height:%d",
+		hexutil.Encode(data.PubKey[:]), data.Height)
 }
 
-func (data EditCandidateData) Gas() int64 {
-	return commissions.EditCandidate
+func (data SetHaltBlockData) Gas() int64 {
+	return commissions.SetHaltBlock
 }
 
-func (data EditCandidateData) Run(tx *Transaction, context state.Interface, rewardPool *big.Int, currentBlock uint64) Response {
+func (data SetHaltBlockData) Run(tx *Transaction, context state.Interface, rewardPool *big.Int, currentBlock uint64) Response {
+	if currentBlock < upgrades.UpgradeBlock4 {
+		return Response{
+			Code: code.DecodeError,
+			Log:  "Unknown transaction type",
+		}
+	}
+
 	sender, _ := tx.Sender()
 
 	var checkState *state.CheckState
@@ -68,6 +81,16 @@ func (data EditCandidateData) Run(tx *Transaction, context state.Interface, rewa
 	response := data.BasicCheck(tx, checkState)
 	if response != nil {
 		return *response
+	}
+
+	if data.Height < currentBlock {
+		return Response{
+			Code: code.WrongHaltHeight,
+			Log:  fmt.Sprintf("Halt height should be equal or bigger than current: %d", currentBlock),
+			Info: EncodeError(map[string]string{
+				"height": strconv.FormatUint(data.Height, 10),
+			}),
+		}
 	}
 
 	commissionInBaseCoin := tx.CommissionInBaseCoin()
@@ -99,7 +122,7 @@ func (data EditCandidateData) Run(tx *Transaction, context state.Interface, rewa
 	if checkState.Accounts().GetBalance(sender, tx.GasCoin).Cmp(commission) < 0 {
 		return Response{
 			Code: code.InsufficientFunds,
-			Log:  fmt.Sprintf("Insufficient funds for sender account: %s. Wanted %s %s", sender.String(), commission.String(), tx.GasCoin),
+			Log:  fmt.Sprintf("Insufficient funds for sender account: %s. Wanted %s %s", sender.String(), commission, tx.GasCoin),
 			Info: EncodeError(map[string]string{
 				"sender":       sender.String(),
 				"needed_value": commission.String(),
@@ -115,12 +138,12 @@ func (data EditCandidateData) Run(tx *Transaction, context state.Interface, rewa
 		deliveryState.Coins.SubVolume(tx.GasCoin, commission)
 
 		deliveryState.Accounts.SubBalance(sender, tx.GasCoin, commission)
-		deliveryState.Candidates.Edit(data.PubKey, data.RewardAddress, data.OwnerAddress)
+		deliveryState.Halts.AddHaltBlock(data.Height, data.PubKey)
 		deliveryState.Accounts.SetNonce(sender, tx.Nonce)
 	}
 
 	tags := kv.Pairs{
-		kv.Pair{Key: []byte("tx.type"), Value: []byte(hex.EncodeToString([]byte{byte(TypeEditCandidate)}))},
+		kv.Pair{Key: []byte("tx.type"), Value: []byte(hex.EncodeToString([]byte{byte(TypeUnbond)}))},
 		kv.Pair{Key: []byte("tx.from"), Value: []byte(hex.EncodeToString(sender[:]))},
 	}
 
@@ -130,26 +153,4 @@ func (data EditCandidateData) Run(tx *Transaction, context state.Interface, rewa
 		GasWanted: tx.Gas(),
 		Tags:      tags,
 	}
-}
-
-func checkCandidateOwnership(data CandidateTx, tx *Transaction, context *state.CheckState) *Response {
-	if !context.Candidates().Exists(data.GetPubKey()) {
-		return &Response{
-			Code: code.CandidateNotFound,
-			Log:  fmt.Sprintf("Candidate with such public key (%s) not found", data.GetPubKey().String()),
-			Info: EncodeError(map[string]string{
-				"public_key": data.GetPubKey().String(),
-			}),
-		}
-	}
-
-	owner := context.Candidates().GetCandidateOwner(data.GetPubKey())
-	sender, _ := tx.Sender()
-	if owner != sender {
-		return &Response{
-			Code: code.IsNotOwnerOfCandidate,
-			Log:  fmt.Sprintf("Sender is not an owner of a candidate")}
-	}
-
-	return nil
 }

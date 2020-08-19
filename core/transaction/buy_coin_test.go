@@ -2,32 +2,32 @@ package transaction
 
 import (
 	"bytes"
-	"math/big"
-	"sync"
-	"testing"
-
-	"github.com/noah-blockchain/noah-go-node/config"
+	"crypto/ecdsa"
+	"fmt"
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/crypto"
+	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/noah-blockchain/noah-go-node/helpers"
-	"github.com/noah-blockchain/noah-go-node/log"
 	"github.com/noah-blockchain/noah-go-node/rlp"
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tm-db"
+	"math/big"
+	"math/rand"
+	"sync"
+	"testing"
+	"time"
 )
 
 var (
 	cdc = amino.NewCodec()
+
+	rnd = rand.New(rand.NewSource(time.Now().Unix()))
 )
 
-func init() {
-	log.InitLog(config.GetConfig())
-}
-
-func getState() *state.StateDB {
-	s, err := state.New(0, db.NewMemDB(), false)
+func getState() *state.State {
+	s, err := state.NewState(0, db.NewMemDB(), nil, 1, 1)
 
 	if err != nil {
 		panic(err)
