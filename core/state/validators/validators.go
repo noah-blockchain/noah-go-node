@@ -2,9 +2,9 @@ package validators
 
 import (
 	"fmt"
-	eventsdb "github.com/noah-blockchain/events-db"
 	"github.com/noah-blockchain/noah-go-node/core/dao"
 	"github.com/noah-blockchain/noah-go-node/core/developers"
+	eventsdb "github.com/noah-blockchain/noah-go-node/core/events"
 	"github.com/noah-blockchain/noah-go-node/core/state/bus"
 	"github.com/noah-blockchain/noah-go-node/core/state/candidates"
 	"github.com/noah-blockchain/noah-go-node/core/types"
@@ -29,11 +29,35 @@ type Validators struct {
 	list   []*Validator
 	loaded bool
 
-	iavl tree.Tree
+	iavl tree.MTree
 	bus  *bus.Bus
 }
 
-func NewValidators(bus *bus.Bus, iavl tree.Tree) (*Validators, error) {
+type RValidators interface {
+	GetValidators() []*Validator
+	Export(state *types.AppState)
+	GetByPublicKey(pubKey types.Pubkey) *Validator
+	LoadValidators()
+	GetByTmAddress(address types.TmAddress) *Validator
+}
+
+func NewReadValidators(bus *bus.Bus, iavl tree.MTree) (RValidators, error) {
+	validators := &Validators{iavl: iavl, bus: bus}
+
+	return validators, nil
+}
+
+type RWValidators interface {
+	RValidators
+	Commit() error
+	SetValidatorPresent(height uint64, address types.TmAddress)
+	SetValidatorAbsent(height uint64, address types.TmAddress)
+	PunishByzantineValidator(tmAddress [20]byte)
+	PayRewards(height uint64)
+	SetNewValidators(candidates []candidates.Candidate)
+}
+
+func NewValidators(bus *bus.Bus, iavl tree.MTree) (*Validators, error) {
 	validators := &Validators{iavl: iavl, bus: bus}
 
 	return validators, nil
@@ -56,7 +80,7 @@ func (v *Validators) Commit() error {
 			path := []byte{mainPrefix}
 			path = append(path, val.PubKey.Bytes()...)
 			path = append(path, totalStakePrefix)
-			v.iavl.Set(path, val.GetTotalBipStake().Bytes())
+			v.iavl.Set(path, val.GetTotalNoahStake().Bytes())
 		}
 
 		if val.isDirty || val.isAccumRewardDirty {
@@ -119,7 +143,7 @@ func (v *Validators) SetNewValidators(candidates []candidates.Candidate) {
 		newVals = append(newVals, &Validator{
 			PubKey:             candidate.PubKey,
 			AbsentTimes:        absentTimes,
-			totalStake:         candidate.GetTotalBipStake(),
+			totalStake:         candidate.GetTotalNoahStake(),
 			accumReward:        accumReward,
 			isDirty:            true,
 			isTotalStakeDirty:  true,
@@ -134,7 +158,7 @@ func (v *Validators) SetNewValidators(candidates []candidates.Candidate) {
 
 func (v *Validators) PunishByzantineValidator(tmAddress [20]byte) {
 	validator := v.GetByTmAddress(tmAddress)
-	validator.SetTotalBipStake(big.NewInt(0))
+	validator.SetTotalNoahStake(big.NewInt(0))
 	validator.toDrop = true
 	validator.isDirty = true
 }
@@ -169,7 +193,7 @@ func (v *Validators) PayRewards(height uint64) {
 			DAOReward.Div(DAOReward, big.NewInt(100))
 			v.bus.Accounts().AddBalance(dao.Address, types.GetBaseCoin(), DAOReward)
 			remainder.Sub(remainder, DAOReward)
-			v.bus.Events().AddEvent(uint32(height), eventsdb.RewardEvent{
+			v.bus.Events().AddEvent(uint32(height), &eventsdb.RewardEvent{
 				Role:            eventsdb.RoleDAO.String(),
 				Address:         dao.Address,
 				Amount:          DAOReward.String(),
@@ -182,7 +206,7 @@ func (v *Validators) PayRewards(height uint64) {
 			DevelopersReward.Div(DevelopersReward, big.NewInt(100))
 			v.bus.Accounts().AddBalance(developers.Address, types.GetBaseCoin(), DevelopersReward)
 			remainder.Sub(remainder, DevelopersReward)
-			v.bus.Events().AddEvent(uint32(height), eventsdb.RewardEvent{
+			v.bus.Events().AddEvent(uint32(height), &eventsdb.RewardEvent{
 				Role:            eventsdb.RoleDevelopers.String(),
 				Address:         developers.Address,
 				Amount:          DevelopersReward.String(),
@@ -199,7 +223,7 @@ func (v *Validators) PayRewards(height uint64) {
 			totalReward.Sub(totalReward, validatorReward)
 			v.bus.Accounts().AddBalance(candidate.RewardAddress, types.GetBaseCoin(), validatorReward)
 			remainder.Sub(remainder, validatorReward)
-			v.bus.Events().AddEvent(uint32(height), eventsdb.RewardEvent{
+			v.bus.Events().AddEvent(uint32(height), &eventsdb.RewardEvent{
 				Role:            eventsdb.RoleValidator.String(),
 				Address:         candidate.RewardAddress,
 				Amount:          validatorReward.String(),
@@ -208,14 +232,14 @@ func (v *Validators) PayRewards(height uint64) {
 
 			stakes := v.bus.Candidates().GetStakes(validator.PubKey)
 			for _, stake := range stakes {
-				if stake.BipValue.Cmp(big.NewInt(0)) == 0 {
+				if stake.NoahValue.Cmp(big.NewInt(0)) == 0 {
 					continue
 				}
 
 				reward := big.NewInt(0).Set(totalReward)
-				reward.Mul(reward, stake.BipValue)
+				reward.Mul(reward, stake.NoahValue)
 
-				reward.Div(reward, validator.GetTotalBipStake())
+				reward.Div(reward, validator.GetTotalNoahStake())
 				if reward.Cmp(types.Big0) < 1 {
 					continue
 				}
@@ -223,7 +247,7 @@ func (v *Validators) PayRewards(height uint64) {
 				v.bus.Accounts().AddBalance(stake.Owner, types.GetBaseCoin(), reward)
 				remainder.Sub(remainder, reward)
 
-				v.bus.Events().AddEvent(uint32(height), eventsdb.RewardEvent{
+				v.bus.Events().AddEvent(uint32(height), &eventsdb.RewardEvent{
 					Role:            eventsdb.RoleDelegator.String(),
 					Address:         stake.Owner,
 					Amount:          reward.String(),
@@ -328,7 +352,7 @@ func (v *Validators) punishValidator(height uint64, tmAddress types.TmAddress) {
 	validator := v.GetByTmAddress(tmAddress)
 
 	totalStake := v.bus.Candidates().Punish(height, tmAddress)
-	validator.SetTotalBipStake(totalStake)
+	validator.SetTotalNoahStake(totalStake)
 }
 
 func (v *Validators) SetValidators(vals []*Validator) {
@@ -340,7 +364,7 @@ func (v *Validators) Export(state *types.AppState) {
 
 	for _, val := range v.GetValidators() {
 		state.Validators = append(state.Validators, types.Validator{
-			TotalBipStake: val.GetTotalBipStake().String(),
+			TotalNoahStake: val.GetTotalNoahStake().String(),
 			PubKey:        val.PubKey,
 			AccumReward:   val.GetAccumReward().String(),
 			AbsentTimes:   val.AbsentTimes,
