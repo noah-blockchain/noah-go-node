@@ -3,6 +3,7 @@ package rewards
 import (
 	"github.com/noah-blockchain/noah-go-node/helpers"
 	"math/big"
+	"sync"
 	"testing"
 )
 
@@ -37,7 +38,7 @@ func TestGetRewardForBlock(t *testing.T) {
 }
 
 func TestTotalRewardsCount(t *testing.T) {
-	target := helpers.BipToPip(big.NewInt(9800000000))
+	target := helpers.NoahToQNoah(big.NewInt(9800000000))
 	fromHeight := uint64(1)
 	toHeight := uint64(43703000)
 	const routines = 4
