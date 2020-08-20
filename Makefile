@@ -1,8 +1,16 @@
+GOTOOLS = \
+	github.com/mitchellh/gox \
+	github.com/alecthomas/gometalinter \
+	github.com/gogo/protobuf/protoc-gen-gogo
 PACKAGES=$(shell go list ./... | grep -v '/vendor/')
 BUILD_TAGS?=noah
-BUILD_FLAGS=-ldflags "-s -w -X noah/version.GitCommit=`git rev-parse --short=8 HEAD`" -mod=vendor
+BUILD_FLAGS=-ldflags "-s -w -X noah/version.GitCommit=`git rev-parse --short=8 HEAD`"
 
-all: build test install
+all: check build test install
+
+check: check_tools ensure_deps
+
+docker: build_docker
 
 ########################################
 ### Build
@@ -21,11 +29,32 @@ install:
 ### Tools & dependencies
 
 test:
-	CGO_ENABLED=1 CGO_LDFLAGS="-lsnappy" go test --count 1 --tags "gcc cleveldb" ./...
+	CGO_ENABLED=1 go test --count 1 --tags "gcc" ./...
 
-create_vendor:
-	@echo "--> Installing vendor"
-	CGO_ENABLED=0 go mod vendor
+check_tools:
+	@# https://stackoverflow.com/a/25668869
+	@echo "Found tools: $(foreach tool,$(notdir $(GOTOOLS)),\
+        $(if $(shell which $(tool)),$(tool),$(error "No $(tool) in PATH")))"
+
+get_tools:
+	@echo "--> Installing tools"
+	./scripts/get_tools.sh
+
+update_tools:
+	@echo "--> Updating tools"
+	@go get -u $(GOTOOLS)
+
+#Run this from CI
+get_vendor_deps:
+	@rm -rf vendor/
+	@echo "--> Running dep"
+	@go mod vendor
+
+#Run this locally.
+ensure_deps:
+	@rm -rf vendor/
+	@echo "--> Running dep"
+	@go mod vendor
 
 ########################################
 ### Formatting, linting, and vetting
@@ -69,13 +98,8 @@ metalinter_all:
 ###########################################################
 ### Docker image
 
-build-docker:
-	cp build/noah DOCKER/noah
-	cd DOCKER && make build
-	rm -f noah
-
-push-docker:
-	cd DOCKER && make push
+build_docker:
+	docker build . --tag noah-go-node:local
 
 ###########################################################
 ### Local testnet using docker

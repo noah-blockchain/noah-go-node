@@ -8,11 +8,7 @@ import (
 	"os"
 )
 
-var (
-	logger log.Logger
-)
-
-func InitLog(cfg *config.Config) {
+func NewLogger(cfg *config.Config) log.Logger {
 	var dest io.Writer = os.Stdout
 
 	if cfg.LogPath != "stdout" {

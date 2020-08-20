@@ -135,7 +135,7 @@ func GetConfig() *Config {
 
 	cfg.Mempool.Recheck = false
 
-	cfg.P2P.AddrBook = fmt.Sprintf("config-%s/addrbook-%s.json", NetworkId, NetworkId)
+	cfg.P2P.AddrBook = "config/addrbook.json"
 
 	cfg.SetRoot(utils.GetNoahHome())
 	EnsureRoot(utils.GetNoahHome())

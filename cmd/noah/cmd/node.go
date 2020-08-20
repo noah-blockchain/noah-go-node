@@ -130,7 +130,7 @@ func runNode(cmd *cobra.Command) error {
 	}
 
 	go func() {
-		err := service.StartCLIServer(utils.GetMinterHome()+"/manager.sock", service.NewManager(app, client, cfg), cmd.Context())
+		err := service.StartCLIServer(utils.GetNoahHome()+"/manager.sock", service.NewManager(app, client, cfg), cmd.Context())
 		if err != nil {
 			panic(err)
 		}
