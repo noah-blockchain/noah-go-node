@@ -51,11 +51,11 @@ func (data CreateCoinData) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (data CreateCoinData) TotalSpend(tx *Transaction, context *state.CheckState) (TotalSpends, []Conversion, *big.Int, *Response) {
+func (data CreateCoinData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
 	panic("implement me")
 }
 
-func (data CreateCoinData) BasicCheck(tx *Transaction, context *state.CheckState) *Response {
+func (data CreateCoinData) BasicCheck(tx *Transaction, context *state.State) *Response {
 	if data.InitialReserve == nil || data.InitialAmount == nil || data.MaxSupply == nil {
 		return &Response{
 			Code: code.DecodeError,
@@ -74,7 +74,7 @@ func (data CreateCoinData) BasicCheck(tx *Transaction, context *state.CheckState
 			Log:  fmt.Sprintf("Invalid coin symbol. Should be %s", allowedCoinSymbols)}
 	}
 
-	if context.Coins().Exists(data.Symbol) {
+	if context.Coins.Exists(data.Symbol) {
 		return &Response{
 			Code: code.CoinAlreadyExists,
 			Log:  fmt.Sprintf("Coin already exists")}
@@ -144,7 +144,7 @@ func (data CreateCoinData) Run(tx *Transaction, context state.Interface, rewardP
 	commission := big.NewInt(0).Set(commissionInBaseCoin)
 
 	if tx.GasCoin != types.GetBaseCoin() {
-		coin := checkState.Coins().GetCoin(tx.GasCoin)
+		coin := context.Coins.GetCoin(tx.GasCoin)
 
 		errResp := CheckReserveUnderflow(coin, commissionInBaseCoin)
 		if errResp != nil {
@@ -166,7 +166,7 @@ func (data CreateCoinData) Run(tx *Transaction, context state.Interface, rewardP
 		commission = formula.CalculateSaleAmount(coin.Volume(), coin.Reserve(), coin.Crr(), commissionInBaseCoin)
 	}
 
-	if checkState.Accounts().GetBalance(sender, tx.GasCoin).Cmp(commission) < 0 {
+	if context.Accounts.GetBalance(sender, tx.GasCoin).Cmp(commission) < 0 {
 		return Response{
 			Code: code.InsufficientFunds,
 			Log:  fmt.Sprintf("Insufficient funds for sender account: %s. Wanted %s %s", sender.String(), commission.String(), tx.GasCoin),
@@ -178,7 +178,7 @@ func (data CreateCoinData) Run(tx *Transaction, context state.Interface, rewardP
 		}
 	}
 
-	if checkState.Accounts().GetBalance(sender, types.GetBaseCoin()).Cmp(data.InitialReserve) < 0 {
+	if context.Accounts.GetBalance(sender, types.GetBaseCoin()).Cmp(data.InitialReserve) < 0 {
 		return Response{
 			Code: code.InsufficientFunds,
 			Log:  fmt.Sprintf("Insufficient funds for sender account: %s. Wanted %s %s", sender.String(), data.InitialReserve.String(), types.GetBaseCoin()),
@@ -195,7 +195,7 @@ func (data CreateCoinData) Run(tx *Transaction, context state.Interface, rewardP
 		totalTxCost.Add(totalTxCost, data.InitialReserve)
 		totalTxCost.Add(totalTxCost, commission)
 
-		if checkState.Accounts().GetBalance(sender, types.GetBaseCoin()).Cmp(totalTxCost) < 0 {
+		if context.Accounts.GetBalance(sender, types.GetBaseCoin()).Cmp(totalTxCost) < 0 {
 			return Response{
 				Code: code.InsufficientFunds,
 				Log:  fmt.Sprintf("Insufficient funds for sender account: %s. Wanted %s %s", sender.String(), totalTxCost.String(), tx.GasCoin),
@@ -208,17 +208,17 @@ func (data CreateCoinData) Run(tx *Transaction, context state.Interface, rewardP
 		}
 	}
 
-	if deliveryState, ok := context.(*state.State); ok {
+	if !isCheck {
 		rewardPool.Add(rewardPool, commissionInBaseCoin)
 
-		deliveryState.Coins.SubReserve(tx.GasCoin, commissionInBaseCoin)
-		deliveryState.Coins.SubVolume(tx.GasCoin, commission)
+		context.Coins.SubReserve(tx.GasCoin, commissionInBaseCoin)
+		context.Coins.SubVolume(tx.GasCoin, commission)
 
-		deliveryState.Accounts.SubBalance(sender, types.GetBaseCoin(), data.InitialReserve)
-		deliveryState.Accounts.SubBalance(sender, tx.GasCoin, commission)
-		deliveryState.Coins.Create(data.Symbol, data.Name, data.InitialAmount, data.ConstantReserveRatio, data.InitialReserve, data.MaxSupply)
-		deliveryState.Accounts.AddBalance(sender, data.Symbol, data.InitialAmount)
-		deliveryState.Accounts.SetNonce(sender, tx.Nonce)
+		context.Accounts.SubBalance(sender, types.GetBaseCoin(), data.InitialReserve)
+		context.Accounts.SubBalance(sender, tx.GasCoin, commission)
+		context.Coins.Create(data.Symbol, data.Name, data.InitialAmount, data.ConstantReserveRatio, data.InitialReserve, data.MaxSupply)
+		context.Accounts.AddBalance(sender, data.Symbol, data.InitialAmount)
+		context.Accounts.SetNonce(sender, tx.Nonce)
 	}
 
 	tags := kv.Pairs{

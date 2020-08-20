@@ -15,7 +15,7 @@ import (
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tendermint/tendermint/evidence"
 	"github.com/tendermint/tendermint/libs/log"
-	rpc "github.com/tendermint/tendermint/rpc/client/local"
+	rpc "github.com/tendermint/tendermint/rpc/client"
 	"github.com/tendermint/tendermint/types"
 	"net/http"
 	"net/url"
@@ -52,6 +52,7 @@ var Routes = map[string]*rpcserver.RPCFunc{
 	"max_gas":                rpcserver.NewRPCFunc(MaxGas, "height"),
 	"min_gas_price":          rpcserver.NewRPCFunc(MinGasPrice, ""),
 	"genesis":                rpcserver.NewRPCFunc(Genesis, ""),
+	"missed_blocks":          rpcserver.NewRPCFunc(MissedBlocks, "pub_key,height"),
 }
 
 func responseTime(b *minter.Blockchain) func(f func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
@@ -137,7 +138,7 @@ type Response struct {
 	Log    string      `json:"log,omitempty"`
 }
 
-func GetStateForHeight(height int) (*state.CheckState, error) {
+func GetStateForHeight(height int) (*state.State, error) {
 	if height > 0 {
 		cState, err := blockchain.GetStateForHeight(uint64(height))
 

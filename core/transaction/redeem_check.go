@@ -34,7 +34,7 @@ func (data RedeemCheckData) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (data RedeemCheckData) TotalSpend(tx *Transaction, context *state.CheckState) (TotalSpends, []Conversion, *big.Int, *Response) {
+func (data RedeemCheckData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
 	panic("implement me")
 }
 
@@ -42,7 +42,7 @@ func (data RedeemCheckData) CommissionInBaseCoin(tx *Transaction) *big.Int {
 	panic("implement me")
 }
 
-func (data RedeemCheckData) BasicCheck(tx *Transaction, context *state.CheckState) *Response {
+func (data RedeemCheckData) BasicCheck(tx *Transaction, context *state.State) *Response {
 	if data.RawCheck == nil {
 		return &Response{
 			Code: code.DecodeError,
@@ -67,16 +67,10 @@ func (data RedeemCheckData) Gas() int64 {
 	return commissions.RedeemCheckTx
 }
 
-func (data RedeemCheckData) Run(tx *Transaction, context state.Interface, rewardPool *big.Int, currentBlock uint64) Response {
+func (data RedeemCheckData) Run(tx *Transaction, context *state.State, isCheck bool, rewardPool *big.Int, currentBlock uint64) Response {
 	sender, _ := tx.Sender()
 
-	var checkState *state.CheckState
-	var isCheck bool
-	if checkState, isCheck = context.(*state.CheckState); !isCheck {
-		checkState = state.NewCheckState(context.(*state.State))
-	}
-
-	response := data.BasicCheck(tx, checkState)
+	response := data.BasicCheck(tx, context)
 	if response != nil {
 		return *response
 	}
@@ -115,7 +109,7 @@ func (data RedeemCheckData) Run(tx *Transaction, context state.Interface, reward
 			Log:  err.Error()}
 	}
 
-	if !checkState.Coins().Exists(decodedCheck.Coin) {
+	if !context.Coins.Exists(decodedCheck.Coin) {
 		return Response{
 			Code: code.CoinNotExists,
 			Log:  fmt.Sprintf("Coin not exists"),
@@ -125,7 +119,7 @@ func (data RedeemCheckData) Run(tx *Transaction, context state.Interface, reward
 		}
 	}
 
-	if !checkState.Coins().Exists(decodedCheck.GasCoin) {
+	if !context.Coins.Exists(decodedCheck.GasCoin) {
 		return Response{
 			Code: code.CoinNotExists,
 			Log:  fmt.Sprintf("Gas coin not exists"),
@@ -156,7 +150,7 @@ func (data RedeemCheckData) Run(tx *Transaction, context state.Interface, reward
 		}
 	}
 
-	if checkState.Checks().IsCheckUsed(decodedCheck) {
+	if context.Checks.IsCheckUsed(decodedCheck) {
 		return Response{
 			Code: code.CheckUsed,
 			Log:  fmt.Sprintf("Check already redeemed")}
@@ -199,7 +193,7 @@ func (data RedeemCheckData) Run(tx *Transaction, context state.Interface, reward
 	commission := big.NewInt(0).Set(commissionInBaseCoin)
 
 	if !decodedCheck.GasCoin.IsBaseCoin() {
-		coin := checkState.Coins().GetCoin(decodedCheck.GasCoin)
+		coin := context.Coins.GetCoin(decodedCheck.GasCoin)
 		errResp := CheckReserveUnderflow(coin, commissionInBaseCoin)
 		if errResp != nil {
 			return *errResp
@@ -209,7 +203,7 @@ func (data RedeemCheckData) Run(tx *Transaction, context state.Interface, reward
 
 	if decodedCheck.Coin == decodedCheck.GasCoin {
 		totalTxCost := big.NewInt(0).Add(decodedCheck.Value, commission)
-		if checkState.Accounts().GetBalance(checkSender, decodedCheck.Coin).Cmp(totalTxCost) < 0 {
+		if context.Accounts.GetBalance(checkSender, decodedCheck.Coin).Cmp(totalTxCost) < 0 {
 			return Response{
 				Code: code.InsufficientFunds,
 				Log:  fmt.Sprintf("Insufficient funds for check issuer account: %s %s. Wanted %s %s", decodedCheck.Coin, checkSender.String(), totalTxCost.String(), decodedCheck.Coin),
@@ -221,7 +215,7 @@ func (data RedeemCheckData) Run(tx *Transaction, context state.Interface, reward
 			}
 		}
 	} else {
-		if checkState.Accounts().GetBalance(checkSender, decodedCheck.Coin).Cmp(decodedCheck.Value) < 0 {
+		if context.Accounts.GetBalance(checkSender, decodedCheck.Coin).Cmp(decodedCheck.Value) < 0 {
 			return Response{
 				Code: code.InsufficientFunds,
 				Log:  fmt.Sprintf("Insufficient funds for check issuer account: %s %s. Wanted %s %s", checkSender.String(), decodedCheck.Coin, decodedCheck.Value.String(), decodedCheck.Coin),
@@ -233,7 +227,7 @@ func (data RedeemCheckData) Run(tx *Transaction, context state.Interface, reward
 			}
 		}
 
-		if checkState.Accounts().GetBalance(checkSender, decodedCheck.GasCoin).Cmp(commission) < 0 {
+		if context.Accounts.GetBalance(checkSender, decodedCheck.GasCoin).Cmp(commission) < 0 {
 			return Response{
 				Code: code.InsufficientFunds,
 				Log:  fmt.Sprintf("Insufficient funds for check issuer account: %s %s. Wanted %s %s", checkSender.String(), decodedCheck.GasCoin, commission.String(), decodedCheck.GasCoin),
@@ -246,17 +240,17 @@ func (data RedeemCheckData) Run(tx *Transaction, context state.Interface, reward
 		}
 	}
 
-	if deliveryState, ok := context.(*state.State); ok {
-		deliveryState.Checks.UseCheck(decodedCheck)
+	if !isCheck {
+		context.Checks.UseCheck(decodedCheck)
 		rewardPool.Add(rewardPool, commissionInBaseCoin)
 
-		deliveryState.Coins.SubVolume(decodedCheck.GasCoin, commission)
-		deliveryState.Coins.SubReserve(decodedCheck.GasCoin, commissionInBaseCoin)
+		context.Coins.SubVolume(decodedCheck.GasCoin, commission)
+		context.Coins.SubReserve(decodedCheck.GasCoin, commissionInBaseCoin)
 
-		deliveryState.Accounts.SubBalance(checkSender, decodedCheck.GasCoin, commission)
-		deliveryState.Accounts.SubBalance(checkSender, decodedCheck.Coin, decodedCheck.Value)
-		deliveryState.Accounts.AddBalance(sender, decodedCheck.Coin, decodedCheck.Value)
-		deliveryState.Accounts.SetNonce(sender, tx.Nonce)
+		context.Accounts.SubBalance(checkSender, decodedCheck.GasCoin, commission)
+		context.Accounts.SubBalance(checkSender, decodedCheck.Coin, decodedCheck.Value)
+		context.Accounts.AddBalance(sender, decodedCheck.Coin, decodedCheck.Value)
+		context.Accounts.SetNonce(sender, tx.Nonce)
 	}
 
 	tags := kv.Pairs{

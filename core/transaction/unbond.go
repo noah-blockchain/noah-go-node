@@ -34,18 +34,18 @@ func (data UnbondData) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (data UnbondData) TotalSpend(tx *Transaction, context *state.CheckState) (TotalSpends, []Conversion, *big.Int, *Response) {
+func (data UnbondData) TotalSpend(tx *Transaction, context *state.State) (TotalSpends, []Conversion, *big.Int, *Response) {
 	panic("implement me")
 }
 
-func (data UnbondData) BasicCheck(tx *Transaction, context *state.CheckState) *Response {
+func (data UnbondData) BasicCheck(tx *Transaction, context *state.State) *Response {
 	if data.Value == nil {
 		return &Response{
 			Code: code.DecodeError,
 			Log:  "Incorrect tx data"}
 	}
 
-	if !context.Coins().Exists(data.Coin) {
+	if !context.Coins.Exists(data.Coin) {
 		return &Response{
 			Code: code.CoinNotExists,
 			Log:  fmt.Sprintf("Coin %s not exists", data.Coin),
@@ -55,7 +55,7 @@ func (data UnbondData) BasicCheck(tx *Transaction, context *state.CheckState) *R
 		}
 	}
 
-	if !context.Candidates().Exists(data.PubKey) {
+	if !context.Candidates.Exists(data.PubKey) {
 		return &Response{
 			Code: code.CandidateNotFound,
 			Log:  fmt.Sprintf("Candidate with such public key not found"),
@@ -66,7 +66,7 @@ func (data UnbondData) BasicCheck(tx *Transaction, context *state.CheckState) *R
 	}
 
 	sender, _ := tx.Sender()
-	stake := context.Candidates().GetStakeValueOfAddress(data.PubKey, sender, data.Coin)
+	stake := context.Candidates.GetStakeValueOfAddress(data.PubKey, sender, data.Coin)
 
 	if stake == nil {
 		return &Response{
@@ -95,16 +95,10 @@ func (data UnbondData) Gas() int64 {
 	return commissions.UnbondTx
 }
 
-func (data UnbondData) Run(tx *Transaction, context state.Interface, rewardPool *big.Int, currentBlock uint64) Response {
+func (data UnbondData) Run(tx *Transaction, context *state.State, isCheck bool, rewardPool *big.Int, currentBlock uint64) Response {
 	sender, _ := tx.Sender()
 
-	var checkState *state.CheckState
-	var isCheck bool
-	if checkState, isCheck = context.(*state.CheckState); !isCheck {
-		checkState = state.NewCheckState(context.(*state.State))
-	}
-
-	response := data.BasicCheck(tx, checkState)
+	response := data.BasicCheck(tx, context)
 	if response != nil {
 		return *response
 	}
@@ -113,7 +107,7 @@ func (data UnbondData) Run(tx *Transaction, context state.Interface, rewardPool 
 	commission := big.NewInt(0).Set(commissionInBaseCoin)
 
 	if !tx.GasCoin.IsBaseCoin() {
-		coin := checkState.Coins().GetCoin(tx.GasCoin)
+		coin := context.Coins.GetCoin(tx.GasCoin)
 
 		errResp := CheckReserveUnderflow(coin, commissionInBaseCoin)
 		if errResp != nil {
@@ -135,7 +129,7 @@ func (data UnbondData) Run(tx *Transaction, context state.Interface, rewardPool 
 		commission = formula.CalculateSaleAmount(coin.Volume(), coin.Reserve(), coin.Crr(), commissionInBaseCoin)
 	}
 
-	if checkState.Accounts().GetBalance(sender, tx.GasCoin).Cmp(commission) < 0 {
+	if context.Accounts.GetBalance(sender, tx.GasCoin).Cmp(commission) < 0 {
 		return Response{
 			Code: code.InsufficientFunds,
 			Log:  fmt.Sprintf("Insufficient funds for sender account: %s. Wanted %s %s", sender.String(), commission, tx.GasCoin),
@@ -147,19 +141,19 @@ func (data UnbondData) Run(tx *Transaction, context state.Interface, rewardPool 
 		}
 	}
 
-	if deliveryState, ok := context.(*state.State); ok {
+	if !isCheck {
 		// now + 30 days
 		unbondAtBlock := currentBlock + unbondPeriod
 
 		rewardPool.Add(rewardPool, commissionInBaseCoin)
 
-		deliveryState.Coins.SubReserve(tx.GasCoin, commissionInBaseCoin)
-		deliveryState.Coins.SubVolume(tx.GasCoin, commission)
+		context.Coins.SubReserve(tx.GasCoin, commissionInBaseCoin)
+		context.Coins.SubVolume(tx.GasCoin, commission)
 
-		deliveryState.Accounts.SubBalance(sender, tx.GasCoin, commission)
-		deliveryState.Candidates.SubStake(sender, data.PubKey, data.Coin, data.Value)
-		deliveryState.FrozenFunds.AddFund(unbondAtBlock, sender, data.PubKey, data.Coin, data.Value)
-		deliveryState.Accounts.SetNonce(sender, tx.Nonce)
+		context.Accounts.SubBalance(sender, tx.GasCoin, commission)
+		context.Candidates.SubStake(sender, data.PubKey, data.Coin, data.Value)
+		context.FrozenFunds.AddFund(unbondAtBlock, sender, data.PubKey, data.Coin, data.Value)
+		context.Accounts.SetNonce(sender, tx.Nonce)
 	}
 
 	tags := kv.Pairs{

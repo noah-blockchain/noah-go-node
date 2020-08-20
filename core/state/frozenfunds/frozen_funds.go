@@ -18,21 +18,17 @@ import (
 
 const mainPrefix = byte('f')
 
-type RFrozenFunds interface {
-	Export(state *types.AppState, height uint64)
-}
-
 type FrozenFunds struct {
 	list  map[uint64]*Model
 	dirty map[uint64]interface{}
 
 	bus  *bus.Bus
-	iavl tree.MTree
+	iavl tree.Tree
 
 	lock sync.RWMutex
 }
 
-func NewFrozenFunds(stateBus *bus.Bus, iavl tree.MTree) (*FrozenFunds, error) {
+func NewFrozenFunds(stateBus *bus.Bus, iavl tree.Tree) (*FrozenFunds, error) {
 	frozenfunds := &FrozenFunds{bus: stateBus, iavl: iavl, list: map[uint64]*Model{}, dirty: map[uint64]interface{}{}}
 	frozenfunds.bus.SetFrozenFunds(NewBus(frozenfunds))
 
@@ -99,7 +95,7 @@ func (f *FrozenFunds) PunishFrozenFundsWithAddress(fromHeight uint64, toHeight u
 
 				f.bus.Checker().AddCoin(item.Coin, slashed)
 
-				f.bus.Events().AddEvent(uint32(fromHeight), &eventsdb.SlashEvent{
+				f.bus.Events().AddEvent(uint32(fromHeight), eventsdb.SlashEvent{
 					Address:         item.Address,
 					Amount:          slashed.String(),
 					Coin:            item.Coin,

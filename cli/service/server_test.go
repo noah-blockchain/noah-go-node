@@ -27,7 +27,7 @@ func TestStartCLIServer(t *testing.T) {
 		}
 	}()
 	time.Sleep(time.Millisecond)
-	console, err := NewCLI(socketPath)
+	console, err := ConfigureManagerConsole(socketPath)
 	if err != nil {
 		t.Log(err)
 	}

@@ -17,24 +17,17 @@ const (
 	infoPrefix = byte('i')
 )
 
-type RCoins interface {
-	Export(state *types.AppState)
-	Exists(symbol types.CoinSymbol) bool
-	SubReserve(symbol types.CoinSymbol, amount *big.Int)
-	GetCoin(symbol types.CoinSymbol) *Model
-}
-
 type Coins struct {
 	list  map[types.CoinSymbol]*Model
 	dirty map[types.CoinSymbol]struct{}
 
 	bus  *bus.Bus
-	iavl tree.MTree
+	iavl tree.Tree
 
 	lock sync.RWMutex
 }
 
-func NewCoins(stateBus *bus.Bus, iavl tree.MTree) (*Coins, error) {
+func NewCoins(stateBus *bus.Bus, iavl tree.Tree) (*Coins, error) {
 	coins := &Coins{bus: stateBus, iavl: iavl, list: map[types.CoinSymbol]*Model{}, dirty: map[types.CoinSymbol]struct{}{}}
 	coins.bus.SetCoins(NewBus(coins))
 
