@@ -7,17 +7,17 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Service) Candidates(ctx context.Context, req *pb.CandidatesRequest) (*pb.CandidatesResponse, error) {
-	cState, err := s.blockchain.GetStateForHeight(req.Height)
+func (s *Service) Candidates(_ context.Context, req *pb.CandidatesRequest) (*pb.CandidatesResponse, error) {
+	cState, err := s.getStateForHeight(req.Height)
 	if err != nil {
 		return new(pb.CandidatesResponse), status.Error(codes.NotFound, err.Error())
 	}
 
 	if req.Height != 0 {
 		cState.Lock()
-		cState.Candidates().LoadCandidates()
+		cState.Candidates.LoadCandidates()
 		if req.IncludeStakes {
-			cState.Candidates().LoadStakes()
+			cState.Candidates.LoadStakes()
 		}
 		cState.Unlock()
 	}
@@ -25,19 +25,14 @@ func (s *Service) Candidates(ctx context.Context, req *pb.CandidatesRequest) (*p
 	cState.RLock()
 	defer cState.RUnlock()
 
-	candidates := cState.Candidates().GetCandidates()
+	candidates := cState.Candidates.GetCandidates()
 
-	response := &pb.CandidatesResponse{
+	result := &pb.CandidatesResponse{
 		Candidates: make([]*pb.CandidateResponse, 0, len(candidates)),
 	}
 	for _, candidate := range candidates {
-
-		if timeoutStatus := s.checkTimeout(ctx); timeoutStatus != nil {
-			return new(pb.CandidatesResponse), timeoutStatus.Err()
-		}
-
-		response.Candidates = append(response.Candidates, makeResponseCandidate(cState, *candidate, req.IncludeStakes))
+		result.Candidates = append(result.Candidates, makeResponseCandidate(cState, *candidate, req.IncludeStakes))
 	}
 
-	return response, nil
+	return result, nil
 }

@@ -1,55 +1,39 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
-	eventsdb "github.com/noah-blockchain/noah-go-node/core/events"
-	pb "github.com/noah-blockchain /node-grpc-gateway/api_pb"
+	compact_db "github.com/noah-blockchain/events-db"
+	pb "github.com/noah-blockchain/node-grpc-gateway/api_pb"
+	"github.com/golang/protobuf/jsonpb"
 	_struct "github.com/golang/protobuf/ptypes/struct"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
-func (s *Service) Events(ctx context.Context, req *pb.EventsRequest) (*pb.EventsResponse, error) {
-	height := uint32(req.Height)
-	events := s.blockchain.GetEventsDB().LoadEvents(height)
+func (s *Service) Events(_ context.Context, req *pb.EventsRequest) (*pb.EventsResponse, error) {
+	events := s.blockchain.GetEventsDB().LoadEvents(req.Height)
 	resultEvents := make([]*pb.EventsResponse_Event, 0, len(events))
 	for _, event := range events {
-
-		if timeoutStatus := s.checkTimeout(ctx); timeoutStatus != nil {
-			return new(pb.EventsResponse), timeoutStatus.Err()
-		}
-
-		var find = true
-		for _, s := range req.Search {
-			if event.AddressString() == s || event.ValidatorPubKeyString() == s {
-				find = true
-				break
-			}
-			find = false
-		}
-		if !find {
-			continue
-		}
-
-		b, err := json.Marshal(event)
+		byteData, err := json.Marshal(event)
 		if err != nil {
-			return new(pb.EventsResponse), status.Error(codes.Internal, err.Error())
+			return nil, err
 		}
 
-		data := &_struct.Struct{}
-		if err := data.UnmarshalJSON(b); err != nil {
-			return new(pb.EventsResponse), status.Error(codes.Internal, err.Error())
+		var bb bytes.Buffer
+		bb.Write(byteData)
+		data := &_struct.Struct{Fields: make(map[string]*_struct.Value)}
+		if err := (&jsonpb.Unmarshaler{}).Unmarshal(&bb, data); err != nil {
+			return nil, err
 		}
 
 		var t string
 		switch event.(type) {
-		case *eventsdb.RewardEvent:
-			t = "noah/RewardEvent"
-		case *eventsdb.SlashEvent:
-			t = "noah/SlashEvent"
-		case *eventsdb.UnbondEvent:
-			t = "noah/UnbondEvent"
+		case *compact_db.RewardEvent:
+			t = "minter/RewardEvent"
+		case *compact_db.SlashEvent:
+			t = "minter/SlashEvent"
+		case *compact_db.UnbondEvent:
+			t = "minter/UnbondEvent"
 		default:
 			t = "Undefined Type"
 		}

@@ -9,8 +9,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Service) Validators(ctx context.Context, req *pb.ValidatorsRequest) (*pb.ValidatorsResponse, error) {
-	height := int64(req.Height)
+func (s *Service) Validators(_ context.Context, req *pb.ValidatorsRequest) (*pb.ValidatorsResponse, error) {
+	height := req.Height
 	if height == 0 {
 		height = int64(s.blockchain.Height())
 	}
@@ -18,10 +18,6 @@ func (s *Service) Validators(ctx context.Context, req *pb.ValidatorsRequest) (*p
 	tmVals, err := s.client.Validators(&height, int(req.Page), int(req.PerPage))
 	if err != nil {
 		return new(pb.ValidatorsResponse), status.Error(codes.FailedPrecondition, err.Error())
-	}
-
-	if timeoutStatus := s.checkTimeout(ctx); timeoutStatus != nil {
-		return new(pb.ValidatorsResponse), timeoutStatus.Err()
 	}
 
 	responseValidators := make([]*pb.ValidatorsResponse_Result, 0, len(tmVals.Validators))

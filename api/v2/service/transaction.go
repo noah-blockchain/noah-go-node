@@ -1,19 +1,21 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/MinterTeam/minter-go-node/core/transaction"
-	pb "github.com/MinterTeam/node-grpc-gateway/api_pb"
+	"github.com/noah-blockchain/noah-go-node/core/transaction"
+	pb "github.com/noah-blockchain/node-grpc-gateway/api_pb"
+	"github.com/golang/protobuf/jsonpb"
 	_struct "github.com/golang/protobuf/ptypes/struct"
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (s *Service) Transaction(ctx context.Context, req *pb.TransactionRequest) (*pb.TransactionResponse, error) {
+func (s *Service) Transaction(_ context.Context, req *pb.TransactionRequest) (*pb.TransactionResponse, error) {
 	if len(req.Hash) < 3 {
 		return new(pb.TransactionResponse), status.Error(codes.InvalidArgument, "invalid hash")
 	}
@@ -63,6 +65,7 @@ func (s *Service) encodeTxData(decodedTx *transaction.Transaction) (*_struct.Str
 	var (
 		err error
 		b   []byte
+		bb  bytes.Buffer
 	)
 	switch decodedTx.Type {
 	case transaction.TypeSend:
@@ -93,8 +96,6 @@ func (s *Service) encodeTxData(decodedTx *transaction.Transaction) (*_struct.Str
 		b, err = s.cdc.MarshalJSON(decodedTx.GetDecodedData().(*transaction.CreateMultisigData))
 	case transaction.TypeEditCandidate:
 		b, err = s.cdc.MarshalJSON(decodedTx.GetDecodedData().(*transaction.EditCandidateData))
-	case transaction.TypeSetHaltBlock:
-		b, err = s.cdc.MarshalJSON(decodedTx.GetDecodedData().(*transaction.SetHaltBlockData))
 	default:
 		return nil, errors.New("unknown tx type")
 	}
@@ -103,8 +104,10 @@ func (s *Service) encodeTxData(decodedTx *transaction.Transaction) (*_struct.Str
 		return nil, err
 	}
 
-	dataStruct := &_struct.Struct{}
-	if err := dataStruct.UnmarshalJSON(b); err != nil {
+	bb.Write(b)
+
+	dataStruct := &_struct.Struct{Fields: make(map[string]*_struct.Value)}
+	if err := (&jsonpb.Unmarshaler{}).Unmarshal(&bb, dataStruct); err != nil {
 		return nil, err
 	}
 

@@ -1,10 +1,12 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	pb "github.com/MinterTeam/node-grpc-gateway/api_pb"
+	"github.com/golang/protobuf/jsonpb"
 	_struct "github.com/golang/protobuf/ptypes/struct"
 	"github.com/google/uuid"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
@@ -33,7 +35,7 @@ func (s *Service) Subscribe(request *pb.SubscribeRequest, stream pb.ApiService_S
 		return status.Error(codes.Internal, err.Error())
 	}
 	defer func() {
-		if err := s.client.UnsubscribeAll(context.Background(), subscriber); err != nil {
+		if err := s.client.UnsubscribeAll(stream.Context(), subscriber); err != nil {
 			s.client.Logger.Error(err.Error())
 		}
 	}()
@@ -58,22 +60,23 @@ func (s *Service) Subscribe(request *pb.SubscribeRequest, stream pb.ApiService_S
 }
 
 func subscribeResponse(msg core_types.ResultEvent) (*pb.SubscribeResponse, error) {
-	events := make([]*pb.SubscribeResponse_Event, 0, len(msg.Events))
+	var events []*pb.SubscribeResponse_Event
 	for key, eventSlice := range msg.Events {
 		events = append(events, &pb.SubscribeResponse_Event{
 			Key:    key,
 			Events: eventSlice,
 		})
 	}
-
 	byteData, err := json.Marshal(msg.Data)
 	if err != nil {
 		return nil, err
 	}
 
-	data := &_struct.Struct{}
+	var bb bytes.Buffer
+	bb.Write(byteData)
 
-	if err := data.UnmarshalJSON(byteData); err != nil {
+	data := &_struct.Struct{Fields: make(map[string]*_struct.Value)}
+	if err := (&jsonpb.Unmarshaler{}).Unmarshal(&bb, data); err != nil {
 		return nil, err
 	}
 

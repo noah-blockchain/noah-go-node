@@ -1,7 +1,6 @@
 package api
 
 import (
-	"bytes"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 )

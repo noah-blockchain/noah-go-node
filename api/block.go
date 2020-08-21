@@ -10,7 +10,7 @@ import (
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
-	types2 "github.com/tendermint/tendermint/types"
+	tmTypes "github.com/tendermint/tendermint/types"
 	"time"
 )
 
