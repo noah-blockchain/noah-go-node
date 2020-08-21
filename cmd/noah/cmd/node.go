@@ -22,7 +22,7 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/proxy"
-	rpc "github.com/tendermint/tendermint/rpc/client/local"
+	rpc "github.com/tendermint/tendermint/rpc/client"
 	"github.com/tendermint/tendermint/store"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"io"
@@ -107,7 +107,7 @@ func runNode(cmd *cobra.Command) error {
 	// start TM node
 	node := startTendermintNode(app, tmConfig, logger)
 
-	client := rpc.New(node)
+	client := rpc.NewLocal(node)
 
 	app.SetTmNode(node)
 
@@ -121,9 +121,7 @@ func runNode(cmd *cobra.Command) error {
 			if err != nil {
 				logger.Error("Failed to parse API v2 address", err)
 			}
-			traceLog := os.Getenv("API_V2_LOG_LEVEL") == "trace"
-			logger.Error("Failed to start Api V2 in both gRPC and RESTful",
-				api_v2.Run(srv, grpcUrl.Host, apiV2url.Host, traceLog))
+			logger.Error("Failed to start Api V2 in both gRPC and RESTful", api_v2.Run(srv, grpcUrl.Host, apiV2url.Host))
 		}(service_api.NewService(amino.NewCodec(), app, client, node, cfg, version.Version))
 
 		go api_v1.RunAPI(app, client, cfg, logger)
@@ -137,7 +135,8 @@ func runNode(cmd *cobra.Command) error {
 	}()
 
 	if cfg.Instrumentation.Prometheus {
-		go app.SetStatisticData(statistics.New()).Statistic(cmd.Context())
+		data := statistics.New()
+		go app.SetStatisticData(data).Statistic(cmd.Context())
 	}
 
 	<-cmd.Context().Done()
