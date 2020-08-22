@@ -11,25 +11,15 @@ import (
 
 const mainPrefix = 'd'
 
-type RApp interface {
-	Export(state *types.AppState, height uint64)
-	GetMaxGas() uint64
-	GetTotalSlashed() *big.Int
-}
-
-func (v *App) Tree() tree.ReadOnlyTree {
-	return v.iavl
-}
-
 type App struct {
 	model   *Model
 	isDirty bool
 
 	bus  *bus.Bus
-	iavl tree.MTree
+	iavl tree.Tree
 }
 
-func NewApp(stateBus *bus.Bus, iavl tree.MTree) (*App, error) {
+func NewApp(stateBus *bus.Bus, iavl tree.Tree) (*App, error) {
 	app := &App{bus: stateBus, iavl: iavl}
 	app.bus.SetApp(NewBus(app))
 

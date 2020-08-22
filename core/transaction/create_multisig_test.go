@@ -117,7 +117,7 @@ func TestCreateMultisigFromExistingAccountTx(t *testing.T) {
 
 	coin := types.GetBaseCoin()
 
-	cState.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
+	cState.Accounts.AddBalance(addr, coin, helpers.NoahToQNoah(big.NewInt(1000000)))
 
 	addresses := []types.Address{
 		addr,

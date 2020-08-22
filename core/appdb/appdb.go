@@ -3,9 +3,7 @@ package appdb
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"github.com/noah-blockchain/noah-go-node/cmd/utils"
-
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/abci/types"
@@ -163,6 +161,6 @@ func (appDB *AppDB) SetLastBlocksTimeDelta(height uint64, delta int) {
 
 func NewAppDB(cfg *config.Config) *AppDB {
 	return &AppDB{
-		db: db.NewDB(dbName, db.BackendType(cfg.DBBackend), utils.GetMinterHome()+"/data"),
+		db: db.NewDB(dbName, db.BackendType(cfg.DBBackend), utils.GetNoahHome()+"/data"),
 	}
 }

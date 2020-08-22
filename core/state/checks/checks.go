@@ -12,20 +12,15 @@ import (
 
 const mainPrefix = byte('t')
 
-type RChecks interface {
-	Export(state *types.AppState)
-	IsCheckUsed(check *check.Check) bool
-}
-
 type Checks struct {
 	usedChecks map[types.Hash]struct{}
 
-	iavl tree.MTree
+	iavl tree.Tree
 
 	lock sync.RWMutex
 }
 
-func NewChecks(iavl tree.MTree) (*Checks, error) {
+func NewChecks(iavl tree.Tree) (*Checks, error) {
 	return &Checks{iavl: iavl, usedChecks: map[types.Hash]struct{}{}}, nil
 }
 

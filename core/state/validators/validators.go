@@ -2,9 +2,9 @@ package validators
 
 import (
 	"fmt"
+	eventsdb "github.com/noah-blockchain/events-db"
 	"github.com/noah-blockchain/noah-go-node/core/dao"
 	"github.com/noah-blockchain/noah-go-node/core/developers"
-	eventsdb "github.com/noah-blockchain/noah-go-node/core/events"
 	"github.com/noah-blockchain/noah-go-node/core/state/bus"
 	"github.com/noah-blockchain/noah-go-node/core/state/candidates"
 	"github.com/noah-blockchain/noah-go-node/core/types"

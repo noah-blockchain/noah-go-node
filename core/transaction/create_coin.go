@@ -127,15 +127,10 @@ func (data CreateCoinData) Gas() int64 {
 	return 100000 // 100 noah
 }
 
-func (data CreateCoinData) Run(tx *Transaction, context state.Interface, rewardPool *big.Int, currentBlock uint64) Response {
+func (data CreateCoinData) Run(tx *Transaction, context *state.State, isCheck bool, rewardPool *big.Int, currentBlock uint64) Response {
 	sender, _ := tx.Sender()
 
-	var checkState *state.CheckState
-	var isCheck bool
-	if checkState, isCheck = context.(*state.CheckState); !isCheck {
-		checkState = state.NewCheckState(context.(*state.State))
-	}
-	response := data.BasicCheck(tx, checkState)
+	response := data.BasicCheck(tx, context)
 	if response != nil {
 		return *response
 	}

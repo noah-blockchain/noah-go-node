@@ -1,6 +1,6 @@
 package bus
 
-import eventsdb "github.com/noah-blockchain/noah-go-node/core/events"
+import eventsdb "github.com/noah-blockchain/events-db"
 
 type Bus struct {
 	coins       Coins
@@ -8,7 +8,6 @@ type Bus struct {
 	accounts    Accounts
 	candidates  Candidates
 	frozenfunds FrozenFunds
-	halts       HaltBlocks
 	events      eventsdb.IEventsDB
 	checker     Checker
 }
