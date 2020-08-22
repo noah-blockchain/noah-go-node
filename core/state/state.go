@@ -94,17 +94,19 @@ type State struct {
 
 	db             db.DB
 	events         eventsdb.IEventsDB
-	tree           tree.MTree
+	tree           tree.Tree
 	keepLastStates int64
 	bus            *bus.Bus
 
 	lock sync.RWMutex
 }
 
-func (s *State) isValue_State() {}
-
-func NewState(height uint64, db db.DB, events eventsdb.IEventsDB, cacheSize int, keepLastStates int64) (*State, error) {
-	iavlTree := tree.NewMutableTree(height, db, cacheSize)
+func NewState(height uint64, db db.DB, events eventsdb.IEventsDB, keepLastStates int64, cacheSize int) (*State, error) {
+	iavlTree := tree.NewMutableTree(db, cacheSize)
+	_, err := iavlTree.LoadVersion(int64(height))
+	if err != nil {
+		return nil, err
+	}
 
 	state, err := newStateForTree(iavlTree, events, db, keepLastStates)
 	if err != nil {
@@ -118,14 +120,18 @@ func NewState(height uint64, db db.DB, events eventsdb.IEventsDB, cacheSize int,
 	return state, nil
 }
 
-func NewCheckStateAtHeight(height uint64, db db.DB) (*CheckState, error) {
-	iavlTree := tree.NewImmutableTree(height, db)
-
-	return newCheckStateForTree(iavlTree, nil, nil, 0)
+func NewCheckState(state *State) *State {
+	return state
 }
 
-func (s *State) Tree() tree.MTree {
-	return s.tree
+func NewCheckStateAtHeight(height uint64, db db.DB) (*State, error) {
+	iavlTree := tree.NewMutableTree(db, 1024)
+	_, err := iavlTree.LazyLoadVersion(int64(height))
+	if err != nil {
+		return nil, err
+	}
+
+	return newStateForTree(iavlTree.GetImmutable(), nil, nil, 0)
 }
 
 func (s *State) Lock() {
@@ -160,13 +166,8 @@ func (s *State) Check() error {
 	return nil
 }
 
-const countBatchBlocksDelete = 100
-
 func (s *State) Commit() ([]byte, error) {
 	s.Checker.Reset()
-
-	s.tree.GlobalLock()
-	defer s.tree.GlobalUnlock()
 
 	if err := s.Accounts.Commit(); err != nil {
 		return nil, err
@@ -196,22 +197,13 @@ func (s *State) Commit() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := s.Halts.Commit(); err != nil {
-		return nil, err
-	}
-
 	hash, version, err := s.tree.SaveVersion()
-	if err != nil {
-		return hash, err
+
+	if s.keepLastStates < version-1 {
+		_ = s.tree.DeleteVersion(version - s.keepLastStates)
 	}
 
-	if version%countBatchBlocksDelete == 0 && version-countBatchBlocksDelete > s.keepLastStates {
-		if err := s.tree.DeleteVersionsIfExists(version-countBatchBlocksDelete-s.keepLastStates, version-s.keepLastStates); err != nil {
-			return hash, err
-		}
-	}
-
-	return hash, nil
+	return hash, err
 }
 
 func (s *State) Import(state types.AppState) error {
@@ -279,27 +271,18 @@ func (s *State) Export(height uint64) types.AppState {
 	}
 
 	appState := new(types.AppState)
-	state.App().Export(appState, height)
-	state.Validators().Export(appState)
-	state.Candidates().Export(appState)
-	state.FrozenFunds().Export(appState, height)
-	state.Accounts().Export(appState)
-	state.Coins().Export(appState)
-	state.Checks().Export(appState)
+	state.App.Export(appState, height)
+	state.Validators.Export(appState)
+	state.Candidates.Export(appState)
+	state.FrozenFunds.Export(appState, height)
+	state.Accounts.Export(appState)
+	state.Coins.Export(appState)
+	state.Checks.Export(appState)
 
 	return *appState
 }
 
-func newCheckStateForTree(iavlTree tree.MTree, events eventsdb.IEventsDB, db db.DB, keepLastStates int64) (*CheckState, error) {
-	stateForTree, err := newStateForTree(iavlTree, events, db, keepLastStates)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewCheckState(stateForTree), nil
-}
-
-func newStateForTree(iavlTree tree.MTree, events eventsdb.IEventsDB, db db.DB, keepLastStates int64) (*State, error) {
+func newStateForTree(iavlTree tree.Tree, events eventsdb.IEventsDB, db db.DB, keepLastStates int64) (*State, error) {
 	stateBus := bus.NewBus()
 	stateBus.SetEvents(events)
 
@@ -340,11 +323,6 @@ func newStateForTree(iavlTree tree.MTree, events eventsdb.IEventsDB, db db.DB, k
 		return nil, err
 	}
 
-	haltsState, err := halts.NewHalts(stateBus, iavlTree)
-	if err != nil {
-		return nil, err
-	}
-
 	state := &State{
 		Validators:  validatorsState,
 		App:         appState,
@@ -354,7 +332,6 @@ func newStateForTree(iavlTree tree.MTree, events eventsdb.IEventsDB, db db.DB, k
 		Coins:       coinsState,
 		Checks:      checksState,
 		Checker:     stateChecker,
-		Halts:       haltsState,
 		bus:         stateBus,
 
 		db:             db,
