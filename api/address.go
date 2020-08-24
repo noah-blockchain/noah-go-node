@@ -1,8 +1,6 @@
 package api
 
 import (
-	"math/big"
-
 	"github.com/noah-blockchain/noah-go-node/core/types"
 )
 
