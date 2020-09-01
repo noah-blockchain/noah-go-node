@@ -18,7 +18,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 
-	types "github.com/MinterTeam/minter-go-node/rpc/lib/types"
+	types "github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/log"
 )
