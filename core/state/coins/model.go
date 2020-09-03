@@ -7,7 +7,7 @@ import (
 	"math/big"
 )
 
-var minCoinReserve = helpers.NoahToQNoah(big.NewInt(10000))
+var minCoinReserve = helpers.BipToPip(big.NewInt(10000))
 
 type Model struct {
 	CName      string
