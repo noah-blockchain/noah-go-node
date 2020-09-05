@@ -22,17 +22,17 @@ func GetRewardForBlock(blockHeight uint64) *big.Int {
 	}
 
 	if blockHeight == lastBlock {
-		return helpers.NoahToQNoah(big.NewInt(lastReward))
+		return helpers.BipToPip(big.NewInt(lastReward))
 	}
 
 	reward := big.NewInt(firstReward)
 	reward.Sub(reward, big.NewInt(int64(blockHeight/200000)))
 
 	if reward.Cmp(types.Big0) < 1 {
-		return helpers.NoahToQNoah(big.NewInt(1))
+		return helpers.BipToPip(big.NewInt(1))
 	}
 
-	return helpers.NoahToQNoah(reward)
+	return helpers.BipToPip(reward)
 }
 
 func SetStartHeight(sHeight uint64) {

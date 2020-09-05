@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/MinterTeam/minter-go-node/core/types"
-	pb "github.com/MinterTeam/node-grpc-gateway/api_pb"
+	"github.com/noah-blockchain/noah-go-node/core/types"
+	pb "github.com/noah-blockchain/node-grpc-gateway/api_pb"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

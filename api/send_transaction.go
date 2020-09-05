@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/MinterTeam/minter-go-node/rpc/lib/types"
+	"github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
 )
 

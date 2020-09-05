@@ -2,7 +2,7 @@ package mainnet
 
 import (
 	"github.com/gobuffalo/packr"
-	"github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/os"
 )
 
 func GenerateStatic(genesisFile string) error {
@@ -12,7 +12,7 @@ func GenerateStatic(genesisFile string) error {
 		panic(err)
 	}
 
-	if err := common.WriteFile(genesisFile, bytes, 0644); err != nil {
+	if err := os.WriteFile(genesisFile, bytes, 0644); err != nil {
 		return err
 	}
 

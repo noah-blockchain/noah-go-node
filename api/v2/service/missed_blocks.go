@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
-	pb "github.com/MinterTeam/node-grpc-gateway/api_pb"
+	pb "github.com/noah-blockchain/node-grpc-gateway/api_pb"
 )
 
 func (s *Service) MissedBlocks(_ context.Context, req *pb.MissedBlocksRequest) (*pb.MissedBlocksResponse, error) {

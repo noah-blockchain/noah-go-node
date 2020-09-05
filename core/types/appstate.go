@@ -3,7 +3,7 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/MinterTeam/minter-go-node/helpers"
+	"github.com/noah-blockchain/noah-go-node/helpers"
 	"math/big"
 )
 
