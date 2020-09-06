@@ -59,11 +59,11 @@ func (v *Validator) GetAddress() types.TmAddress {
 	return v.tmAddress
 }
 
-func (v *Validator) GetTotalBipStake() *big.Int {
+func (v *Validator) GetTotalNoahStake() *big.Int {
 	return big.NewInt(0).Set(v.totalStake)
 }
 
-func (v *Validator) SetTotalBipStake(value *big.Int) {
+func (v *Validator) SetTotalNoahStake(value *big.Int) {
 	if v.totalStake.Cmp(value) != 0 {
 		v.isTotalStakeDirty = true
 	}
