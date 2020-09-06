@@ -208,21 +208,21 @@ type Validator struct {
 }
 
 type Candidate struct {
-	RewardAddress Address `json:"reward_address"`
-	OwnerAddress  Address `json:"owner_address"`
-	TotalBipStake string  `json:"total_bip_stake"`
-	PubKey        Pubkey  `json:"pub_key"`
-	Commission    uint    `json:"commission"`
-	Stakes        []Stake `json:"stakes"`
-	Updates       []Stake `json:"updates"`
-	Status        byte    `json:"status"`
+	RewardAddress  Address `json:"reward_address"`
+	OwnerAddress   Address `json:"owner_address"`
+	TotalNoahStake string  `json:"total_noah_stake"`
+	PubKey         Pubkey  `json:"pub_key"`
+	Commission     uint    `json:"commission"`
+	Stakes         []Stake `json:"stakes"`
+	Updates        []Stake `json:"updates"`
+	Status         byte    `json:"status"`
 }
 
 type Stake struct {
-	Owner    Address    `json:"owner"`
-	Coin     CoinSymbol `json:"coin"`
-	Value    string     `json:"value"`
-	BipValue string     `json:"bip_value"`
+	Owner     Address    `json:"owner"`
+	Coin      CoinSymbol `json:"coin"`
+	Value     string     `json:"value"`
+	NoahValue string     `json:"noah_value"`
 }
 
 type Coin struct {
