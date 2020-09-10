@@ -31,10 +31,6 @@ type CheckState struct {
 	state *State
 }
 
-func NewCheckState(state *State) *CheckState {
-	return &CheckState{state: state}
-}
-
 func (cs *CheckState) isValue_State() {}
 
 func (cs *CheckState) Lock() {
@@ -53,40 +49,11 @@ func (cs *CheckState) RUnlock() {
 	cs.state.lock.RUnlock()
 }
 
-func (cs *CheckState) Validators() validators.RValidators {
-	return cs.state.Validators
-}
-func (cs *CheckState) App() app.RApp {
-	return cs.state.App
-}
-func (cs *CheckState) Candidates() candidates.RCandidates {
-	return cs.state.Candidates
-}
-func (cs *CheckState) FrozenFunds() frozenfunds.RFrozenFunds {
-	return cs.state.FrozenFunds
-}
-func (cs *CheckState) Halts() halts.RHalts {
-	return cs.state.Halts
-}
-func (cs *CheckState) Accounts() accounts.RAccounts {
-	return cs.state.Accounts
-}
-func (cs *CheckState) Coins() coins.RCoins {
-	return cs.state.Coins
-}
-func (cs *CheckState) Checks() checks.RChecks {
-	return cs.state.Checks
-}
-func (cs *CheckState) Tree() tree.ReadOnlyTree {
-	return cs.state.Tree()
-}
-
 type State struct {
 	App         *app.App
 	Validators  *validators.Validators
 	Candidates  *candidates.Candidates
 	FrozenFunds *frozenfunds.FrozenFunds
-	Halts       *halts.HaltBlocks
 	Accounts    *accounts.Accounts
 	Coins       *coins.Coins
 	Checks      *checks.Checks

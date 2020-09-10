@@ -24,7 +24,7 @@ func InitDB(cfg *config.Config) {
 	if cfg.ValidatorMode {
 		edb = NOOPEventsDB{}
 	} else {
-		edb = NewEventsDB(db.NewDB("events", db.DBBackendType(cfg.DBBackend), fmt.Sprintf("%s/data-%s", utils.GetNoahHome(), config.NetworkId)))
+		edb = NewEventsDB(db.NewDB("events", db.BackendType(cfg.DBBackend), fmt.Sprintf("%s/data-%s", utils.GetNoahHome(), config.NetworkId)))
 	}
 }
 
@@ -131,7 +131,11 @@ func (db *EventsDB) setEvents(height uint64, events e.Events) {
 
 func (db *EventsDB) LoadEvents(height uint64) e.Events {
 	db.lock.RLock()
-	data := db.db.Get(getKeyForHeight(height))
+	data, err := db.db.Get(getKeyForHeight(height))
+	if err != nil {
+		panic(err)
+	}
+
 	db.lock.RUnlock()
 
 	if len(data) == 0 {
@@ -139,7 +143,7 @@ func (db *EventsDB) LoadEvents(height uint64) e.Events {
 	}
 
 	var decoded e.Events
-	err := cdc.UnmarshalBinaryBare(data, &decoded)
+	err = cdc.UnmarshalBinaryBare(data, &decoded)
 	if err != nil {
 		panic(err)
 	}
