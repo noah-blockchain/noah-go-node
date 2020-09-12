@@ -91,7 +91,7 @@ func TestDeclareCandidacyTx(t *testing.T) {
 		t.Fatalf("Reward address is not correct")
 	}
 
-	if candidate.GetTotalBipStake() != nil && candidate.GetTotalBipStake().Cmp(types.Big0) != 0 {
+	if candidate.GetTotalNoahStake() != nil && candidate.GetTotalNoahStake().Cmp(types.Big0) != 0 {
 		t.Fatalf("Total stake is not correct")
 	}
 

@@ -3,7 +3,7 @@ package state
 import (
 	"encoding/hex"
 	"fmt"
-	eventsdb "github.com/noah-blockchain/noah-go-node/core/events"
+	eventsdb "github.com/noah-blockchain/events-db"
 	"github.com/noah-blockchain/noah-go-node/core/state/accounts"
 	"github.com/noah-blockchain/noah-go-node/core/state/app"
 	"github.com/noah-blockchain/noah-go-node/core/state/bus"
@@ -12,7 +12,6 @@ import (
 	"github.com/noah-blockchain/noah-go-node/core/state/checks"
 	"github.com/noah-blockchain/noah-go-node/core/state/coins"
 	"github.com/noah-blockchain/noah-go-node/core/state/frozenfunds"
-	"github.com/noah-blockchain/noah-go-node/core/state/halts"
 	"github.com/noah-blockchain/noah-go-node/core/state/validators"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/helpers"

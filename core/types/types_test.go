@@ -137,25 +137,25 @@ func TestAppState(t *testing.T) {
 	appState := AppState{
 		Validators: []Validator{
 			{
-				TotalBipStake: big.NewInt(1).String(),
-				PubKey:        pubkey,
-				AccumReward:   big.NewInt(1).String(),
-				AbsentTimes:   ba,
+				TotalNoahStake: big.NewInt(1).String(),
+				PubKey:         pubkey,
+				AccumReward:    big.NewInt(1).String(),
+				AbsentTimes:    ba,
 			},
 		},
 		Candidates: []Candidate{
 			{
-				RewardAddress: testAddr,
-				OwnerAddress:  testAddr,
-				TotalBipStake: big.NewInt(1).String(),
-				PubKey:        pubkey,
-				Commission:    1,
+				RewardAddress:  testAddr,
+				OwnerAddress:   testAddr,
+				TotalNoahStake: big.NewInt(1).String(),
+				PubKey:         pubkey,
+				Commission:     1,
 				Stakes: []Stake{
 					{
-						Owner:    testAddr,
-						Coin:     GetBaseCoin(),
-						Value:    big.NewInt(1).String(),
-						BipValue: big.NewInt(1).String(),
+						Owner:     testAddr,
+						Coin:      GetBaseCoin(),
+						Value:     big.NewInt(1).String(),
+						NoahValue: big.NewInt(1).String(),
 					},
 				},
 				Status: 1,

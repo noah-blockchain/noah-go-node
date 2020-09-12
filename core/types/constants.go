@@ -11,7 +11,7 @@ const (
 
 var (
 	coinTestnet = StrToCoinSymbol("MNT")
-	coinMainnet = StrToCoinSymbol("BIP")
+	coinMainnet = StrToCoinSymbol("NOAH")
 )
 
 func GetBaseCoin() CoinSymbol {
