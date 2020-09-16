@@ -234,8 +234,8 @@ func (b Uint64) String() string {
 	return EncodeUint64(uint64(b))
 }
 
-// Uint marshals/unmarshals as a JSON string with NOAHx prefix.
-// The zero value marshals as "NOAHx0".
+// Uint marshals/unmarshals as a JSON string with Mx prefix.
+// The zero value marshals as "Mx0".
 type Uint uint
 
 // MarshalText implements encoding.TextMarshaler.
@@ -274,7 +274,7 @@ func isString(input []byte) bool {
 }
 
 func bytesHave0xPrefix(input []byte) bool {
-	return len(input) >= 2 && input[0] == 'M' && (input[1] == 'x' || input[1] == 'X')
+	return len(input) >= 4 && input[0] == 'N' && input[1] == 'O' && input[2] == 'A' && input[3] == 'H' && (input[4] == 'x' || input[4] == 'X')
 }
 
 func checkText(input []byte, wantPrefix bool) ([]byte, error) {
