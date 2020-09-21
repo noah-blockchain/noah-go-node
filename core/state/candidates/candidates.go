@@ -79,7 +79,7 @@ func (c *Candidates) Commit() error {
 			path := []byte{mainPrefix}
 			path = append(path, pubkey[:]...)
 			path = append(path, totalStakePrefix)
-			c.iavl.Set(path, candidate.totalBipStake.Bytes())
+			c.iavl.Set(path, candidate.totalNoahStake.Bytes())
 			candidate.isTotalStakeDirty = false
 		}
 
@@ -135,7 +135,7 @@ func (c *Candidates) GetNewCandidates(valCount int) []Candidate {
 			continue
 		}
 
-		if candidate.totalBipStake.Cmp(big.NewInt(0)) == 0 {
+		if candidate.totalNoahStake.Cmp(big.NewInt(0)) == 0 {
 			continue
 		}
 
@@ -143,7 +143,7 @@ func (c *Candidates) GetNewCandidates(valCount int) []Candidate {
 	}
 
 	sort.Slice(result, func(i, j int) bool {
-		return result[i].totalBipStake.Cmp(result[j].totalBipStake) == 1
+		return result[i].totalNoahStake.Cmp(result[j].totalNoahStake) == 1
 	})
 
 	if len(result) > valCount {
@@ -160,7 +160,7 @@ func (c *Candidates) Create(ownerAddress types.Address, rewardAddress types.Addr
 		OwnerAddress:      ownerAddress,
 		Commission:        commission,
 		Status:            CandidateStatusOffline,
-		totalBipStake:     big.NewInt(0),
+		totalNoahStake:    big.NewInt(0),
 		stakes:            [MaxDelegatorsPerCandidate]*Stake{},
 		isDirty:           true,
 		isTotalStakeDirty: true,
@@ -236,7 +236,7 @@ func (c *Candidates) recalculateStakesOld1(height uint64) {
 		candidate := c.getFromMap(pubkey)
 		stakes := c.GetStakes(candidate.PubKey)
 		for _, stake := range stakes {
-			stake.setBipValue(c.calculateBipValue(stake.Coin, stake.Value, false, true, coinsCache))
+			stake.setNoahValue(c.calculateNoahValue(stake.Coin, stake.Value, false, true, coinsCache))
 		}
 
 		// apply updates for existing stakes
@@ -245,17 +245,17 @@ func (c *Candidates) recalculateStakesOld1(height uint64) {
 			if stake != nil {
 				stake.addValue(update.Value)
 				update.setValue(big.NewInt(0))
-				stake.setBipValue(c.calculateBipValue(stake.Coin, stake.Value, false, true, coinsCache))
+				stake.setNoahValue(c.calculateNoahValue(stake.Coin, stake.Value, false, true, coinsCache))
 			}
 		}
 
 		updates := candidate.GetFilteredUpdates()
 		for _, update := range updates {
-			update.setBipValue(c.calculateBipValue(update.Coin, update.Value, false, true, coinsCache))
+			update.setNoahValue(c.calculateNoahValue(update.Coin, update.Value, false, true, coinsCache))
 		}
 		// Sort updates in descending order
 		sort.SliceStable(updates, func(i, j int) bool {
-			return updates[i].BipValue.Cmp(updates[j].BipValue) == 1
+			return updates[i].NoahValue.Cmp(updates[j].NoahValue) == 1
 		})
 
 		for _, update := range updates {
@@ -274,13 +274,13 @@ func (c *Candidates) recalculateStakesOld1(height uint64) {
 						break
 					}
 
-					if smallestStake == nil || smallestStake.Cmp(stake.BipValue) == 1 {
-						smallestStake = big.NewInt(0).Set(stake.BipValue)
+					if smallestStake == nil || smallestStake.Cmp(stake.NoahValue) == 1 {
+						smallestStake = big.NewInt(0).Set(stake.NoahValue)
 						index = i
 					}
 				}
 
-				if index == -1 || smallestStake.Cmp(update.BipValue) == 1 {
+				if index == -1 || smallestStake.Cmp(update.NoahValue) == 1 {
 					c.bus.Events().AddEvent(uint32(height), eventsdb.UnbondEvent{
 						Address:         update.Owner,
 						Amount:          update.Value.String(),
@@ -311,15 +311,15 @@ func (c *Candidates) recalculateStakesOld1(height uint64) {
 
 		candidate.clearUpdates()
 
-		totalBipValue := big.NewInt(0)
+		totalNoahValue := big.NewInt(0)
 		for _, stake := range c.GetStakes(candidate.PubKey) {
 			if stake == nil {
 				continue
 			}
-			totalBipValue.Add(totalBipValue, stake.BipValue)
+			totalNoahValue.Add(totalNoahValue, stake.NoahValue)
 		}
 
-		candidate.setTotalBipStake(totalBipValue)
+		candidate.setTotalNoahStake(totalNoahValue)
 		candidate.updateStakesCount()
 	}
 }
@@ -331,7 +331,7 @@ func (c *Candidates) recalculateStakesOld2(height uint64) {
 		candidate := c.getFromMap(pubkey)
 		stakes := c.GetStakes(candidate.PubKey)
 		for _, stake := range stakes {
-			stake.setBipValue(c.calculateBipValue(stake.Coin, stake.Value, false, true, coinsCache))
+			stake.setNoahValue(c.calculateNoahValue(stake.Coin, stake.Value, false, true, coinsCache))
 		}
 
 		// apply updates for existing stakes
@@ -341,13 +341,13 @@ func (c *Candidates) recalculateStakesOld2(height uint64) {
 			if stake != nil {
 				stake.addValue(update.Value)
 				update.setValue(big.NewInt(0))
-				stake.setBipValue(c.calculateBipValue(stake.Coin, stake.Value, false, true, coinsCache))
+				stake.setNoahValue(c.calculateNoahValue(stake.Coin, stake.Value, false, true, coinsCache))
 			}
 		}
 
 		candidate.FilterUpdates()
 		for _, update := range candidate.updates {
-			update.setBipValue(c.calculateBipValue(update.Coin, update.Value, false, true, coinsCache))
+			update.setNoahValue(c.calculateNoahValue(update.Coin, update.Value, false, true, coinsCache))
 		}
 
 		for _, update := range candidate.updates {
@@ -379,14 +379,14 @@ func (c *Candidates) recalculateStakesOld2(height uint64) {
 						break
 					}
 
-					if smallestStake == nil || smallestStake.Cmp(stake.BipValue) == 1 {
-						smallestStake = big.NewInt(0).Set(stake.BipValue)
+					if smallestStake == nil || smallestStake.Cmp(stake.NoahValue) == 1 {
+						smallestStake = big.NewInt(0).Set(stake.NoahValue)
 						index = i
 					}
 				}
 			}
 
-			if index == -1 || smallestStake.Cmp(update.BipValue) == 1 {
+			if index == -1 || smallestStake.Cmp(update.NoahValue) == 1 {
 				c.bus.Events().AddEvent(uint32(height), eventsdb.UnbondEvent{
 					Address:         update.Owner,
 					Amount:          update.Value.String(),
@@ -416,15 +416,15 @@ func (c *Candidates) recalculateStakesOld2(height uint64) {
 
 		candidate.clearUpdates()
 
-		totalBipValue := big.NewInt(0)
+		totalNoahValue := big.NewInt(0)
 		for _, stake := range c.GetStakes(candidate.PubKey) {
 			if stake == nil {
 				continue
 			}
-			totalBipValue.Add(totalBipValue, stake.BipValue)
+			totalNoahValue.Add(totalNoahValue, stake.NoahValue)
 		}
 
-		candidate.setTotalBipStake(totalBipValue)
+		candidate.setTotalNoahStake(totalNoahValue)
 		candidate.updateStakesCount()
 	}
 }
@@ -439,7 +439,7 @@ func (c *Candidates) recalculateStakesNew(height uint64) {
 			if stake == nil {
 				continue
 			}
-			stake.setBipValue(c.calculateBipValue(stake.Coin, stake.Value, false, true, coinsCache))
+			stake.setNoahValue(c.calculateNoahValue(stake.Coin, stake.Value, false, true, coinsCache))
 		}
 
 		// apply updates for existing stakes
@@ -448,13 +448,13 @@ func (c *Candidates) recalculateStakesNew(height uint64) {
 			if stake != nil {
 				stake.addValue(update.Value)
 				update.setValue(big.NewInt(0))
-				stake.setBipValue(c.calculateBipValue(stake.Coin, stake.Value, false, true, coinsCache))
+				stake.setNoahValue(c.calculateNoahValue(stake.Coin, stake.Value, false, true, coinsCache))
 			}
 		}
 
 		candidate.FilterUpdates()
 		for _, update := range candidate.updates {
-			update.setBipValue(c.calculateBipValue(update.Coin, update.Value, false, true, coinsCache))
+			update.setNoahValue(c.calculateNoahValue(update.Coin, update.Value, false, true, coinsCache))
 		}
 
 		for _, update := range candidate.updates {
@@ -469,13 +469,13 @@ func (c *Candidates) recalculateStakesNew(height uint64) {
 					break
 				}
 
-				if index == -1 || smallestStake.Cmp(stake.BipValue) == 1 {
-					smallestStake = big.NewInt(0).Set(stake.BipValue)
+				if index == -1 || smallestStake.Cmp(stake.NoahValue) == 1 {
+					smallestStake = big.NewInt(0).Set(stake.NoahValue)
 					index = i
 				}
 			}
 
-			if smallestStake.Cmp(update.BipValue) == 1 {
+			if smallestStake.Cmp(update.NoahValue) == 1 {
 				c.bus.Events().AddEvent(uint32(height), eventsdb.UnbondEvent{
 					Address:         update.Owner,
 					Amount:          update.Value.String(),
@@ -504,15 +504,15 @@ func (c *Candidates) recalculateStakesNew(height uint64) {
 
 		candidate.clearUpdates()
 
-		totalBipValue := big.NewInt(0)
+		totalNoahValue := big.NewInt(0)
 		for _, stake := range stakes {
 			if stake == nil {
 				continue
 			}
-			totalBipValue.Add(totalBipValue, stake.BipValue)
+			totalNoahValue.Add(totalNoahValue, stake.NoahValue)
 		}
 
-		candidate.setTotalBipStake(totalBipValue)
+		candidate.setTotalNoahStake(totalNoahValue)
 	}
 }
 
@@ -536,11 +536,11 @@ func (c *Candidates) IsNewCandidateStakeSufficient(coin types.CoinSymbol, stake 
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 
-	bipValue := c.calculateBipValue(coin, stake, true, true, nil)
+	NoahValue := c.calculateNoahValue(coin, stake, true, true, nil)
 	var stakes []*big.Int
 
 	for _, candidate := range c.list {
-		stakes = append(stakes, big.NewInt(0).Set(candidate.totalBipStake))
+		stakes = append(stakes, big.NewInt(0).Set(candidate.totalNoahStake))
 	}
 
 	sort.SliceStable(stakes, func(i, j int) bool {
@@ -548,7 +548,7 @@ func (c *Candidates) IsNewCandidateStakeSufficient(coin types.CoinSymbol, stake 
 	})
 
 	for _, stake := range stakes[:limit] {
-		if stake.Cmp(bipValue) == -1 {
+		if stake.Cmp(NoahValue) == -1 {
 			return true
 		}
 	}
@@ -566,9 +566,9 @@ func (c *Candidates) IsDelegatorStakeSufficient(address types.Address, pubkey ty
 		return true
 	}
 
-	stakeValue := c.calculateBipValue(coin, amount, true, true, nil)
+	stakeValue := c.calculateNoahValue(coin, amount, true, true, nil)
 	for _, stake := range stakes {
-		if stakeValue.Cmp(stake.BipValue) == 1 || (stake.Owner == address && stake.Coin == coin) {
+		if stakeValue.Cmp(stake.NoahValue) == 1 || (stake.Owner == address && stake.Coin == coin) {
 			return true
 		}
 	}
@@ -576,12 +576,12 @@ func (c *Candidates) IsDelegatorStakeSufficient(address types.Address, pubkey ty
 	return false
 }
 
-func (c *Candidates) Delegate(address types.Address, pubkey types.Pubkey, coin types.CoinSymbol, value *big.Int, bipValue *big.Int) {
+func (c *Candidates) Delegate(address types.Address, pubkey types.Pubkey, coin types.CoinSymbol, value *big.Int, NoahValue *big.Int) {
 	stake := &Stake{
-		Owner:    address,
-		Coin:     coin,
-		Value:    big.NewInt(0).Set(value),
-		BipValue: big.NewInt(0).Set(bipValue),
+		Owner:     address,
+		Coin:      coin,
+		Value:     big.NewInt(0).Set(value),
+		NoahValue: big.NewInt(0).Set(NoahValue),
 	}
 
 	candidate := c.GetCandidate(pubkey)
@@ -621,20 +621,20 @@ func (c *Candidates) GetCandidates() []*Candidate {
 
 func (c *Candidates) GetTotalStake(pubkey types.Pubkey) *big.Int {
 	candidate := c.getFromMap(pubkey)
-	if candidate.totalBipStake == nil {
+	if candidate.totalNoahStake == nil {
 		path := []byte{mainPrefix}
 		path = append(path, pubkey[:]...)
 		path = append(path, totalStakePrefix)
 		_, enc := c.iavl.Get(path)
 		if len(enc) == 0 {
-			candidate.totalBipStake = big.NewInt(0)
+			candidate.totalNoahStake = big.NewInt(0)
 			return big.NewInt(0)
 		}
 
-		candidate.totalBipStake = big.NewInt(0).SetBytes(enc)
+		candidate.totalNoahStake = big.NewInt(0).SetBytes(enc)
 	}
 
-	return candidate.totalBipStake
+	return candidate.totalNoahStake
 }
 
 func (c *Candidates) GetStakes(pubkey types.Pubkey) []*Stake {
@@ -709,9 +709,9 @@ func (c *Candidates) LoadCandidates() {
 		path = append(path, totalStakePrefix)
 		_, enc = c.iavl.Get(path)
 		if len(enc) == 0 {
-			candidate.totalBipStake = big.NewInt(0)
+			candidate.totalNoahStake = big.NewInt(0)
 		} else {
-			candidate.totalBipStake = big.NewInt(0).SetBytes(enc)
+			candidate.totalNoahStake = big.NewInt(0).SetBytes(enc)
 		}
 
 		candidate.setTmAddress()
@@ -725,7 +725,7 @@ func (c *Candidates) LoadStakes() {
 	}
 }
 
-func (c *Candidates) calculateBipValue(coinSymbol types.CoinSymbol, amount *big.Int, includeSelf, includeUpdates bool, coinsCache *coinsCache) *big.Int {
+func (c *Candidates) calculateNoahValue(coinSymbol types.CoinSymbol, amount *big.Int, includeSelf, includeUpdates bool, coinsCache *coinsCache) *big.Int {
 	if coinSymbol.IsBaseCoin() {
 		return big.NewInt(0).Set(amount)
 	}
@@ -814,10 +814,10 @@ func (c *Candidates) SetStakes(pubkey types.Pubkey, stakes []types.Stake, update
 
 	for _, u := range updates {
 		candidate.addUpdate(&Stake{
-			Owner:    u.Owner,
-			Coin:     u.Coin,
-			Value:    helpers.StringToBigInt(u.Value),
-			BipValue: helpers.StringToBigInt(u.BipValue),
+			Owner:     u.Owner,
+			Coin:      u.Coin,
+			Value:     helpers.StringToBigInt(u.Value),
+			NoahValue: helpers.StringToBigInt(u.NoahValue),
 		})
 	}
 
@@ -827,20 +827,20 @@ func (c *Candidates) SetStakes(pubkey types.Pubkey, stakes []types.Stake, update
 
 		for _, u := range stakes[1000:] {
 			candidate.addUpdate(&Stake{
-				Owner:    u.Owner,
-				Coin:     u.Coin,
-				Value:    helpers.StringToBigInt(u.Value),
-				BipValue: helpers.StringToBigInt(u.BipValue),
+				Owner:     u.Owner,
+				Coin:      u.Coin,
+				Value:     helpers.StringToBigInt(u.Value),
+				NoahValue: helpers.StringToBigInt(u.NoahValue),
 			})
 		}
 	}
 
 	for i, s := range stakes[:count] {
 		candidate.stakes[i] = &Stake{
-			Owner:    s.Owner,
-			Coin:     s.Coin,
-			Value:    helpers.StringToBigInt(s.Value),
-			BipValue: helpers.StringToBigInt(s.BipValue),
+			Owner:     s.Owner,
+			Coin:      s.Coin,
+			Value:     helpers.StringToBigInt(s.Value),
+			NoahValue: helpers.StringToBigInt(s.NoahValue),
 			markDirty: func(index int) {
 				candidate.dirtyStakes[index] = true
 			},
@@ -861,32 +861,32 @@ func (c *Candidates) Export(state *types.AppState) {
 		stakes := make([]types.Stake, len(candidateStakes))
 		for i, s := range candidateStakes {
 			stakes[i] = types.Stake{
-				Owner:    s.Owner,
-				Coin:     s.Coin,
-				Value:    s.Value.String(),
-				BipValue: s.BipValue.String(),
+				Owner:     s.Owner,
+				Coin:      s.Coin,
+				Value:     s.Value.String(),
+				NoahValue: s.NoahValue.String(),
 			}
 		}
 
 		updates := make([]types.Stake, len(candidate.updates))
 		for i, u := range candidate.updates {
 			updates[i] = types.Stake{
-				Owner:    u.Owner,
-				Coin:     u.Coin,
-				Value:    u.Value.String(),
-				BipValue: u.BipValue.String(),
+				Owner:     u.Owner,
+				Coin:      u.Coin,
+				Value:     u.Value.String(),
+				NoahValue: u.NoahValue.String(),
 			}
 		}
 
 		state.Candidates = append(state.Candidates, types.Candidate{
-			RewardAddress: candidate.RewardAddress,
-			OwnerAddress:  candidate.OwnerAddress,
-			TotalBipStake: candidate.GetTotalBipStake().String(),
-			PubKey:        candidate.PubKey,
-			Commission:    candidate.Commission,
-			Status:        candidate.Status,
-			Updates:       updates,
-			Stakes:        stakes,
+			RewardAddress:  candidate.RewardAddress,
+			OwnerAddress:   candidate.OwnerAddress,
+			TotalNoahStake: candidate.GetTotalNoahStake().String(),
+			PubKey:         candidate.PubKey,
+			Commission:     candidate.Commission,
+			Status:         candidate.Status,
+			Updates:        updates,
+			Stakes:         stakes,
 		})
 	}
 
@@ -923,7 +923,7 @@ func (c *Candidates) setToMap(pubkey types.Pubkey, model *Candidate) {
 }
 
 func (c *Candidates) SetTotalStake(pubkey types.Pubkey, stake *big.Int) {
-	c.GetCandidate(pubkey).setTotalBipStake(stake)
+	c.GetCandidate(pubkey).setTotalNoahStake(stake)
 }
 
 func (c *Candidates) LoadStakesOfCandidate(pubkey types.Pubkey) {
@@ -983,9 +983,9 @@ func (c *Candidates) LoadStakesOfCandidate(pubkey types.Pubkey) {
 	path = append(path, totalStakePrefix)
 	_, enc = c.iavl.Get(path)
 	if len(enc) == 0 {
-		candidate.totalBipStake = big.NewInt(0)
+		candidate.totalNoahStake = big.NewInt(0)
 	} else {
-		candidate.totalBipStake = big.NewInt(0).SetBytes(enc)
+		candidate.totalNoahStake = big.NewInt(0).SetBytes(enc)
 	}
 
 	candidate.setTmAddress()

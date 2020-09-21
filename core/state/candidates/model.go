@@ -14,11 +14,11 @@ type Candidate struct {
 	Commission    uint
 	Status        byte
 
-	totalBipStake *big.Int
-	stakesCount   int
-	stakes        [MaxDelegatorsPerCandidate]*Stake
-	updates       []*Stake
-	tmAddress     *types.TmAddress
+	totalNoahStake *big.Int
+	stakesCount    int
+	stakes         [MaxDelegatorsPerCandidate]*Stake
+	updates        []*Stake
+	tmAddress      *types.TmAddress
 
 	isDirty           bool
 	isTotalStakeDirty bool
@@ -57,12 +57,12 @@ func (candidate *Candidate) clearUpdates() {
 	candidate.updates = nil
 }
 
-func (candidate *Candidate) setTotalBipStake(totalBipValue *big.Int) {
-	if totalBipValue.Cmp(candidate.totalBipStake) != 0 {
+func (candidate *Candidate) setTotalNoahStake(totalNoahValue *big.Int) {
+	if totalNoahValue.Cmp(candidate.totalNoahStake) != 0 {
 		candidate.isTotalStakeDirty = true
 	}
 
-	candidate.totalBipStake.Set(totalBipValue)
+	candidate.totalNoahStake.Set(totalNoahValue)
 }
 
 func (candidate *Candidate) GetTmAddress() types.TmAddress {
@@ -130,7 +130,7 @@ func (candidate *Candidate) FilterUpdates() {
 	}
 
 	sort.SliceStable(updates, func(i, j int) bool {
-		return updates[i].BipValue.Cmp(updates[j].BipValue) == 1
+		return updates[i].NoahValue.Cmp(updates[j].NoahValue) == 1
 	})
 
 	candidate.updates = updates
@@ -147,8 +147,8 @@ func (candidate *Candidate) updateStakesCount() {
 	candidate.stakesCount = count
 }
 
-func (candidate *Candidate) GetTotalBipStake() *big.Int {
-	return big.NewInt(0).Set(candidate.totalBipStake)
+func (candidate *Candidate) GetTotalNoahStake() *big.Int {
+	return big.NewInt(0).Set(candidate.totalNoahStake)
 }
 
 func (candidate *Candidate) SetStakeAtIndex(index int, stake *Stake, isDirty bool) {
@@ -165,10 +165,10 @@ func (candidate *Candidate) SetStakeAtIndex(index int, stake *Stake, isDirty boo
 }
 
 type Stake struct {
-	Owner    types.Address
-	Coin     types.CoinSymbol
-	Value    *big.Int
-	BipValue *big.Int
+	Owner     types.Address
+	Coin      types.CoinSymbol
+	Value     *big.Int
+	NoahValue *big.Int
 
 	index     int
 	markDirty func(int)
@@ -184,18 +184,18 @@ func (stake *Stake) subValue(value *big.Int) {
 	stake.Value.Sub(stake.Value, value)
 }
 
-func (stake *Stake) setBipValue(value *big.Int) {
-	if stake.BipValue.Cmp(value) != 0 {
+func (stake *Stake) setNoahValue(value *big.Int) {
+	if stake.NoahValue.Cmp(value) != 0 {
 		stake.markDirty(stake.index)
 	}
 
-	stake.BipValue.Set(value)
+	stake.NoahValue.Set(value)
 }
 
 func (stake *Stake) setNewOwner(coin types.CoinSymbol, owner types.Address) {
 	stake.Coin = coin
 	stake.Owner = owner
-	stake.BipValue = big.NewInt(0)
+	stake.NoahValue = big.NewInt(0)
 	stake.Value = big.NewInt(0)
 	stake.markDirty(stake.index)
 }

@@ -91,7 +91,7 @@ func TestDeclareCandidacyTx(t *testing.T) {
 		t.Fatalf("Reward address is not correct")
 	}
 
-	if candidate.GetTotalBipStake() != nil && candidate.GetTotalBipStake().Cmp(types.Big0) != 0 {
+	if candidate.GetTotalNoahStake() != nil && candidate.GetTotalNoahStake().Cmp(types.Big0) != 0 {
 		t.Fatalf("Total stake is not correct")
 	}
 
@@ -111,7 +111,7 @@ func TestDeclareCandidacyTxOverflow(t *testing.T) {
 	for i := 0; i < maxCandidatesCount; i++ {
 		pubkey := types.Pubkey{byte(i)}
 		cState.Candidates.Create(types.Address{}, types.Address{}, pubkey, 10)
-		cState.Candidates.Delegate(types.Address{}, pubkey, types.GetBaseCoin(), helpers.NoahToQNoah(big.NewInt(10)), helpers.BipToPip(big.NewInt(10)))
+		cState.Candidates.Delegate(types.Address{}, pubkey, types.GetBaseCoin(), helpers.NoahToQNoah(big.NewInt(10)), helpers.NoahToQNoah(big.NewInt(10)))
 	}
 
 	cState.Candidates.RecalculateStakes(upgrades.UpgradeBlock3)

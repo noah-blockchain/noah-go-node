@@ -22,12 +22,12 @@ type HaltBlocks struct {
 	dirty map[uint64]interface{}
 
 	bus  *bus.Bus
-	iavl tree.MTree
+	iavl tree.Tree
 
 	lock sync.RWMutex
 }
 
-func NewHalts(stateBus *bus.Bus, iavl tree.MTree) (*HaltBlocks, error) {
+func NewHalts(stateBus *bus.Bus, iavl tree.Tree) (*HaltBlocks, error) {
 	halts := &HaltBlocks{
 		bus:   stateBus,
 		iavl:  iavl,

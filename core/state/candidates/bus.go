@@ -20,10 +20,10 @@ func (b *Bus) GetStakes(pubkey types.Pubkey) []bus.Stake {
 
 	for _, stake := range stakes {
 		result = append(result, bus.Stake{
-			Owner:    stake.Owner,
-			Value:    big.NewInt(0).Set(stake.Value),
-			Coin:     stake.Coin,
-			BipValue: big.NewInt(0).Set(stake.BipValue),
+			Owner:     stake.Owner,
+			Value:     big.NewInt(0).Set(stake.Value),
+			Coin:      stake.Coin,
+			NoahValue: big.NewInt(0).Set(stake.NoahValue),
 		})
 	}
 

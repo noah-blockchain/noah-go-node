@@ -8,10 +8,10 @@ import (
 )
 
 type Stake struct {
-	Owner    string `json:"owner"`
-	Coin     string `json:"coin"`
-	Value    string `json:"value"`
-	BipValue string `json:"bip_value"`
+	Owner     string `json:"owner"`
+	Coin      string `json:"coin"`
+	Value     string `json:"value"`
+	NoahValue string `json:"noah_value"`
 }
 
 type CandidateResponse struct {
@@ -39,10 +39,10 @@ func makeResponseCandidate(state *state.State, c candidates.Candidate, includeSt
 		candidate.Stakes = make([]Stake, len(stakes))
 		for i, stake := range stakes {
 			candidate.Stakes[i] = Stake{
-				Owner:    stake.Owner.String(),
-				Coin:     stake.Coin.String(),
-				Value:    stake.Value.String(),
-				BipValue: stake.BipValue.String(),
+				Owner:     stake.Owner.String(),
+				Coin:      stake.Coin.String(),
+				Value:     stake.Value.String(),
+				NoahValue: stake.NoahValue.String(),
 			}
 		}
 	}

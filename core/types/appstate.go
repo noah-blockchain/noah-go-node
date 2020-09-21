@@ -52,8 +52,8 @@ func (s *AppState) Verify() error {
 		}
 
 		// basic checks
-		if !helpers.IsValidBigInt(val.TotalBipStake) {
-			return fmt.Errorf("total bip stake of validator %s is not valid", val.PubKey.String())
+		if !helpers.IsValidBigInt(val.TotalNoahStake) {
+			return fmt.Errorf("total noah stake of validator %s is not valid", val.PubKey.String())
 		}
 
 		if !helpers.IsValidBigInt(val.AccumReward) {
@@ -201,28 +201,28 @@ func (s *AppState) Verify() error {
 }
 
 type Validator struct {
-	TotalBipStake string    `json:"total_bip_stake"`
-	PubKey        Pubkey    `json:"pub_key"`
-	AccumReward   string    `json:"accum_reward"`
-	AbsentTimes   *BitArray `json:"absent_times"`
+	TotalNoahStake string    `json:"total_noah_stake"`
+	PubKey         Pubkey    `json:"pub_key"`
+	AccumReward    string    `json:"accum_reward"`
+	AbsentTimes    *BitArray `json:"absent_times"`
 }
 
 type Candidate struct {
-	RewardAddress Address `json:"reward_address"`
-	OwnerAddress  Address `json:"owner_address"`
-	TotalBipStake string  `json:"total_bip_stake"`
-	PubKey        Pubkey  `json:"pub_key"`
-	Commission    uint    `json:"commission"`
-	Stakes        []Stake `json:"stakes"`
-	Updates       []Stake `json:"updates"`
-	Status        byte    `json:"status"`
+	RewardAddress  Address `json:"reward_address"`
+	OwnerAddress   Address `json:"owner_address"`
+	TotalNoahStake string  `json:"total_noah_stake"`
+	PubKey         Pubkey  `json:"pub_key"`
+	Commission     uint    `json:"commission"`
+	Stakes         []Stake `json:"stakes"`
+	Updates        []Stake `json:"updates"`
+	Status         byte    `json:"status"`
 }
 
 type Stake struct {
-	Owner    Address    `json:"owner"`
-	Coin     CoinSymbol `json:"coin"`
-	Value    string     `json:"value"`
-	BipValue string     `json:"bip_value"`
+	Owner     Address    `json:"owner"`
+	Coin      CoinSymbol `json:"coin"`
+	Value     string     `json:"value"`
+	NoahValue string     `json:"noah_value"`
 }
 
 type Coin struct {

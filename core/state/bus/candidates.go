@@ -14,10 +14,10 @@ type Candidates interface {
 }
 
 type Stake struct {
-	Owner    types.Address
-	Value    *big.Int
-	Coin     types.CoinSymbol
-	BipValue *big.Int
+	Owner     types.Address
+	Value     *big.Int
+	Coin      types.CoinSymbol
+	NoahValue *big.Int
 }
 
 type Candidate struct {

@@ -274,7 +274,7 @@ func isString(input []byte) bool {
 }
 
 func bytesHave0xPrefix(input []byte) bool {
-	return len(input) >= 2 && input[0] == 'M' && (input[1] == 'x' || input[1] == 'X')
+	return len(input) >= 5 && string(input[:5]) == "NOAHx"
 }
 
 func checkText(input []byte, wantPrefix bool) ([]byte, error) {
@@ -282,7 +282,7 @@ func checkText(input []byte, wantPrefix bool) ([]byte, error) {
 		return nil, nil // empty strings are allowed
 	}
 	if bytesHave0xPrefix(input) {
-		input = input[2:]
+		input = input[5:]
 	} else if wantPrefix {
 		return nil, ErrMissingPrefix
 	}
