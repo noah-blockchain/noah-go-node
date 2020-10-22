@@ -22,32 +22,6 @@ import (
 	"sync"
 )
 
-type Interface interface {
-	isValue_State()
-}
-
-type CheckState struct {
-	state *State
-}
-
-func (cs *CheckState) isValue_State() {}
-
-func (cs *CheckState) Lock() {
-	cs.state.lock.Lock()
-}
-
-func (cs *CheckState) Unlock() {
-	cs.state.lock.Unlock()
-}
-
-func (cs *CheckState) RLock() {
-	cs.state.lock.RLock()
-}
-
-func (cs *CheckState) RUnlock() {
-	cs.state.lock.RUnlock()
-}
-
 type State struct {
 	App         *app.App
 	Validators  *validators.Validators
