@@ -3,7 +3,7 @@ package state
 import (
 	"crypto/rand"
 	"encoding/binary"
-	eventsdb "github.com/noah-blockchain/events-db"
+	eventsdb "github.com/noah-blockchain/explorer-events-db"
 	"github.com/noah-blockchain/noah-go-node/core/state/candidates"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/upgrades"

@@ -2,7 +2,7 @@ package validators
 
 import (
 	"fmt"
-	eventsdb "github.com/noah-blockchain/events-db"
+	eventsdb "github.com/noah-blockchain/explorer-events-db"
 	"github.com/noah-blockchain/noah-go-node/core/dao"
 	"github.com/noah-blockchain/noah-go-node/core/developers"
 	"github.com/noah-blockchain/noah-go-node/core/state/bus"
@@ -341,9 +341,9 @@ func (v *Validators) Export(state *types.AppState) {
 	for _, val := range v.GetValidators() {
 		state.Validators = append(state.Validators, types.Validator{
 			TotalNoahStake: val.GetTotalNoahStake().String(),
-			PubKey:        val.PubKey,
-			AccumReward:   val.GetAccumReward().String(),
-			AbsentTimes:   val.AbsentTimes,
+			PubKey:         val.PubKey,
+			AccumReward:    val.GetAccumReward().String(),
+			AbsentTimes:    val.AbsentTimes,
 		})
 	}
 }

@@ -1,6 +1,6 @@
 package bus
 
-import eventsdb "github.com/noah-blockchain/events-db"
+import eventsdb "github.com/noah-blockchain/explorer-events-db"
 
 type Bus struct {
 	coins       Coins

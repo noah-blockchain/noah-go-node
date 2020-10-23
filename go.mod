@@ -14,8 +14,8 @@ require (
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/grpc-ecosystem/grpc-gateway v1.14.8
 	github.com/marcusolsson/tui-go v0.4.0
-	github.com/noah-blockchain/explorer-events-db v0.1.1-0.20201016095346-bd9b7167b449 // indirect
-	github.com/noah-blockchain/node-grpc-gateway v0.0.0-20201016090438-d615ecc520ff // indirect
+	github.com/noah-blockchain/explorer-events-db v0.1.1-0.20201016102755-b04112103c19
+	github.com/noah-blockchain/node-grpc-gateway v0.0.0-20201016090438-d615ecc520ff
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/term v1.1.0 // indirect
 	github.com/prometheus/client_golang v1.5.1

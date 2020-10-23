@@ -2,7 +2,7 @@ package api
 
 import (
 	"fmt"
-	eventsdb "github.com/noah-blockchain/events-db"
+	eventsdb "github.com/noah-blockchain/explorer-events-db"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/noah"
 	"github.com/noah-blockchain/noah-go-node/core/state"
@@ -27,7 +27,7 @@ var (
 	cdc        = amino.NewCodec()
 	blockchain *noah.Blockchain
 	client     *rpc.Local
-	noahCfg  *config.Config
+	noahCfg    *config.Config
 )
 
 var Routes = map[string]*rpcserver.RPCFunc{
