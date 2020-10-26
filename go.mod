@@ -16,6 +16,7 @@ require (
 	github.com/noah-blockchain/explorer-events-db v0.1.1-0.20201016102755-b04112103c19
 	github.com/noah-blockchain/node-grpc-gateway v0.0.0-20201016090438-d615ecc520ff
 	github.com/pkg/errors v0.9.1
+	github.com/pkg/term v0.0.0-20180423043932-cda20d4ac917
 	github.com/prometheus/client_golang v1.5.1
 	github.com/rs/cors v1.7.0
 	github.com/spf13/cobra v0.0.6
