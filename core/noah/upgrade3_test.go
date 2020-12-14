@@ -1,7 +1,7 @@
 package noah
 
 import (
-	eventsdb "github.com/noah-blockchain/events-db"
+	eventsdb "github.com/noah-blockchain/explorer-events-db"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/helpers"

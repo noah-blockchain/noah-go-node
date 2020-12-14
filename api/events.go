@@ -1,7 +1,7 @@
 package api
 
 import (
-	eventsdb "github.com/noah-blockchain/events-db"
+	eventsdb "github.com/noah-blockchain/explorer-events-db"
 )
 
 type EventsResponse struct {

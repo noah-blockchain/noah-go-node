@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	compact_db "github.com/noah-blockchain/events-db"
-	pb "github.com/noah-blockchain/node-grpc-gateway/api_pb"
 	"github.com/golang/protobuf/jsonpb"
 	_struct "github.com/golang/protobuf/ptypes/struct"
+	compact_db "github.com/noah-blockchain/explorer-events-db"
+	pb "github.com/noah-blockchain/node-grpc-gateway/api_pb"
 )
 
 func (s *Service) Events(_ context.Context, req *pb.EventsRequest) (*pb.EventsResponse, error) {

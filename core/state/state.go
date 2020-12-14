@@ -3,7 +3,7 @@ package state
 import (
 	"encoding/hex"
 	"fmt"
-	eventsdb "github.com/noah-blockchain/events-db"
+	eventsdb "github.com/noah-blockchain/explorer-events-db"
 	"github.com/noah-blockchain/noah-go-node/core/state/accounts"
 	"github.com/noah-blockchain/noah-go-node/core/state/app"
 	"github.com/noah-blockchain/noah-go-node/core/state/bus"
