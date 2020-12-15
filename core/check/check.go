@@ -53,6 +53,7 @@ func (check *Check) LockPubKey() ([]byte, error) {
 	return pub, nil
 }
 
+// HashWithoutLock returns a types.Hash to be used in process of signing and checking Lock
 func (check *Check) HashWithoutLock() types.Hash {
 	return rlpHash([]interface{}{
 		check.Nonce,
@@ -64,6 +65,7 @@ func (check *Check) HashWithoutLock() types.Hash {
 	})
 }
 
+// Hash returns a types.Hash to be used in process of signing a Check by sender
 func (check *Check) Hash() types.Hash {
 	return rlpHash([]interface{}{
 		check.Nonce,
@@ -76,6 +78,7 @@ func (check *Check) Hash() types.Hash {
 	})
 }
 
+// Sign signs the check with given private key, returns error
 func (check *Check) Sign(prv *ecdsa.PrivateKey) error {
 	h := check.Hash()
 	sig, err := crypto.Sign(h[:], prv)
@@ -83,12 +86,12 @@ func (check *Check) Sign(prv *ecdsa.PrivateKey) error {
 		return err
 	}
 
-	check.SetSignature(sig)
+	check.setSignature(sig)
 
 	return nil
 }
 
-func (check *Check) SetSignature(sig []byte) {
+func (check *Check) setSignature(sig []byte) {
 	check.R = new(big.Int).SetBytes(sig[:32])
 	check.S = new(big.Int).SetBytes(sig[32:64])
 	check.V = new(big.Int).SetBytes([]byte{sig[64] + 27})
@@ -101,6 +104,7 @@ func (check *Check) String() string {
 		check.DueBlock, check.Value.String(), check.Coin.String())
 }
 
+// DecodeFromBytes decodes check from bytes
 func DecodeFromBytes(buf []byte) (*Check, error) {
 	var check Check
 	err := rlp.Decode(bytes.NewReader(buf), &check)
@@ -116,7 +120,7 @@ func DecodeFromBytes(buf []byte) (*Check, error) {
 }
 
 func rlpHash(x interface{}) (h types.Hash) {
-	hw := sha3.NewKeccak256()
+	hw := sha3.NewLegacyKeccak256()
 	err := rlp.Encode(hw, x)
 	if err != nil {
 		panic(err)

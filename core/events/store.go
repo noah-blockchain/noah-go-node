@@ -7,6 +7,7 @@ import (
 	"sync"
 )
 
+// IEventsDB is an interface of Events
 type IEventsDB interface {
 	AddEvent(height uint32, event Event)
 	LoadEvents(height uint32) Events
@@ -18,8 +19,8 @@ type eventsStore struct {
 	sync.RWMutex
 	db        db.DB
 	pending   pendingEvents
-	idPubKey  map[uint16]string
-	pubKeyID  map[string]uint16
+	idPubKey  map[uint16][32]byte
+	pubKeyID  map[[32]byte]uint16
 	idAddress map[uint32][20]byte
 	addressID map[[20]byte]uint32
 }
@@ -30,6 +31,7 @@ type pendingEvents struct {
 	items  Events
 }
 
+// NewEventsStore creates new events store in given DB
 func NewEventsStore(db db.DB) IEventsDB {
 	codec := amino.NewCodec()
 	codec.RegisterInterface((*Event)(nil), nil)
@@ -37,20 +39,21 @@ func NewEventsStore(db db.DB) IEventsDB {
 	codec.RegisterConcrete(&reward{}, "reward", nil)
 	codec.RegisterConcrete(&slash{}, "slash", nil)
 	codec.RegisterConcrete(&unbond{}, "unbond", nil)
+	codec.RegisterConcrete(&stakeKick{}, "stakeKick", nil)
 
 	return &eventsStore{
 		cdc:       codec,
 		RWMutex:   sync.RWMutex{},
 		db:        db,
 		pending:   pendingEvents{},
-		idPubKey:  make(map[uint16]string),
-		pubKeyID:  make(map[string]uint16),
+		idPubKey:  make(map[uint16][32]byte),
+		pubKeyID:  make(map[[32]byte]uint16),
 		idAddress: make(map[uint32][20]byte),
 		addressID: make(map[[20]byte]uint32),
 	}
 }
 
-func (store *eventsStore) cachePubKey(id uint16, key string) {
+func (store *eventsStore) cachePubKey(id uint16, key [32]byte) {
 	store.idPubKey[id] = key
 	store.pubKeyID[key] = id
 }
@@ -115,7 +118,7 @@ func (store *eventsStore) CommitEvents() error {
 	store.Lock()
 	defer store.Unlock()
 	if err := store.db.Set(uint32ToBytes(store.pending.height), bytes); err != nil {
-		panic(err)
+		return err
 	}
 	return nil
 }
@@ -154,7 +157,7 @@ func (store *eventsStore) saveAddress(address [20]byte) uint32 {
 
 func (store *eventsStore) savePubKey(validatorPubKey [32]byte) uint16 {
 
-	key := string(validatorPubKey[:])
+	key := validatorPubKey
 	if id, ok := store.pubKeyID[key]; ok {
 		return id
 	}
@@ -174,11 +177,13 @@ func (store *eventsStore) savePubKey(validatorPubKey [32]byte) uint16 {
 func (store *eventsStore) loadPubKeys() {
 	if count, _ := store.db.Get([]byte(pubKeysCountKey)); len(count) > 0 {
 		for id := uint16(0); id < binary.BigEndian.Uint16(count); id++ {
-			pubKey, err := store.db.Get(append([]byte(pubKeyPrefix), uint16ToBytes(id)...))
+			key, err := store.db.Get(append([]byte(pubKeyPrefix), uint16ToBytes(id)...))
 			if err != nil {
 				panic(err)
 			}
-			store.cachePubKey(id, string(pubKey))
+			var pubKey [32]byte
+			copy(pubKey[:], key)
+			store.cachePubKey(id, pubKey)
 		}
 	}
 }
