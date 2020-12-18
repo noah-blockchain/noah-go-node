@@ -138,7 +138,7 @@ type Response struct {
 	Log    string      `json:"log,omitempty"`
 }
 
-func GetStateForHeight(height int) (*state.State, error) {
+func GetStateForHeight(height int) (*state.CheckState, error) {
 	if height > 0 {
 		cState, err := blockchain.GetStateForHeight(uint64(height))
 
@@ -146,30 +146,4 @@ func GetStateForHeight(height int) (*state.State, error) {
 	}
 
 	return blockchain.CurrentState(), nil
-}
-
-// RegisterAmino registers all crypto related types in the given (amino) codec.
-func RegisterCryptoAmino(cdc *amino.Codec) {
-	// These are all written here instead of
-	cdc.RegisterInterface((*crypto.PubKey)(nil), nil)
-	cdc.RegisterConcrete(ed25519.PubKeyEd25519{},
-		ed25519.PubKeyAminoName, nil)
-	cdc.RegisterConcrete(secp256k1.PubKeySecp256k1{},
-		secp256k1.PubKeyAminoName, nil)
-	cdc.RegisterConcrete(multisig.PubKeyMultisigThreshold{},
-		multisig.PubKeyMultisigThresholdAminoRoute, nil)
-
-	cdc.RegisterInterface((*crypto.PrivKey)(nil), nil)
-	cdc.RegisterConcrete(ed25519.PrivKeyEd25519{},
-		ed25519.PrivKeyAminoName, nil)
-	cdc.RegisterConcrete(secp256k1.PrivKeySecp256k1{},
-		secp256k1.PrivKeyAminoName, nil)
-}
-
-func RegisterEvidenceMessages(cdc *amino.Codec) {
-	cdc.RegisterInterface((*evidence.Message)(nil), nil)
-	cdc.RegisterConcrete(&evidence.ListMessage{},
-		"tendermint/evidence/EvidenceListMessage", nil)
-	cdc.RegisterInterface((*types.Evidence)(nil), nil)
-	cdc.RegisterConcrete(&types.DuplicateVoteEvidence{}, "tendermint/DuplicateVoteEvidence", nil)
 }

@@ -23,17 +23,39 @@ func CoinInfo(coinSymbol string, height int) (*CoinInfoResponse, error) {
 	cState.RLock()
 	defer cState.RUnlock()
 
-	coin := cState.Coins.GetCoin(types.StrToCoinSymbol(coinSymbol))
-	if coin == nil {
+	if coinSymbol == nil && id == nil {
 		return nil, rpctypes.RPCError{Code: 404, Message: "Coin not found"}
 	}
 
+	if coinSymbol != nil {
+		coin = cState.Coins().GetCoinBySymbol(types.StrToCoinBaseSymbol(*coinSymbol), types.GetVersionFromSymbol(*coinSymbol))
+		if coin == nil {
+			return nil, rpctypes.RPCError{Code: 404, Message: "Coin not found"}
+		}
+	}
+
+	if id != nil {
+		coin = cState.Coins().GetCoin(types.CoinID(*id))
+		if coin == nil {
+			return nil, rpctypes.RPCError{Code: 404, Message: "Coin not found"}
+		}
+	}
+
+	var ownerAddress *string
+	info := cState.Coins().GetSymbolInfo(coin.Symbol())
+	if info != nil && info.OwnerAddress() != nil {
+		owner := info.OwnerAddress().String()
+		ownerAddress = &owner
+	}
+
 	return &CoinInfoResponse{
+		ID:             coin.ID().Uint32(),
 		Name:           coin.Name(),
-		Symbol:         coin.Symbol().String(),
+		Symbol:         coin.GetFullSymbol(),
 		Volume:         coin.Volume().String(),
 		Crr:            coin.Crr(),
 		ReserveBalance: coin.Reserve().String(),
 		MaxSupply:      coin.MaxSupply().String(),
+		OwnerAddress:   ownerAddress,
 	}, nil
 }
