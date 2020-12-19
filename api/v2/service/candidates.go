@@ -7,17 +7,18 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Service) Candidates(_ context.Context, req *pb.CandidatesRequest) (*pb.CandidatesResponse, error) {
-	cState, err := s.getStateForHeight(req.Height)
+// Candidates returns list of candidates.
+func (s *Service) Candidates(ctx context.Context, req *pb.CandidatesRequest) (*pb.CandidatesResponse, error) {
+	cState, err := s.blockchain.GetStateForHeight(req.Height)
 	if err != nil {
-		return new(pb.CandidatesResponse), status.Error(codes.NotFound, err.Error())
+		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
 	if req.Height != 0 {
 		cState.Lock()
-		cState.Candidates.LoadCandidates()
+		cState.Candidates().LoadCandidates()
 		if req.IncludeStakes {
-			cState.Candidates.LoadStakes()
+			cState.Candidates().LoadStakes()
 		}
 		cState.Unlock()
 	}

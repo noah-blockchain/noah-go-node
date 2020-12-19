@@ -43,14 +43,8 @@ func (s *Service) createError(statusErr *status.Status, data string) error {
 		return statusErr.Err()
 	}
 
-	var bb bytes.Buffer
-	if _, err := bb.Write([]byte(data)); err != nil {
-		s.client.Logger.Error(err.Error())
-		return statusErr.Err()
-	}
-
-	detailsMap := &_struct.Struct{Fields: make(map[string]*_struct.Value)}
-	if err := (&jsonpb.Unmarshaler{}).Unmarshal(&bb, detailsMap); err != nil {
+	detailsMap, err := encodeToStruct([]byte(data))
+	if err != nil {
 		s.client.Logger.Error(err.Error())
 		return statusErr.Err()
 	}
@@ -62,4 +56,13 @@ func (s *Service) createError(statusErr *status.Status, data string) error {
 	}
 
 	return withDetails.Err()
+}
+
+func (s *Service) checkTimeout(ctx context.Context) *status.Status {
+	select {
+	case <-ctx.Done():
+		return status.FromContextError(ctx.Err())
+	default:
+		return nil
+	}
 }
