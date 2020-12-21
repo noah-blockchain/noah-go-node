@@ -5,8 +5,19 @@ import (
 )
 
 type AddressResponse struct {
-	Balance          map[string]string `json:"balance"`
-	TransactionCount uint64            `json:"transaction_count"`
+	Balance          []BalanceItem `json:"balances"`
+	TransactionCount uint64        `json:"transaction_count"`
+}
+
+type BalanceItem struct {
+	CoinID uint32 `json:"coin_id"`
+	Symbol string `json:"symbol"`
+	Value  string `json:"value"`
+}
+
+type Coin struct {
+	ID     uint32 `json:"id"`
+	Symbol string `json:"symbol"`
 }
 
 func Address(address types.Address, height int) (*AddressResponse, error) {

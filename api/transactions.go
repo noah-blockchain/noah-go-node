@@ -2,9 +2,9 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
+
 	"github.com/noah-blockchain/noah-go-node/core/transaction"
-	"github.com/tendermint/tendermint/libs/bytes"
+	"github.com/noah-blockchain/noah-go-node/core/transaction/encoder"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
 )
 

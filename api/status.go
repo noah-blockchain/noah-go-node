@@ -27,9 +27,9 @@ func Status() (*StatusResponse, error) {
 		NoahVersion:     version.Version,
 		LatestBlockHash:   fmt.Sprintf("%X", result.SyncInfo.LatestBlockHash),
 		LatestAppHash:     fmt.Sprintf("%X", result.SyncInfo.LatestAppHash),
+		KeepLastStates:    noahCfg.BaseConfig.KeepLastStates,
 		LatestBlockHeight: result.SyncInfo.LatestBlockHeight,
 		LatestBlockTime:   result.SyncInfo.LatestBlockTime,
-		KeepLastStates:    noahCfg.BaseConfig.KeepLastStates,
 		TmStatus:          result,
 	}, nil
 }

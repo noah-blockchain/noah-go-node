@@ -2,21 +2,14 @@ package api
 
 import (
 	"fmt"
-	eventsdb "github.com/noah-blockchain/explorer-events-db"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/noah"
 	"github.com/noah-blockchain/noah-go-node/core/state"
 	"github.com/noah-blockchain/noah-go-node/rpc/lib/server"
 	"github.com/rs/cors"
 	"github.com/tendermint/go-amino"
-	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/tendermint/tendermint/crypto/multisig"
-	"github.com/tendermint/tendermint/crypto/secp256k1"
-	"github.com/tendermint/tendermint/evidence"
 	"github.com/tendermint/tendermint/libs/log"
-	rpc "github.com/tendermint/tendermint/rpc/client"
-	"github.com/tendermint/tendermint/types"
+	rpc "github.com/tendermint/tendermint/rpc/client/local"
 	"net/http"
 	"net/url"
 	"strings"
@@ -27,14 +20,14 @@ var (
 	cdc        = amino.NewCodec()
 	blockchain *noah.Blockchain
 	client     *rpc.Local
-	noahCfg    *config.Config
+	noahCfg  *config.Config
 )
 
 var Routes = map[string]*rpcserver.RPCFunc{
 	"status":                 rpcserver.NewRPCFunc(Status, ""),
 	"candidates":             rpcserver.NewRPCFunc(Candidates, "height,include_stakes"),
 	"candidate":              rpcserver.NewRPCFunc(Candidate, "pub_key,height"),
-	"validators":             rpcserver.NewRPCFunc(Validators, "height,page,perPage"),
+	"validators":             rpcserver.NewRPCFunc(Validators, "height"),
 	"address":                rpcserver.NewRPCFunc(Address, "address,height"),
 	"addresses":              rpcserver.NewRPCFunc(Addresses, "addresses,height"),
 	"send_transaction":       rpcserver.NewRPCFunc(SendTransaction, "tx"),
@@ -43,9 +36,9 @@ var Routes = map[string]*rpcserver.RPCFunc{
 	"block":                  rpcserver.NewRPCFunc(Block, "height"),
 	"events":                 rpcserver.NewRPCFunc(Events, "height"),
 	"net_info":               rpcserver.NewRPCFunc(NetInfo, ""),
-	"coin_info":              rpcserver.NewRPCFunc(CoinInfo, "symbol,height"),
+	"coin_info":              rpcserver.NewRPCFunc(CoinInfo, "symbol,id,height"),
 	"estimate_coin_sell":     rpcserver.NewRPCFunc(EstimateCoinSell, "coin_to_sell,coin_to_buy,value_to_sell,height"),
-	"estimate_coin_sell_all": rpcserver.NewRPCFunc(EstimateCoinSellAll, "coin_to_sell,coin_to_buy,value_to_sell,gas_price,height"),
+	"estimate_coin_sell_all": rpcserver.NewRPCFunc(EstimateCoinSellAll, "coin_to_sell,coin_to_buy,value_to_sell,height"),
 	"estimate_coin_buy":      rpcserver.NewRPCFunc(EstimateCoinBuy, "coin_to_sell,coin_to_buy,value_to_buy,height"),
 	"estimate_tx_commission": rpcserver.NewRPCFunc(EstimateTxCommission, "tx,height"),
 	"unconfirmed_txs":        rpcserver.NewRPCFunc(UnconfirmedTxs, "limit"),
@@ -53,6 +46,7 @@ var Routes = map[string]*rpcserver.RPCFunc{
 	"min_gas_price":          rpcserver.NewRPCFunc(MinGasPrice, ""),
 	"genesis":                rpcserver.NewRPCFunc(Genesis, ""),
 	"missed_blocks":          rpcserver.NewRPCFunc(MissedBlocks, "pub_key,height"),
+	"waitlist":               rpcserver.NewRPCFunc(Waitlist, "pub_key,address,height"),
 }
 
 func responseTime(b *noah.Blockchain) func(f func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
@@ -60,17 +54,15 @@ func responseTime(b *noah.Blockchain) func(f func(http.ResponseWriter, *http.Req
 		return func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
 			f(w, r)
-			go b.StatisticData().SetApiTime(time.Now().Sub(start), r.URL.Path)
+			go b.StatisticData().SetApiTime(time.Since(start), r.URL.Path)
 		}
 	}
 }
 
-func RunAPI(b *noah.Blockchain, tmRPC *rpc.Local, cfg *config.Config, logger log.Logger) {
+// RunAPI start
+func RunAPI(codec *amino.Codec, b *noah.Blockchain, tmRPC *rpc.Local, cfg *config.Config, logger log.Logger) {
+	cdc = codec
 	noahCfg = cfg
-	RegisterCryptoAmino(cdc)
-	eventsdb.RegisterAminoEvents(cdc)
-	RegisterEvidenceMessages(cdc)
-
 	client = tmRPC
 	blockchain = b
 	waitForTendermint()

@@ -1,20 +1,25 @@
 package api
 
 import (
+	"github.com/noah-blockchain/noah-go-node/core/state/coins"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/rpc/lib/types"
 )
 
 type CoinInfoResponse struct {
-	Name           string `json:"name"`
-	Symbol         string `json:"symbol"`
-	Volume         string `json:"volume"`
-	Crr            uint   `json:"crr"`
-	ReserveBalance string `json:"reserve_balance"`
-	MaxSupply      string `json:"max_supply"`
+	ID             uint32  `json:"id"`
+	Name           string  `json:"name"`
+	Symbol         string  `json:"symbol"`
+	Volume         string  `json:"volume"`
+	Crr            uint32  `json:"crr"`
+	ReserveBalance string  `json:"reserve_balance"`
+	MaxSupply      string  `json:"max_supply"`
+	OwnerAddress   *string `json:"owner_address"`
 }
 
-func CoinInfo(coinSymbol string, height int) (*CoinInfoResponse, error) {
+func CoinInfo(coinSymbol *string, id *int, height int) (*CoinInfoResponse, error) {
+	var coin *coins.Model
+
 	cState, err := GetStateForHeight(height)
 	if err != nil {
 		return nil, err
