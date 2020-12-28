@@ -1,32 +1,29 @@
 package service
 
 import (
-	"bytes"
 	"context"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"github.com/noah-blockchain/noah-go-node/core/transaction"
 	pb "github.com/noah-blockchain/node-grpc-gateway/api_pb"
-	"github.com/golang/protobuf/jsonpb"
-	_struct "github.com/golang/protobuf/ptypes/struct"
-	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"strings"
 )
 
-func (s *Service) Transaction(_ context.Context, req *pb.TransactionRequest) (*pb.TransactionResponse, error) {
+// Transaction returns transaction info.
+func (s *Service) Transaction(ctx context.Context, req *pb.TransactionRequest) (*pb.TransactionResponse, error) {
 	if len(req.Hash) < 3 {
-		return new(pb.TransactionResponse), status.Error(codes.InvalidArgument, "invalid hash")
+		return nil, status.Error(codes.InvalidArgument, "invalid hash")
 	}
 	decodeString, err := hex.DecodeString(req.Hash[2:])
 	if err != nil {
-		return new(pb.TransactionResponse), status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	tx, err := s.client.Tx(decodeString, false)
 	if err != nil {
-		return new(pb.TransactionResponse), status.Error(codes.FailedPrecondition, err.Error())
+		return nil, status.Error(codes.FailedPrecondition, err.Error())
 	}
 
 	decodedTx, _ := transaction.TxDecoder.DecodeFromBytes(tx.Tx)
