@@ -1,18 +1,17 @@
 package service
 
 import (
-	"bytes"
+	"context"
 	"github.com/noah-blockchain/noah-go-node/config"
 	"github.com/noah-blockchain/noah-go-node/core/noah"
-	"github.com/noah-blockchain/noah-go-node/core/state"
-	"github.com/golang/protobuf/jsonpb"
-	_struct "github.com/golang/protobuf/ptypes/struct"
 	"github.com/tendermint/go-amino"
 	tmNode "github.com/tendermint/tendermint/node"
-	rpc "github.com/tendermint/tendermint/rpc/client"
+	rpc "github.com/tendermint/tendermint/rpc/client/local"
 	"google.golang.org/grpc/status"
+	"time"
 )
 
+// Service is gRPC implementation ApiServiceServer
 type Service struct {
 	cdc        *amino.Codec
 	blockchain *noah.Blockchain
@@ -22,20 +21,21 @@ type Service struct {
 	version    string
 }
 
+// NewService create gRPC server implementation
 func NewService(cdc *amino.Codec, blockchain *noah.Blockchain, client *rpc.Local, node *tmNode.Node, noahCfg *config.Config, version string) *Service {
-	return &Service{cdc: cdc, blockchain: blockchain, client: client, noahCfg: noahCfg, version: version, tmNode: node}
+	return &Service{
+		cdc:        cdc,
+		blockchain: blockchain,
+		client:     client,
+		noahCfg:  noahCfg,
+		version:    version,
+		tmNode:     node,
+	}
 }
 
-func (s *Service) getStateForHeight(height int32) (*state.State, error) {
-	if height > 0 {
-		cState, err := s.blockchain.GetStateForHeight(uint64(height))
-		if err != nil {
-			return nil, err
-		}
-		return cState, nil
-	}
-
-	return s.blockchain.CurrentState(), nil
+// TimeoutDuration gRPC
+func (s *Service) TimeoutDuration() time.Duration {
+	return s.noahCfg.APIv2TimeoutDuration
 }
 
 func (s *Service) createError(statusErr *status.Status, data string) error {
