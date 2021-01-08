@@ -92,7 +92,7 @@ func (m *Manager) Dashboard(_ *empty.Empty, stream pb.ManagerService_DashboardSe
 			var stake string
 			if pbValidatorStatus == pb.DashboardResponse_Validating {
 				missedBlocks = validator.AbsentTimes.String()
-				stake = validator.GetTotalBipStake().String()
+				stake = validator.GetTotalNoahStake().String()
 			}
 
 			if err := stream.Send(&pb.DashboardResponse{
