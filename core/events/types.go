@@ -7,26 +7,37 @@ import (
 	"math/big"
 )
 
+// Event type names
+const (
+	TypeRewardEvent    = "noah/RewardEvent"
+	TypeSlashEvent     = "noah/SlashEvent"
+	TypeUnbondEvent    = "noah/UnbondEvent"
+	TypeStakeKickEvent = "noah/StakeKickEvent"
+)
+
 func RegisterAminoEvents(codec *amino.Codec) {
 	codec.RegisterInterface((*Event)(nil), nil)
 	codec.RegisterConcrete(RewardEvent{},
-		"noah/RewardEvent", nil)
+		TypeRewardEvent, nil)
 	codec.RegisterConcrete(SlashEvent{},
-		"noah/SlashEvent", nil)
+		TypeSlashEvent, nil)
 	codec.RegisterConcrete(UnbondEvent{},
-		"noah/UnbondEvent", nil)
+		TypeUnbondEvent, nil)
+	codec.RegisterConcrete(StakeKickEvent{},
+		TypeStakeKickEvent, nil)
 }
 
 type Event interface {
-	address() types.Address
-	validatorPubKey() types.Pubkey
+	Type() string
 	AddressString() string
 	ValidatorPubKeyString() string
+	validatorPubKey() types.Pubkey
+	address() types.Address
 	convert(pubKeyID uint16, addressID uint32) compactEvent
 }
 
 type compactEvent interface {
-	compile(pubKey string, address [20]byte) Event
+	compile(pubKey [32]byte, address [20]byte) Event
 	addressID() uint32
 	pubKeyID() uint16
 }

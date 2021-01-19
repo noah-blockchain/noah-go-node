@@ -7,32 +7,46 @@ import (
 	"fmt"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/crypto"
-	"github.com/noah-blockchain/noah-go-node/crypto/sha3"
 	"github.com/noah-blockchain/noah-go-node/rlp"
+	"golang.org/x/crypto/sha3"
 	"math/big"
 )
 
 var (
+	// ErrInvalidSig represents error on given v, r, s values
 	ErrInvalidSig = errors.New("invalid transaction v, r, s values")
 )
 
+// Check is like an ordinary bank check.
+// Each user of network can issue check with any amount of coins and pass it to another person.
+// Receiver will be able to cash a check from arbitrary account.
+//
+// Nonce - unique "id" of the check.
+// Coin Symbol - symbol of coin.
+// Value - amount of coins.
+// GasCoin - symbol of a coin to pay fee.
+// DueBlock - defines last block height in which the check can be used.
+// Lock - secret to prevent hijacking.
+// V, R, S - signature of issuer.
 type Check struct {
 	Nonce    []byte
 	ChainID  types.ChainID
 	DueBlock uint64
-	Coin     types.CoinSymbol
+	Coin     types.CoinID
 	Value    *big.Int
-	GasCoin  types.CoinSymbol
+	GasCoin  types.CoinID
 	Lock     *big.Int
 	V        *big.Int
 	R        *big.Int
 	S        *big.Int
 }
 
+// Sender returns sender's address of a Check, recovered from signature
 func (check *Check) Sender() (types.Address, error) {
 	return recoverPlain(check.Hash(), check.R, check.S, check.V)
 }
 
+// LockPubKey returns bytes of public key, which is used for proving check's recipient rights
 func (check *Check) LockPubKey() ([]byte, error) {
 	sig := check.Lock.Bytes()
 
