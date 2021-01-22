@@ -2,50 +2,104 @@ package candidates
 
 import (
 	"bytes"
+	"encoding/binary"
 	"fmt"
-	eventsdb "github.com/noah-blockchain/explorer-events-db"
+	eventsdb "github.com/noah-blockchain/noah-go-node/core/events"
 	"github.com/noah-blockchain/noah-go-node/core/state/bus"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/noah-blockchain/noah-go-node/helpers"
 	"github.com/noah-blockchain/noah-go-node/rlp"
 	"github.com/noah-blockchain/noah-go-node/tree"
-	"github.com/noah-blockchain/noah-go-node/upgrades"
+
 	"math/big"
 	"sort"
 	"sync"
 )
 
+// Common constants
 const (
 	CandidateStatusOffline = 0x01
 	CandidateStatusOnline  = 0x02
 
 	UnbondPeriod              = 518400
 	MaxDelegatorsPerCandidate = 1000
+)
 
+const (
 	mainPrefix       = 'c'
+	pubKeyIDPrefix   = mainPrefix + 'p'
+	blockListPrefix  = mainPrefix + 'b'
+	maxIDPrefix      = mainPrefix + 'i'
 	stakesPrefix     = 's'
 	totalStakePrefix = 't'
 	updatesPrefix    = 'u'
 )
 
-type Candidates struct {
-	list map[types.Pubkey]*Candidate
+var (
+	minValidatorNoahStake = helpers.NoahToQNoah(big.NewInt(1000))
+)
 
-	iavl tree.Tree
-	bus  *bus.Bus
-
-	lock   sync.RWMutex
-	loaded bool
+// RCandidates interface represents Candidates state
+type RCandidates interface {
+	Export(state *types.AppState)
+	Exists(pubkey types.Pubkey) bool
+	IsBlockedPubKey(pubkey types.Pubkey) bool
+	PubKey(id uint32) types.Pubkey
+	Count() int
+	IsNewCandidateStakeSufficient(coin types.CoinID, stake *big.Int, limit int) bool
+	IsDelegatorStakeSufficient(address types.Address, pubkey types.Pubkey, coin types.CoinID, amount *big.Int) bool
+	GetStakeValueOfAddress(pubkey types.Pubkey, address types.Address, coin types.CoinID) *big.Int
+	GetCandidateOwner(pubkey types.Pubkey) types.Address
+	GetCandidateControl(pubkey types.Pubkey) types.Address
+	GetTotalStake(pubkey types.Pubkey) *big.Int
+	LoadCandidates()
+	LoadStakesOfCandidate(pubkey types.Pubkey)
+	GetCandidate(pubkey types.Pubkey) *Candidate
+	LoadStakes()
+	GetCandidates() []*Candidate
+	GetStakes(pubkey types.Pubkey) []*stake
 }
 
-func NewCandidates(bus *bus.Bus, iavl tree.Tree) (*Candidates, error) {
-	candidates := &Candidates{iavl: iavl, bus: bus}
+// Candidates struct is a store of Candidates state
+type Candidates struct {
+	list map[uint32]*Candidate
+
+	isDirty   bool
+	blockList map[types.Pubkey]struct{}
+	pubKeyIDs map[types.Pubkey]uint32
+	maxID     uint32
+
+	iavl tree.MTree
+	bus  *bus.Bus
+
+	lock                sync.RWMutex
+	loaded              bool
+	isChangedPublicKeys bool
+}
+
+func (c *Candidates) IsChangedPublicKeys() bool {
+	return c.isChangedPublicKeys
+}
+func (c *Candidates) ResetIsChangedPublicKeys() {
+	c.isChangedPublicKeys = false
+}
+
+// NewCandidates returns newly created Candidates state with a given bus and iavl
+func NewCandidates(bus *bus.Bus, iavl tree.MTree) (*Candidates, error) {
+	candidates := &Candidates{
+		iavl:      iavl,
+		bus:       bus,
+		blockList: map[types.Pubkey]struct{}{},
+		pubKeyIDs: map[types.Pubkey]uint32{},
+		list:      map[uint32]*Candidate{},
+	}
 	candidates.bus.SetCandidates(NewBus(candidates))
 
 	return candidates, nil
 }
 
+// Commit writes changes to iavl, may return an error
 func (c *Candidates) Commit() error {
 	keys := c.getOrderedCandidates()
 
@@ -71,13 +125,48 @@ func (c *Candidates) Commit() error {
 		c.iavl.Set(path, data)
 	}
 
+	if c.isDirty {
+		c.isDirty = false
+		var pubIDs []pubkeyID
+		for pk, v := range c.pubKeyIDs {
+			pubIDs = append(pubIDs, pubkeyID{
+				PubKey: pk,
+				ID:     v,
+			})
+		}
+		sort.SliceStable(pubIDs, func(i, j int) bool {
+			return pubIDs[i].ID < pubIDs[j].ID
+		})
+		pubIDData, err := rlp.EncodeToBytes(pubIDs)
+		if err != nil {
+			panic(fmt.Sprintf("failed to encode candidates public key with ID: %s", err))
+		}
+
+		c.iavl.Set([]byte{pubKeyIDPrefix}, pubIDData)
+
+		var blockList []types.Pubkey
+		for pubKey := range c.blockList {
+			blockList = append(blockList, pubKey)
+		}
+		sort.SliceStable(blockList, func(i, j int) bool {
+			return bytes.Compare(blockList[i].Bytes(), blockList[j].Bytes()) == 1
+		})
+		blockListData, err := rlp.EncodeToBytes(blockList)
+		if err != nil {
+			return fmt.Errorf("can't encode block list of candidates: %v", err)
+		}
+		c.iavl.Set([]byte{blockListPrefix}, blockListData)
+
+		c.iavl.Set([]byte{maxIDPrefix}, c.maxIDBytes())
+	}
+
 	for _, pubkey := range keys {
 		candidate := c.getFromMap(pubkey)
 		candidate.isDirty = false
 
 		if candidate.isTotalStakeDirty {
 			path := []byte{mainPrefix}
-			path = append(path, pubkey[:]...)
+			path = append(path, candidate.idBytes()...)
 			path = append(path, totalStakePrefix)
 			c.iavl.Set(path, candidate.totalNoahStake.Bytes())
 			candidate.isTotalStakeDirty = false
@@ -91,7 +180,7 @@ func (c *Candidates) Commit() error {
 			candidate.dirtyStakes[index] = false
 
 			path := []byte{mainPrefix}
-			path = append(path, pubkey[:]...)
+			path = append(path, candidate.idBytes()...)
 			path = append(path, stakesPrefix)
 			path = append(path, []byte(fmt.Sprintf("%d", index))...)
 
@@ -116,7 +205,7 @@ func (c *Candidates) Commit() error {
 			}
 
 			path := []byte{mainPrefix}
-			path = append(path, pubkey[:]...)
+			path = append(path, candidate.idBytes()...)
 			path = append(path, updatesPrefix)
 			c.iavl.Set(path, data)
 			candidate.isUpdatesDirty = false
@@ -126,6 +215,9 @@ func (c *Candidates) Commit() error {
 	return nil
 }
 
+// GetNewCandidates returns list of candidates that can be the new validators
+// Skips offline candidates and candidates with stake less than minValidatorNoahStake
+// Result is sorted by candidates stakes and limited to valCount
 func (c *Candidates) GetNewCandidates(valCount int) []Candidate {
 	var result []Candidate
 
@@ -135,7 +227,7 @@ func (c *Candidates) GetNewCandidates(valCount int) []Candidate {
 			continue
 		}
 
-		if candidate.totalNoahStake.Cmp(big.NewInt(0)) == 0 {
+		if candidate.totalNoahStake.Cmp(minValidatorNoahStake) == -1 {
 			continue
 		}
 
@@ -153,15 +245,18 @@ func (c *Candidates) GetNewCandidates(valCount int) []Candidate {
 	return result
 }
 
-func (c *Candidates) Create(ownerAddress types.Address, rewardAddress types.Address, pubkey types.Pubkey, commission uint) {
+// Create creates a new candidate with given params and adds it to state
+func (c *Candidates) Create(ownerAddress, rewardAddress, controlAddress types.Address, pubkey types.Pubkey, commission uint32) {
 	candidate := &Candidate{
+		ID:                0,
 		PubKey:            pubkey,
 		RewardAddress:     rewardAddress,
 		OwnerAddress:      ownerAddress,
+		ControlAddress:    controlAddress,
 		Commission:        commission,
 		Status:            CandidateStatusOffline,
-		totalNoahStake:    big.NewInt(0),
-		stakes:            [MaxDelegatorsPerCandidate]*Stake{},
+		totalNoahStake:     big.NewInt(0),
+		stakes:            [MaxDelegatorsPerCandidate]*stake{},
 		isDirty:           true,
 		isTotalStakeDirty: true,
 	}
@@ -170,6 +265,16 @@ func (c *Candidates) Create(ownerAddress types.Address, rewardAddress types.Addr
 	c.setToMap(pubkey, candidate)
 }
 
+// CreateWithID creates a new candidate with given params and adds it to state
+// CreateWithID uses given ID to be associated with public key of a candidate
+func (c *Candidates) CreateWithID(ownerAddress, rewardAddress, controlAddress types.Address, pubkey types.Pubkey, commission uint32, id uint32) {
+	c.setPubKeyID(pubkey, id)
+	c.Create(ownerAddress, rewardAddress, controlAddress, pubkey, commission)
+}
+
+// PunishByzantineCandidate finds candidate with given tmAddress and punishes it:
+// 1. Subs 5% of each stake of a candidate
+// 2. Unbond each stake of a candidate
 func (c *Candidates) PunishByzantineCandidate(height uint64, tmAddress types.TmAddress) {
 	candidate := c.GetCandidateByTendermintAddress(tmAddress)
 	stakes := c.GetStakes(candidate.PubKey)
@@ -186,8 +291,8 @@ func (c *Candidates) PunishByzantineCandidate(height uint64, tmAddress types.TmA
 			coin := c.bus.Coins().GetCoin(stake.Coin)
 			ret := formula.CalculateSaleReturn(coin.Volume, coin.Reserve, coin.Crr, slashed)
 
-			c.bus.Coins().SubCoinVolume(coin.Symbol, slashed)
-			c.bus.Coins().SubCoinReserve(coin.Symbol, ret)
+			c.bus.Coins().SubCoinVolume(coin.ID, slashed)
+			c.bus.Coins().SubCoinReserve(coin.ID, ret)
 
 			c.bus.App().AddTotalSlashed(ret)
 			c.bus.Checker().AddCoin(stake.Coin, big.NewInt(0).Neg(ret))
@@ -196,18 +301,19 @@ func (c *Candidates) PunishByzantineCandidate(height uint64, tmAddress types.TmA
 			c.bus.Checker().AddCoin(stake.Coin, big.NewInt(0).Neg(slashed))
 		}
 
-		c.bus.Events().AddEvent(uint32(height), eventsdb.SlashEvent{
+		c.bus.Events().AddEvent(uint32(height), &eventsdb.SlashEvent{
 			Address:         stake.Owner,
 			Amount:          slashed.String(),
-			Coin:            stake.Coin,
+			Coin:            uint64(stake.Coin),
 			ValidatorPubKey: candidate.PubKey,
 		})
 
-		c.bus.FrozenFunds().AddFrozenFund(height+UnbondPeriod, stake.Owner, candidate.PubKey, stake.Coin, newValue)
+		c.bus.FrozenFunds().AddFrozenFund(height+UnbondPeriod, stake.Owner, candidate.PubKey, candidate.ID, stake.Coin, newValue)
 		stake.setValue(big.NewInt(0))
 	}
 }
 
+// GetCandidateByTendermintAddress finds and returns candidate with given tendermint-address
 func (c *Candidates) GetCandidateByTendermintAddress(address types.TmAddress) *Candidate {
 	candidates := c.GetCandidates()
 	for _, candidate := range candidates {
@@ -219,217 +325,14 @@ func (c *Candidates) GetCandidateByTendermintAddress(address types.TmAddress) *C
 	return nil
 }
 
+// RecalculateStakes recalculate stakes of all candidates:
+// 1. Updates noah-values of each stake
+// 2. Applies updates
 func (c *Candidates) RecalculateStakes(height uint64) {
-	if height >= upgrades.UpgradeBlock3 {
-		c.recalculateStakesNew(height)
-	} else if height >= upgrades.UpgradeBlock2 {
-		c.recalculateStakesOld2(height)
-	} else {
-		c.recalculateStakesOld1(height)
-	}
+	c.recalculateStakes(height)
 }
 
-func (c *Candidates) recalculateStakesOld1(height uint64) {
-	coinsCache := newCoinsCache()
-
-	for _, pubkey := range c.getOrderedCandidates() {
-		candidate := c.getFromMap(pubkey)
-		stakes := c.GetStakes(candidate.PubKey)
-		for _, stake := range stakes {
-			stake.setNoahValue(c.calculateNoahValue(stake.Coin, stake.Value, false, true, coinsCache))
-		}
-
-		// apply updates for existing stakes
-		for _, update := range candidate.updates {
-			stake := c.GetStakeOfAddress(candidate.PubKey, update.Owner, update.Coin)
-			if stake != nil {
-				stake.addValue(update.Value)
-				update.setValue(big.NewInt(0))
-				stake.setNoahValue(c.calculateNoahValue(stake.Coin, stake.Value, false, true, coinsCache))
-			}
-		}
-
-		updates := candidate.GetFilteredUpdates()
-		for _, update := range updates {
-			update.setNoahValue(c.calculateNoahValue(update.Coin, update.Value, false, true, coinsCache))
-		}
-		// Sort updates in descending order
-		sort.SliceStable(updates, func(i, j int) bool {
-			return updates[i].NoahValue.Cmp(updates[j].NoahValue) == 1
-		})
-
-		for _, update := range updates {
-			if candidate.stakesCount < MaxDelegatorsPerCandidate {
-				candidate.SetStakeAtIndex(candidate.stakesCount, update, true)
-				candidate.stakesCount++
-				stakes = c.GetStakes(candidate.PubKey)
-			} else {
-				// find and replace smallest stake
-				index := -1
-				var smallestStake *big.Int
-				for i, stake := range stakes {
-					if stake == nil {
-						index = i
-						smallestStake = big.NewInt(0)
-						break
-					}
-
-					if smallestStake == nil || smallestStake.Cmp(stake.NoahValue) == 1 {
-						smallestStake = big.NewInt(0).Set(stake.NoahValue)
-						index = i
-					}
-				}
-
-				if index == -1 || smallestStake.Cmp(update.NoahValue) == 1 {
-					c.bus.Events().AddEvent(uint32(height), eventsdb.UnbondEvent{
-						Address:         update.Owner,
-						Amount:          update.Value.String(),
-						Coin:            update.Coin,
-						ValidatorPubKey: candidate.PubKey,
-					})
-					c.bus.Accounts().AddBalance(update.Owner, update.Coin, update.Value)
-					c.bus.Checker().AddCoin(update.Coin, big.NewInt(0).Neg(update.Value))
-					update.setValue(big.NewInt(0))
-					continue
-				}
-
-				if stakes[index] != nil {
-					c.bus.Events().AddEvent(uint32(height), eventsdb.UnbondEvent{
-						Address:         stakes[index].Owner,
-						Amount:          stakes[index].Value.String(),
-						Coin:            stakes[index].Coin,
-						ValidatorPubKey: candidate.PubKey,
-					})
-					c.bus.Accounts().AddBalance(stakes[index].Owner, stakes[index].Coin, stakes[index].Value)
-					c.bus.Checker().AddCoin(stakes[index].Coin, big.NewInt(0).Neg(stakes[index].Value))
-				}
-
-				candidate.SetStakeAtIndex(index, update, true)
-				stakes = c.GetStakes(candidate.PubKey)
-			}
-		}
-
-		candidate.clearUpdates()
-
-		totalNoahValue := big.NewInt(0)
-		for _, stake := range c.GetStakes(candidate.PubKey) {
-			if stake == nil {
-				continue
-			}
-			totalNoahValue.Add(totalNoahValue, stake.NoahValue)
-		}
-
-		candidate.setTotalNoahStake(totalNoahValue)
-		candidate.updateStakesCount()
-	}
-}
-
-func (c *Candidates) recalculateStakesOld2(height uint64) {
-	coinsCache := newCoinsCache()
-
-	for _, pubkey := range c.getOrderedCandidates() {
-		candidate := c.getFromMap(pubkey)
-		stakes := c.GetStakes(candidate.PubKey)
-		for _, stake := range stakes {
-			stake.setNoahValue(c.calculateNoahValue(stake.Coin, stake.Value, false, true, coinsCache))
-		}
-
-		// apply updates for existing stakes
-		candidate.FilterUpdates()
-		for _, update := range candidate.updates {
-			stake := c.GetStakeOfAddress(candidate.PubKey, update.Owner, update.Coin)
-			if stake != nil {
-				stake.addValue(update.Value)
-				update.setValue(big.NewInt(0))
-				stake.setNoahValue(c.calculateNoahValue(stake.Coin, stake.Value, false, true, coinsCache))
-			}
-		}
-
-		candidate.FilterUpdates()
-		for _, update := range candidate.updates {
-			update.setNoahValue(c.calculateNoahValue(update.Coin, update.Value, false, true, coinsCache))
-		}
-
-		for _, update := range candidate.updates {
-			// find and replace smallest stake
-			index := -1
-			var smallestStake *big.Int
-
-			if len(stakes) == 0 {
-				index = 0
-				smallestStake = big.NewInt(0)
-			} else if len(stakes) < MaxDelegatorsPerCandidate {
-				for i, stake := range stakes {
-					if stake == nil {
-						index = i
-						break
-					}
-				}
-
-				if index == -1 {
-					index = len(stakes)
-				}
-
-				smallestStake = big.NewInt(0)
-			} else {
-				for i, stake := range stakes {
-					if stake == nil {
-						index = i
-						smallestStake = big.NewInt(0)
-						break
-					}
-
-					if smallestStake == nil || smallestStake.Cmp(stake.NoahValue) == 1 {
-						smallestStake = big.NewInt(0).Set(stake.NoahValue)
-						index = i
-					}
-				}
-			}
-
-			if index == -1 || smallestStake.Cmp(update.NoahValue) == 1 {
-				c.bus.Events().AddEvent(uint32(height), eventsdb.UnbondEvent{
-					Address:         update.Owner,
-					Amount:          update.Value.String(),
-					Coin:            update.Coin,
-					ValidatorPubKey: candidate.PubKey,
-				})
-				c.bus.Accounts().AddBalance(update.Owner, update.Coin, update.Value)
-				c.bus.Checker().AddCoin(update.Coin, big.NewInt(0).Neg(update.Value))
-				update.setValue(big.NewInt(0))
-				continue
-			}
-
-			if len(stakes) > index && stakes[index] != nil {
-				c.bus.Events().AddEvent(uint32(height), eventsdb.UnbondEvent{
-					Address:         stakes[index].Owner,
-					Amount:          stakes[index].Value.String(),
-					Coin:            stakes[index].Coin,
-					ValidatorPubKey: candidate.PubKey,
-				})
-				c.bus.Accounts().AddBalance(stakes[index].Owner, stakes[index].Coin, stakes[index].Value)
-				c.bus.Checker().AddCoin(stakes[index].Coin, big.NewInt(0).Neg(stakes[index].Value))
-			}
-
-			candidate.SetStakeAtIndex(index, update, true)
-			stakes = c.GetStakes(candidate.PubKey)
-		}
-
-		candidate.clearUpdates()
-
-		totalNoahValue := big.NewInt(0)
-		for _, stake := range c.GetStakes(candidate.PubKey) {
-			if stake == nil {
-				continue
-			}
-			totalNoahValue.Add(totalNoahValue, stake.NoahValue)
-		}
-
-		candidate.setTotalNoahStake(totalNoahValue)
-		candidate.updateStakesCount()
-	}
-}
-
-func (c *Candidates) recalculateStakesNew(height uint64) {
+func (c *Candidates) recalculateStakes(height uint64) {
 	coinsCache := newCoinsCache()
 
 	for _, pubkey := range c.getOrderedCandidates() {
@@ -452,7 +355,7 @@ func (c *Candidates) recalculateStakesNew(height uint64) {
 			}
 		}
 
-		candidate.FilterUpdates()
+		candidate.filterUpdates()
 		for _, update := range candidate.updates {
 			update.setNoahValue(c.calculateNoahValue(update.Coin, update.Value, false, true, coinsCache))
 		}
@@ -476,30 +379,16 @@ func (c *Candidates) recalculateStakesNew(height uint64) {
 			}
 
 			if smallestStake.Cmp(update.NoahValue) == 1 {
-				c.bus.Events().AddEvent(uint32(height), eventsdb.UnbondEvent{
-					Address:         update.Owner,
-					Amount:          update.Value.String(),
-					Coin:            update.Coin,
-					ValidatorPubKey: candidate.PubKey,
-				})
-				c.bus.Accounts().AddBalance(update.Owner, update.Coin, update.Value)
-				c.bus.Checker().AddCoin(update.Coin, big.NewInt(0).Neg(update.Value))
+				c.stakeKick(update.Owner, update.Value, update.Coin, candidate.PubKey, height)
 				update.setValue(big.NewInt(0))
 				continue
 			}
 
 			if stakes[index] != nil {
-				c.bus.Events().AddEvent(uint32(height), eventsdb.UnbondEvent{
-					Address:         stakes[index].Owner,
-					Amount:          stakes[index].Value.String(),
-					Coin:            stakes[index].Coin,
-					ValidatorPubKey: candidate.PubKey,
-				})
-				c.bus.Accounts().AddBalance(stakes[index].Owner, stakes[index].Coin, stakes[index].Value)
-				c.bus.Checker().AddCoin(stakes[index].Coin, big.NewInt(0).Neg(stakes[index].Value))
+				c.stakeKick(stakes[index].Owner, stakes[index].Value, stakes[index].Coin, candidate.PubKey, height)
 			}
 
-			candidate.SetStakeAtIndex(index, update, true)
+			candidate.setStakeAtIndex(index, update, true)
 		}
 
 		candidate.clearUpdates()
@@ -516,15 +405,44 @@ func (c *Candidates) recalculateStakesNew(height uint64) {
 	}
 }
 
+func (c *Candidates) stakeKick(owner types.Address, value *big.Int, coin types.CoinID, pubKey types.Pubkey, height uint64) {
+	c.bus.WaitList().AddToWaitList(owner, pubKey, coin, value)
+	c.bus.Events().AddEvent(uint32(height), &eventsdb.StakeKickEvent{
+		Address:         owner,
+		Amount:          value.String(),
+		Coin:            uint64(coin),
+		ValidatorPubKey: pubKey,
+	})
+	c.bus.Checker().AddCoin(coin, big.NewInt(0).Neg(value))
+}
+
+// Exists returns wherever a candidate with given public key exists
 func (c *Candidates) Exists(pubkey types.Pubkey) bool {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 
-	_, exists := c.list[pubkey]
+	return c.existPubKey(pubkey)
+}
 
+func (c *Candidates) existPubKey(pubKey types.Pubkey) bool {
+	_, exists := c.pubKeyIDs[pubKey]
 	return exists
 }
 
+// IsBlockedPubKey returns if given public key is blacklisted
+func (c *Candidates) IsBlockedPubKey(pubkey types.Pubkey) bool {
+	return c.isBlocked(pubkey)
+}
+
+func (c *Candidates) isBlocked(pubKey types.Pubkey) bool {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	_, exists := c.blockList[pubKey]
+	return exists
+}
+
+// Count returns current amount of candidates
 func (c *Candidates) Count() int {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
@@ -532,11 +450,12 @@ func (c *Candidates) Count() int {
 	return len(c.list)
 }
 
-func (c *Candidates) IsNewCandidateStakeSufficient(coin types.CoinSymbol, stake *big.Int, limit int) bool {
+// IsNewCandidateStakeSufficient determines if given stake is sufficient to create new candidate
+func (c *Candidates) IsNewCandidateStakeSufficient(coin types.CoinID, stake *big.Int, limit int) bool {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 
-	NoahValue := c.calculateNoahValue(coin, stake, true, true, nil)
+	noahValue := c.calculateNoahValue(coin, stake, true, true, nil)
 	var stakes []*big.Int
 
 	for _, candidate := range c.list {
@@ -548,7 +467,7 @@ func (c *Candidates) IsNewCandidateStakeSufficient(coin types.CoinSymbol, stake 
 	})
 
 	for _, stake := range stakes[:limit] {
-		if stake.Cmp(NoahValue) == -1 {
+		if stake.Cmp(noahValue) == -1 {
 			return true
 		}
 	}
@@ -556,11 +475,13 @@ func (c *Candidates) IsNewCandidateStakeSufficient(coin types.CoinSymbol, stake 
 	return false
 }
 
+// GetCandidate returns candidate by a public key
 func (c *Candidates) GetCandidate(pubkey types.Pubkey) *Candidate {
 	return c.getFromMap(pubkey)
 }
 
-func (c *Candidates) IsDelegatorStakeSufficient(address types.Address, pubkey types.Pubkey, coin types.CoinSymbol, amount *big.Int) bool {
+// IsDelegatorStakeSufficient determines if given stake is sufficient to add it to a candidate
+func (c *Candidates) IsDelegatorStakeSufficient(address types.Address, pubkey types.Pubkey, coin types.CoinID, amount *big.Int) bool {
 	stakes := c.GetStakes(pubkey)
 	if len(stakes) < MaxDelegatorsPerCandidate {
 		return true
@@ -576,40 +497,44 @@ func (c *Candidates) IsDelegatorStakeSufficient(address types.Address, pubkey ty
 	return false
 }
 
-func (c *Candidates) Delegate(address types.Address, pubkey types.Pubkey, coin types.CoinSymbol, value *big.Int, NoahValue *big.Int) {
-	stake := &Stake{
-		Owner:     address,
-		Coin:      coin,
-		Value:     big.NewInt(0).Set(value),
-		NoahValue: big.NewInt(0).Set(NoahValue),
-	}
-
+// Delegate adds a stake to a candidate
+func (c *Candidates) Delegate(address types.Address, pubkey types.Pubkey, coin types.CoinID, value *big.Int, noahValue *big.Int) {
 	candidate := c.GetCandidate(pubkey)
-	candidate.addUpdate(stake)
+	candidate.addUpdate(&stake{
+		Owner:    address,
+		Coin:     coin,
+		Value:    big.NewInt(0).Set(value),
+		NoahValue: big.NewInt(0).Set(noahValue),
+	})
 
 	c.bus.Checker().AddCoin(coin, value)
 }
 
-func (c *Candidates) Edit(pubkey types.Pubkey, rewardAddress types.Address, ownerAddress types.Address) {
+// Edit edits a candidate
+func (c *Candidates) Edit(pubkey types.Pubkey, rewardAddress types.Address, ownerAddress types.Address, controlAddress types.Address) {
 	candidate := c.getFromMap(pubkey)
 	candidate.setOwner(ownerAddress)
 	candidate.setReward(rewardAddress)
+	candidate.setControl(controlAddress)
 }
 
+// SetOnline sets candidate status to CandidateStatusOnline
 func (c *Candidates) SetOnline(pubkey types.Pubkey) {
 	c.getFromMap(pubkey).setStatus(CandidateStatusOnline)
 }
 
+// SetOffline sets candidate status to CandidateStatusOffline
 func (c *Candidates) SetOffline(pubkey types.Pubkey) {
 	c.getFromMap(pubkey).setStatus(CandidateStatusOffline)
 }
 
-func (c *Candidates) SubStake(address types.Address, pubkey types.Pubkey, coin types.CoinSymbol, value *big.Int) {
-	stake := c.GetStakeOfAddress(pubkey, address, coin)
-	stake.subValue(value)
+// SubStake subs given value from delegator's stake
+func (c *Candidates) SubStake(address types.Address, pubkey types.Pubkey, coin types.CoinID, value *big.Int) {
+	c.GetStakeOfAddress(pubkey, address, coin).subValue(value)
 	c.bus.Checker().AddCoin(coin, big.NewInt(0).Neg(value))
 }
 
+// GetCandidates returns a list of all candidates
 func (c *Candidates) GetCandidates() []*Candidate {
 	var candidates []*Candidate
 	for _, pubkey := range c.getOrderedCandidates() {
@@ -619,11 +544,12 @@ func (c *Candidates) GetCandidates() []*Candidate {
 	return candidates
 }
 
+// GetTotalStake calculates and returns total stake of a candidate
 func (c *Candidates) GetTotalStake(pubkey types.Pubkey) *big.Int {
 	candidate := c.getFromMap(pubkey)
 	if candidate.totalNoahStake == nil {
 		path := []byte{mainPrefix}
-		path = append(path, pubkey[:]...)
+		path = append(path, candidate.idBytes()...)
 		path = append(path, totalStakePrefix)
 		_, enc := c.iavl.Get(path)
 		if len(enc) == 0 {
@@ -637,10 +563,11 @@ func (c *Candidates) GetTotalStake(pubkey types.Pubkey) *big.Int {
 	return candidate.totalNoahStake
 }
 
-func (c *Candidates) GetStakes(pubkey types.Pubkey) []*Stake {
+// GetStakes returns list of stakes of candidate with given public key
+func (c *Candidates) GetStakes(pubkey types.Pubkey) []*stake {
 	candidate := c.GetCandidate(pubkey)
 
-	var stakes []*Stake
+	var stakes []*stake
 	for i := 0; i < MaxDelegatorsPerCandidate; i++ {
 		stake := candidate.stakes[i]
 		if stake == nil {
@@ -652,11 +579,8 @@ func (c *Candidates) GetStakes(pubkey types.Pubkey) []*Stake {
 	return stakes
 }
 
-func (c *Candidates) StakesCount(pubkey types.Pubkey) int {
-	return c.GetCandidate(pubkey).stakesCount
-}
-
-func (c *Candidates) GetStakeOfAddress(pubkey types.Pubkey, address types.Address, coin types.CoinSymbol) *Stake {
+// GetStakeOfAddress returns stake of address in given candidate and in given coin
+func (c *Candidates) GetStakeOfAddress(pubkey types.Pubkey, address types.Address, coin types.CoinID) *stake {
 	candidate := c.GetCandidate(pubkey)
 	for _, stake := range candidate.stakes {
 		if stake == nil {
@@ -671,7 +595,8 @@ func (c *Candidates) GetStakeOfAddress(pubkey types.Pubkey, address types.Addres
 	return nil
 }
 
-func (c *Candidates) GetStakeValueOfAddress(pubkey types.Pubkey, address types.Address, coin types.CoinSymbol) *big.Int {
+// GetStakeValueOfAddress returns stake VALUE of address in given candidate and in given coin
+func (c *Candidates) GetStakeValueOfAddress(pubkey types.Pubkey, address types.Address, coin types.CoinID) *big.Int {
 	stake := c.GetStakeOfAddress(pubkey, address, coin)
 	if stake == nil {
 		return nil
@@ -680,97 +605,172 @@ func (c *Candidates) GetStakeValueOfAddress(pubkey types.Pubkey, address types.A
 	return stake.Value
 }
 
+// GetCandidateOwner returns candidate's owner address
 func (c *Candidates) GetCandidateOwner(pubkey types.Pubkey) types.Address {
 	return c.getFromMap(pubkey).OwnerAddress
 }
 
+// GetCandidateControl returns candidate's control address
+func (c *Candidates) GetCandidateControl(pubkey types.Pubkey) types.Address {
+	return c.getFromMap(pubkey).ControlAddress
+}
+
+// LoadCandidates loads only list of candidates (for read)
 func (c *Candidates) LoadCandidates() {
-	if c.loaded {
+	if c.checkAndSetLoaded() {
 		return
 	}
-	c.loaded = true
+
+	_ = c.loadCandidatesList()
+}
+
+// LoadCandidatesDeliver loads full info about candidates (for edit)
+func (c *Candidates) LoadCandidatesDeliver() {
+	if c.checkAndSetLoaded() {
+		return
+	}
+
+	c.maxID = c.loadCandidatesList()
+
+	_, blockListEnc := c.iavl.Get([]byte{blockListPrefix})
+	if len(blockListEnc) != 0 {
+		var blockList []types.Pubkey
+		if err := rlp.DecodeBytes(blockListEnc, &blockList); err != nil {
+			panic(fmt.Sprintf("failed to decode candidates block list: %s", err))
+		}
+
+		blockListMap := map[types.Pubkey]struct{}{}
+		for _, pubkey := range blockList {
+			blockListMap[pubkey] = struct{}{}
+		}
+		c.setBlockList(blockListMap)
+	}
+
+	_, valueMaxID := c.iavl.Get([]byte{maxIDPrefix})
+	if len(valueMaxID) != 0 {
+		c.maxID = binary.LittleEndian.Uint32(valueMaxID)
+	}
+
+}
+
+func (c *Candidates) loadCandidatesList() (maxID uint32) {
+	_, pubIDenc := c.iavl.Get([]byte{pubKeyIDPrefix})
+	if len(pubIDenc) != 0 {
+		var pubIDs []pubkeyID
+		if err := rlp.DecodeBytes(pubIDenc, &pubIDs); err != nil {
+			panic(fmt.Sprintf("failed to decode candidates: %s", err))
+		}
+
+		pubKeyIDs := map[types.Pubkey]uint32{}
+		for _, v := range pubIDs {
+			pubKeyIDs[v.PubKey] = v.ID
+			if v.ID > maxID {
+				maxID = v.ID
+			}
+		}
+		c.setPubKeyIDs(pubKeyIDs)
+	}
 
 	path := []byte{mainPrefix}
 	_, enc := c.iavl.Get(path)
-	if len(enc) == 0 {
-		c.list = map[types.Pubkey]*Candidate{}
-		return
-	}
-
-	var candidates []*Candidate
-	if err := rlp.DecodeBytes(enc, &candidates); err != nil {
-		panic(fmt.Sprintf("failed to decode candidates: %s", err))
-	}
-
-	c.list = map[types.Pubkey]*Candidate{}
-	for _, candidate := range candidates {
-		// load total stake
-		path = append([]byte{mainPrefix}, candidate.PubKey.Bytes()...)
-		path = append(path, totalStakePrefix)
-		_, enc = c.iavl.Get(path)
-		if len(enc) == 0 {
-			candidate.totalNoahStake = big.NewInt(0)
-		} else {
-			candidate.totalNoahStake = big.NewInt(0).SetBytes(enc)
+	if len(enc) != 0 {
+		var candidates []*Candidate
+		if err := rlp.DecodeBytes(enc, &candidates); err != nil {
+			panic(fmt.Sprintf("failed to decode candidates: %s", err))
 		}
 
-		candidate.setTmAddress()
-		c.setToMap(candidate.PubKey, candidate)
+		for _, candidate := range candidates {
+			// load total stake
+			path = append([]byte{mainPrefix}, candidate.idBytes()...)
+			path = append(path, totalStakePrefix)
+			_, enc = c.iavl.Get(path)
+			if len(enc) == 0 {
+				candidate.totalNoahStake = big.NewInt(0)
+			} else {
+				candidate.totalNoahStake = big.NewInt(0).SetBytes(enc)
+			}
+
+			candidate.setTmAddress()
+			c.setToMap(candidate.PubKey, candidate)
+		}
 	}
+
+	return maxID
 }
 
+func (c *Candidates) checkAndSetLoaded() bool {
+	c.lock.RLock()
+	if c.loaded {
+		c.lock.RUnlock()
+		return true
+	}
+	c.lock.RUnlock()
+	c.lock.Lock()
+	c.loaded = true
+	c.lock.Unlock()
+	return false
+}
+
+// LoadStakes loads all stakes of candidates
 func (c *Candidates) LoadStakes() {
-	for pubkey := range c.list {
+	for pubkey := range c.pubKeyIDs {
 		c.LoadStakesOfCandidate(pubkey)
 	}
 }
 
-func (c *Candidates) calculateNoahValue(coinSymbol types.CoinSymbol, amount *big.Int, includeSelf, includeUpdates bool, coinsCache *coinsCache) *big.Int {
-	if coinSymbol.IsBaseCoin() {
+func (c *Candidates) calculateNoahValue(coinID types.CoinID, amount *big.Int, includeSelf, includeUpdates bool, coinsCache *coinsCache) *big.Int {
+	if coinID.IsBaseCoin() {
 		return big.NewInt(0).Set(amount)
 	}
 
-	totalAmount := big.NewInt(0)
-	if includeSelf {
-		totalAmount.Set(amount)
+	if amount.Cmp(big.NewInt(0)) == 0 {
+		return big.NewInt(0)
 	}
 
-	var totalPower *big.Int
+	coin := c.bus.Coins().GetCoin(coinID)
 
-	if coinsCache.Exists(coinSymbol) {
-		totalPower, totalAmount = coinsCache.Get(coinSymbol)
-	} else {
+	totalDelegatedBasecoin, totalDelegatedValue := big.NewInt(0), big.NewInt(0)
+	if coinsCache.Exists(coinID) {
+		totalDelegatedBasecoin, totalDelegatedValue = coinsCache.Get(coinID)
+	}
+
+	if includeSelf {
+		totalDelegatedValue.Add(totalDelegatedValue, amount)
+	}
+
+	if !coinsCache.Exists(coinID) {
 		candidates := c.GetCandidates()
 		for _, candidate := range candidates {
 			for _, stake := range candidate.stakes {
-				if stake != nil && stake.Coin == coinSymbol {
-					totalAmount.Add(totalAmount, stake.Value)
+				if stake != nil && stake.Coin == coinID {
+					totalDelegatedValue.Add(totalDelegatedValue, stake.Value)
 				}
 			}
 
 			if includeUpdates {
 				for _, update := range candidate.updates {
-					if update.Coin == coinSymbol {
-						totalAmount.Add(totalAmount, update.Value)
+					if update.Coin == coinID {
+						totalDelegatedValue.Add(totalDelegatedValue, update.Value)
 					}
 				}
 			}
 		}
 
-		coin := c.bus.Coins().GetCoin(coinSymbol)
-
-		totalPower = formula.CalculateSaleReturn(coin.Volume, coin.Reserve, coin.Crr, totalAmount)
-		coinsCache.Set(coinSymbol, totalPower, totalAmount)
+		nonLockedSupply := big.NewInt(0).Sub(coin.Volume, totalDelegatedValue)
+		totalDelegatedBasecoin = big.NewInt(0).Sub(coin.Reserve, formula.CalculateSaleReturn(coin.Volume, coin.Reserve, coin.Crr, nonLockedSupply))
+		coinsCache.Set(coinID, totalDelegatedBasecoin, totalDelegatedValue)
 	}
 
-	return big.NewInt(0).Div(big.NewInt(0).Mul(totalPower, amount), totalAmount)
+	return big.NewInt(0).Div(big.NewInt(0).Mul(totalDelegatedBasecoin, amount), totalDelegatedValue)
 }
 
+// Punish punished a candidate with given tendermint-address
+// 1. Subs 1% from each stake
+// 2. Calculate and return new total stake
 func (c *Candidates) Punish(height uint64, address types.TmAddress) *big.Int {
 	totalStake := big.NewInt(0)
 
 	candidate := c.GetCandidateByTendermintAddress(address)
-
 	stakes := c.GetStakes(candidate.PubKey)
 	for _, stake := range stakes {
 		newValue := big.NewInt(0).Set(stake.Value)
@@ -784,8 +784,8 @@ func (c *Candidates) Punish(height uint64, address types.TmAddress) *big.Int {
 			coin := c.bus.Coins().GetCoin(stake.Coin)
 			ret := formula.CalculateSaleReturn(coin.Volume, coin.Reserve, coin.Crr, slashed)
 
-			c.bus.Coins().SubCoinVolume(coin.Symbol, slashed)
-			c.bus.Coins().SubCoinReserve(coin.Symbol, ret)
+			c.bus.Coins().SubCoinVolume(coin.ID, slashed)
+			c.bus.Coins().SubCoinReserve(coin.ID, ret)
 
 			c.bus.App().AddTotalSlashed(ret)
 			c.bus.Checker().AddCoin(stake.Coin, big.NewInt(0).Neg(ret))
@@ -794,10 +794,10 @@ func (c *Candidates) Punish(height uint64, address types.TmAddress) *big.Int {
 			c.bus.Checker().AddCoin(stake.Coin, big.NewInt(0).Neg(slashed))
 		}
 
-		c.bus.Events().AddEvent(uint32(height), eventsdb.SlashEvent{
+		c.bus.Events().AddEvent(uint32(height), &eventsdb.SlashEvent{
 			Address:         stake.Owner,
 			Amount:          slashed.String(),
-			Coin:            stake.Coin,
+			Coin:            uint64(stake.Coin),
 			ValidatorPubKey: candidate.PubKey,
 		})
 
@@ -808,15 +808,16 @@ func (c *Candidates) Punish(height uint64, address types.TmAddress) *big.Int {
 	return totalStake
 }
 
+// SetStakes Sets stakes and updates of a candidate. Used in Import.
 func (c *Candidates) SetStakes(pubkey types.Pubkey, stakes []types.Stake, updates []types.Stake) {
 	candidate := c.GetCandidate(pubkey)
 	candidate.stakesCount = len(stakes)
 
 	for _, u := range updates {
-		candidate.addUpdate(&Stake{
-			Owner:     u.Owner,
-			Coin:      u.Coin,
-			Value:     helpers.StringToBigInt(u.Value),
+		candidate.addUpdate(&stake{
+			Owner:    u.Owner,
+			Coin:     types.CoinID(u.Coin),
+			Value:    helpers.StringToBigInt(u.Value),
 			NoahValue: helpers.StringToBigInt(u.NoahValue),
 		})
 	}
@@ -826,20 +827,20 @@ func (c *Candidates) SetStakes(pubkey types.Pubkey, stakes []types.Stake, update
 		count = MaxDelegatorsPerCandidate
 
 		for _, u := range stakes[1000:] {
-			candidate.addUpdate(&Stake{
-				Owner:     u.Owner,
-				Coin:      u.Coin,
-				Value:     helpers.StringToBigInt(u.Value),
+			candidate.addUpdate(&stake{
+				Owner:    u.Owner,
+				Coin:     types.CoinID(u.Coin),
+				Value:    helpers.StringToBigInt(u.Value),
 				NoahValue: helpers.StringToBigInt(u.NoahValue),
 			})
 		}
 	}
 
 	for i, s := range stakes[:count] {
-		candidate.stakes[i] = &Stake{
-			Owner:     s.Owner,
-			Coin:      s.Coin,
-			Value:     helpers.StringToBigInt(s.Value),
+		candidate.stakes[i] = &stake{
+			Owner:    s.Owner,
+			Coin:     types.CoinID(s.Coin),
+			Value:    helpers.StringToBigInt(s.Value),
 			NoahValue: helpers.StringToBigInt(s.NoahValue),
 			markDirty: func(index int) {
 				candidate.dirtyStakes[index] = true
@@ -851,19 +852,21 @@ func (c *Candidates) SetStakes(pubkey types.Pubkey, stakes []types.Stake, update
 	}
 }
 
+// Export exports all data to the given state
 func (c *Candidates) Export(state *types.AppState) {
-	c.LoadCandidates()
+	c.LoadCandidatesDeliver()
 	c.LoadStakes()
 
 	candidates := c.GetCandidates()
+	state.Candidates = make([]types.Candidate, 0, len(candidates))
 	for _, candidate := range candidates {
 		candidateStakes := c.GetStakes(candidate.PubKey)
 		stakes := make([]types.Stake, len(candidateStakes))
 		for i, s := range candidateStakes {
 			stakes[i] = types.Stake{
-				Owner:     s.Owner,
-				Coin:      s.Coin,
-				Value:     s.Value.String(),
+				Owner:    s.Owner,
+				Coin:     uint64(s.Coin),
+				Value:    s.Value.String(),
 				NoahValue: s.NoahValue.String(),
 			}
 		}
@@ -871,25 +874,33 @@ func (c *Candidates) Export(state *types.AppState) {
 		updates := make([]types.Stake, len(candidate.updates))
 		for i, u := range candidate.updates {
 			updates[i] = types.Stake{
-				Owner:     u.Owner,
-				Coin:      u.Coin,
-				Value:     u.Value.String(),
+				Owner:    u.Owner,
+				Coin:     uint64(u.Coin),
+				Value:    u.Value.String(),
 				NoahValue: u.NoahValue.String(),
 			}
 		}
 
 		state.Candidates = append(state.Candidates, types.Candidate{
+			ID:             uint64(candidate.ID),
 			RewardAddress:  candidate.RewardAddress,
 			OwnerAddress:   candidate.OwnerAddress,
-			TotalNoahStake: candidate.GetTotalNoahStake().String(),
+			ControlAddress: candidate.ControlAddress,
+			totalNoahStake:  candidate.GetTotalNoahStake().String(),
 			PubKey:         candidate.PubKey,
-			Commission:     candidate.Commission,
-			Status:         candidate.Status,
+			Commission:     uint64(candidate.Commission),
+			Status:         uint64(candidate.Status),
 			Updates:        updates,
 			Stakes:         stakes,
 		})
 	}
 
+	for pubkey := range c.blockList {
+		state.BlockListCandidates = append(state.BlockListCandidates, pubkey)
+	}
+	sort.SliceStable(state.BlockListCandidates, func(i, j int) bool {
+		return bytes.Compare(state.BlockListCandidates[i].Bytes(), state.BlockListCandidates[j].Bytes()) == 1
+	})
 }
 
 func (c *Candidates) getOrderedCandidates() []types.Pubkey {
@@ -912,20 +923,42 @@ func (c *Candidates) getFromMap(pubkey types.Pubkey) *Candidate {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 
-	return c.list[pubkey]
+	return c.list[c.id(pubkey)]
 }
 
 func (c *Candidates) setToMap(pubkey types.Pubkey, model *Candidate) {
+	id := model.ID
+	if id == 0 {
+		id = c.getOrNewID(pubkey)
+		model.ID = id
+	}
+
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
-	c.list[pubkey] = model
+	c.list[id] = model
 }
 
+func (c *Candidates) setBlockList(blockList map[types.Pubkey]struct{}) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	c.blockList = blockList
+}
+
+func (c *Candidates) setPubKeyIDs(list map[types.Pubkey]uint32) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	c.pubKeyIDs = list
+}
+
+// SetTotalStake sets candidate's total noah stake. Used in Import.
 func (c *Candidates) SetTotalStake(pubkey types.Pubkey, stake *big.Int) {
 	c.GetCandidate(pubkey).setTotalNoahStake(stake)
 }
 
+// LoadStakesOfCandidate loads stakes of given candidate from disk
 func (c *Candidates) LoadStakesOfCandidate(pubkey types.Pubkey) {
 	candidate := c.GetCandidate(pubkey)
 
@@ -933,7 +966,7 @@ func (c *Candidates) LoadStakesOfCandidate(pubkey types.Pubkey) {
 	stakesCount := 0
 	for index := 0; index < MaxDelegatorsPerCandidate; index++ {
 		path := []byte{mainPrefix}
-		path = append(path, candidate.PubKey.Bytes()...)
+		path = append(path, candidate.idBytes()...)
 		path = append(path, stakesPrefix)
 		path = append(path, []byte(fmt.Sprintf("%d", index))...)
 		_, enc := c.iavl.Get(path)
@@ -942,12 +975,12 @@ func (c *Candidates) LoadStakesOfCandidate(pubkey types.Pubkey) {
 			continue
 		}
 
-		stake := &Stake{}
+		stake := &stake{}
 		if err := rlp.DecodeBytes(enc, stake); err != nil {
 			panic(fmt.Sprintf("failed to decode stake: %s", err))
 		}
 
-		candidate.SetStakeAtIndex(index, stake, false)
+		candidate.setStakeAtIndex(index, stake, false)
 
 		stakesCount++
 	}
@@ -956,13 +989,13 @@ func (c *Candidates) LoadStakesOfCandidate(pubkey types.Pubkey) {
 
 	// load updates
 	path := []byte{mainPrefix}
-	path = append(path, candidate.PubKey.Bytes()...)
+	path = append(path, candidate.idBytes()...)
 	path = append(path, updatesPrefix)
 	_, enc := c.iavl.Get(path)
 	if len(enc) == 0 {
 		candidate.updates = nil
 	} else {
-		var updates []*Stake
+		var updates []*stake
 		if err := rlp.DecodeBytes(enc, &updates); err != nil {
 			panic(fmt.Sprintf("failed to decode updated: %s", err))
 		}
@@ -979,7 +1012,7 @@ func (c *Candidates) LoadStakesOfCandidate(pubkey types.Pubkey) {
 	}
 
 	// load total stake
-	path = append([]byte{mainPrefix}, candidate.PubKey.Bytes()...)
+	path = append([]byte{mainPrefix}, candidate.idBytes()...)
 	path = append(path, totalStakePrefix)
 	_, enc = c.iavl.Get(path)
 	if len(enc) == 0 {
@@ -990,4 +1023,95 @@ func (c *Candidates) LoadStakesOfCandidate(pubkey types.Pubkey) {
 
 	candidate.setTmAddress()
 	c.setToMap(candidate.PubKey, candidate)
+}
+
+// ChangePubKey change public key of a candidate from old to new
+func (c *Candidates) ChangePubKey(old types.Pubkey, new types.Pubkey) {
+	if c.isBlocked(new) {
+		panic("Candidate with such public key (" + new.String() + ") exists in block list")
+	}
+
+	c.getFromMap(old).setPublicKey(new)
+	c.setBlockPubKey(old)
+	c.setPubKeyID(new, c.pubKeyIDs[old])
+	delete(c.pubKeyIDs, old)
+	c.isChangedPublicKeys = true
+}
+
+func (c *Candidates) getOrNewID(pubKey types.Pubkey) uint32 {
+	c.lock.RLock()
+	id := c.id(pubKey)
+	c.lock.RUnlock()
+	if id != 0 {
+		return id
+	}
+
+	c.lock.Lock()
+	c.isDirty = true
+	c.maxID++
+	c.lock.Unlock()
+
+	id = c.maxID
+	c.setPubKeyID(pubKey, id)
+	return id
+}
+
+func (c *Candidates) id(pubKey types.Pubkey) uint32 {
+	return c.pubKeyIDs[pubKey]
+}
+
+// ID returns an id of candidate by it's public key
+func (c *Candidates) ID(pubKey types.Pubkey) uint32 {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+
+	return c.id(pubKey)
+}
+
+// PubKey returns a public key of candidate by it's ID
+func (c *Candidates) PubKey(id uint32) types.Pubkey {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+
+	candidate, ok := c.list[id]
+	if !ok {
+		panic(fmt.Sprintf("candidate by ID %d not found", id))
+	}
+
+	return candidate.PubKey
+}
+
+func (c *Candidates) setPubKeyID(pubkey types.Pubkey, id uint32) {
+	if id == 0 {
+		panic("public key of candidate cannot be equal 0")
+	}
+
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	if c.maxID < id {
+		c.maxID = id
+	}
+
+	c.pubKeyIDs[pubkey] = id
+	c.isDirty = true
+}
+
+func (c *Candidates) setBlockPubKey(p types.Pubkey) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	c.blockList[p] = struct{}{}
+	c.isDirty = true
+}
+
+// AddToBlockPubKey blacklists given publickey
+func (c *Candidates) AddToBlockPubKey(p types.Pubkey) {
+	c.setBlockPubKey(p)
+}
+
+func (c *Candidates) maxIDBytes() []byte {
+	bs := make([]byte, 4)
+	binary.LittleEndian.PutUint32(bs, c.maxID)
+	return bs
 }

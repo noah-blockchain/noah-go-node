@@ -2,15 +2,16 @@ package validators
 
 import (
 	"fmt"
-	eventsdb "github.com/noah-blockchain/explorer-events-db"
 	"github.com/noah-blockchain/noah-go-node/core/dao"
 	"github.com/noah-blockchain/noah-go-node/core/developers"
+	eventsdb "github.com/noah-blockchain/noah-go-node/core/events"
 	"github.com/noah-blockchain/noah-go-node/core/state/bus"
 	"github.com/noah-blockchain/noah-go-node/core/state/candidates"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/rlp"
 	"github.com/noah-blockchain/noah-go-node/tree"
 	"github.com/noah-blockchain/noah-go-node/upgrades"
+
 	"math/big"
 )
 
@@ -21,24 +22,36 @@ const (
 )
 
 const (
-	ValidatorMaxAbsentWindow = 24
-	ValidatorMaxAbsentTimes  = 12
+	validatorMaxAbsentWindow = 24
+	validatorMaxAbsentTimes  = 12
 )
 
+// Validators struct is a store of Validators state
 type Validators struct {
 	list   []*Validator
 	loaded bool
 
-	iavl tree.Tree
+	iavl tree.MTree
 	bus  *bus.Bus
 }
 
-func NewValidators(bus *bus.Bus, iavl tree.Tree) (*Validators, error) {
+// RValidators interface represents Validator state
+type RValidators interface {
+	GetValidators() []*Validator
+	Export(state *types.AppState)
+	GetByPublicKey(pubKey types.Pubkey) *Validator
+	LoadValidators()
+	GetByTmAddress(address types.TmAddress) *Validator
+}
+
+// NewValidators returns newly created Validators state with a given bus and iavl
+func NewValidators(bus *bus.Bus, iavl tree.MTree) (*Validators, error) {
 	validators := &Validators{iavl: iavl, bus: bus}
 
 	return validators, nil
 }
 
+// Commit writes changes to iavl, may return an error
 func (v *Validators) Commit() error {
 	if v.hasDirtyValidators() {
 		data, err := rlp.EncodeToBytes(v.list)
@@ -73,6 +86,7 @@ func (v *Validators) Commit() error {
 	return nil
 }
 
+// SetValidatorPresent marks validator as present at current height
 func (v *Validators) SetValidatorPresent(height uint64, address types.TmAddress) {
 	validator := v.GetByTmAddress(address)
 	if validator == nil {
@@ -81,6 +95,8 @@ func (v *Validators) SetValidatorPresent(height uint64, address types.TmAddress)
 	validator.SetPresent(height)
 }
 
+// SetValidatorAbsent marks validator as absent at current height
+// if validator misses signs of more than validatorMaxAbsentTimes, it will receive penalty and will be swithed off
 func (v *Validators) SetValidatorAbsent(height uint64, address types.TmAddress) {
 	validator := v.GetByTmAddress(address)
 	if validator == nil {
@@ -88,7 +104,7 @@ func (v *Validators) SetValidatorAbsent(height uint64, address types.TmAddress) 
 	}
 	validator.SetAbsent(height)
 
-	if validator.CountAbsentTimes() > ValidatorMaxAbsentTimes {
+	if validator.CountAbsentTimes() > validatorMaxAbsentTimes {
 		if !upgrades.IsGraceBlock(height) {
 			v.punishValidator(height, address)
 		}
@@ -97,17 +113,19 @@ func (v *Validators) SetValidatorAbsent(height uint64, address types.TmAddress) 
 	}
 }
 
+// GetValidators returns list of validators
 func (v *Validators) GetValidators() []*Validator {
 	return v.list
 }
 
+// SetNewValidators updated validators list with new candidates
 func (v *Validators) SetNewValidators(candidates []candidates.Candidate) {
 	old := v.GetValidators()
 
 	var newVals []*Validator
 	for _, candidate := range candidates {
 		accumReward := big.NewInt(0)
-		absentTimes := types.NewBitArray(ValidatorMaxAbsentWindow)
+		absentTimes := types.NewBitArray(validatorMaxAbsentWindow)
 
 		for _, oldVal := range old {
 			if oldVal.GetAddress() == candidate.GetTmAddress() {
@@ -129,21 +147,27 @@ func (v *Validators) SetNewValidators(candidates []candidates.Candidate) {
 		})
 	}
 
-	v.list = newVals
+	v.SetValidators(newVals)
 }
 
+// PunishByzantineValidator find validator with given tmAddress and punishes it:
+// 1. Set total stake 0
+// 2. Drop validator
 func (v *Validators) PunishByzantineValidator(tmAddress [20]byte) {
 	validator := v.GetByTmAddress(tmAddress)
-	validator.SetTotalNoahStake(big.NewInt(0))
-	validator.toDrop = true
-	validator.isDirty = true
+	if validator != nil {
+		validator.SetTotalNoahStake(big.NewInt(0))
+		validator.toDrop = true
+		validator.isDirty = true
+	}
 }
 
+// Create creates a new validator with given params and adds it to state
 func (v *Validators) Create(pubkey types.Pubkey, stake *big.Int) {
 	val := &Validator{
 		PubKey:             pubkey,
-		AbsentTimes:        types.NewBitArray(ValidatorMaxAbsentWindow),
-		totalStake:         stake,
+		AbsentTimes:        types.NewBitArray(validatorMaxAbsentWindow),
+		totalStake:         big.NewInt(0).Set(stake),
 		accumReward:        big.NewInt(0),
 		isDirty:            true,
 		isTotalStakeDirty:  true,
@@ -154,6 +178,7 @@ func (v *Validators) Create(pubkey types.Pubkey, stake *big.Int) {
 	v.list = append(v.list, val)
 }
 
+// PayRewards distributes accumulated rewards between validator, delegators, DAO and developers addresses
 func (v *Validators) PayRewards(height uint64) {
 	vals := v.GetValidators()
 	for _, validator := range vals {
@@ -167,9 +192,9 @@ func (v *Validators) PayRewards(height uint64) {
 			DAOReward := big.NewInt(0).Set(totalReward)
 			DAOReward.Mul(DAOReward, big.NewInt(int64(dao.Commission)))
 			DAOReward.Div(DAOReward, big.NewInt(100))
-			v.bus.Accounts().AddBalance(dao.Address, types.GetBaseCoin(), DAOReward)
+			v.bus.Accounts().AddBalance(dao.Address, types.GetBaseCoinID(), DAOReward)
 			remainder.Sub(remainder, DAOReward)
-			v.bus.Events().AddEvent(uint32(height), eventsdb.RewardEvent{
+			v.bus.Events().AddEvent(uint32(height), &eventsdb.RewardEvent{
 				Role:            eventsdb.RoleDAO.String(),
 				Address:         dao.Address,
 				Amount:          DAOReward.String(),
@@ -180,9 +205,9 @@ func (v *Validators) PayRewards(height uint64) {
 			DevelopersReward := big.NewInt(0).Set(totalReward)
 			DevelopersReward.Mul(DevelopersReward, big.NewInt(int64(developers.Commission)))
 			DevelopersReward.Div(DevelopersReward, big.NewInt(100))
-			v.bus.Accounts().AddBalance(developers.Address, types.GetBaseCoin(), DevelopersReward)
+			v.bus.Accounts().AddBalance(developers.Address, types.GetBaseCoinID(), DevelopersReward)
 			remainder.Sub(remainder, DevelopersReward)
-			v.bus.Events().AddEvent(uint32(height), eventsdb.RewardEvent{
+			v.bus.Events().AddEvent(uint32(height), &eventsdb.RewardEvent{
 				Role:            eventsdb.RoleDevelopers.String(),
 				Address:         developers.Address,
 				Amount:          DevelopersReward.String(),
@@ -197,9 +222,9 @@ func (v *Validators) PayRewards(height uint64) {
 			validatorReward.Mul(validatorReward, big.NewInt(int64(candidate.Commission)))
 			validatorReward.Div(validatorReward, big.NewInt(100))
 			totalReward.Sub(totalReward, validatorReward)
-			v.bus.Accounts().AddBalance(candidate.RewardAddress, types.GetBaseCoin(), validatorReward)
+			v.bus.Accounts().AddBalance(candidate.RewardAddress, types.GetBaseCoinID(), validatorReward)
 			remainder.Sub(remainder, validatorReward)
-			v.bus.Events().AddEvent(uint32(height), eventsdb.RewardEvent{
+			v.bus.Events().AddEvent(uint32(height), &eventsdb.RewardEvent{
 				Role:            eventsdb.RoleValidator.String(),
 				Address:         candidate.RewardAddress,
 				Amount:          validatorReward.String(),
@@ -220,10 +245,10 @@ func (v *Validators) PayRewards(height uint64) {
 					continue
 				}
 
-				v.bus.Accounts().AddBalance(stake.Owner, types.GetBaseCoin(), reward)
+				v.bus.Accounts().AddBalance(stake.Owner, types.GetBaseCoinID(), reward)
 				remainder.Sub(remainder, reward)
 
-				v.bus.Events().AddEvent(uint32(height), eventsdb.RewardEvent{
+				v.bus.Events().AddEvent(uint32(height), &eventsdb.RewardEvent{
 					Role:            eventsdb.RoleDelegator.String(),
 					Address:         stake.Owner,
 					Amount:          reward.String(),
@@ -242,6 +267,7 @@ func (v *Validators) PayRewards(height uint64) {
 	}
 }
 
+// GetByTmAddress finds and returns validator with given tendermint-address
 func (v *Validators) GetByTmAddress(address types.TmAddress) *Validator {
 	for _, val := range v.list {
 		if val.tmAddress == address {
@@ -252,6 +278,7 @@ func (v *Validators) GetByTmAddress(address types.TmAddress) *Validator {
 	return nil
 }
 
+// GetByPublicKey finds and returns validator
 func (v *Validators) GetByPublicKey(pubKey types.Pubkey) *Validator {
 	for _, val := range v.list {
 		if val.PubKey == pubKey {
@@ -262,6 +289,7 @@ func (v *Validators) GetByPublicKey(pubKey types.Pubkey) *Validator {
 	return nil
 }
 
+// LoadValidators loads only list of validators (for read)
 func (v *Validators) LoadValidators() {
 	if v.loaded {
 		return
@@ -331,23 +359,26 @@ func (v *Validators) punishValidator(height uint64, tmAddress types.TmAddress) {
 	validator.SetTotalNoahStake(totalStake)
 }
 
+// SetValidators updates validators list
 func (v *Validators) SetValidators(vals []*Validator) {
 	v.list = vals
 }
 
+// Export exports all data to the given state
 func (v *Validators) Export(state *types.AppState) {
 	v.LoadValidators()
 
 	for _, val := range v.GetValidators() {
 		state.Validators = append(state.Validators, types.Validator{
 			TotalNoahStake: val.GetTotalNoahStake().String(),
-			PubKey:         val.PubKey,
-			AccumReward:    val.GetAccumReward().String(),
-			AbsentTimes:    val.AbsentTimes,
+			PubKey:        val.PubKey,
+			AccumReward:   val.GetAccumReward().String(),
+			AbsentTimes:   val.AbsentTimes,
 		})
 	}
 }
 
+// SetToDrop marks given validator as inactive for dropping it in the next block
 func (v *Validators) SetToDrop(pubkey types.Pubkey) {
 	vals := v.GetValidators()
 	for _, val := range vals {
@@ -359,9 +390,9 @@ func (v *Validators) SetToDrop(pubkey types.Pubkey) {
 
 func (v *Validators) turnValidatorOff(tmAddress types.TmAddress) {
 	validator := v.GetByTmAddress(tmAddress)
-	validator.AbsentTimes = types.NewBitArray(ValidatorMaxAbsentWindow)
+	validator.AbsentTimes = types.NewBitArray(validatorMaxAbsentWindow)
 	validator.toDrop = true
 	validator.isDirty = true
 
-	v.bus.Candidates().SetOffline(v.bus.Candidates().GetCandidateByTendermintAddress(tmAddress).PubKey)
+	v.bus.Candidates().SetOffline(validator.PubKey)
 }
