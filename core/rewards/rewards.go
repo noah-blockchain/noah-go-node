@@ -12,8 +12,9 @@ const firstReward = 1344
 const lastReward = 1344
 
 var startHeight uint64 = 0
-var BeforeGenesis = big.NewInt(0)
+var beforeGenesis = big.NewInt(0)
 
+// GetRewardForBlock returns reward for creation of given block. If there is no reward - returns 0.
 func GetRewardForBlock(blockHeight uint64) *big.Int {
 	blockHeight += startHeight
 
@@ -35,9 +36,10 @@ func GetRewardForBlock(blockHeight uint64) *big.Int {
 	return helpers.NoahToQNoah(reward)
 }
 
+// SetStartHeight sets base height for rewards calculations
 func SetStartHeight(sHeight uint64) {
 	for i := uint64(1); i <= sHeight; i++ {
-		BeforeGenesis.Add(BeforeGenesis, GetRewardForBlock(i))
+		beforeGenesis.Add(beforeGenesis, GetRewardForBlock(i))
 	}
 
 	startHeight = sHeight

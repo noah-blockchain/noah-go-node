@@ -9,25 +9,35 @@ import (
 	"github.com/noah-blockchain/noah-go-node/core/code"
 	"github.com/noah-blockchain/noah-go-node/core/commissions"
 	"github.com/noah-blockchain/noah-go-node/core/state"
-	"github.com/noah-blockchain/noah-go-node/core/state/accounts"
 	"github.com/noah-blockchain/noah-go-node/core/types"
 	"github.com/noah-blockchain/noah-go-node/formula"
 	"github.com/tendermint/tendermint/libs/kv"
 )
 
-type CreateMultisigData struct {
+type EditMultisigData struct {
 	Threshold uint32
 	Weights   []uint32
 	Addresses []types.Address
 }
 
-func (data CreateMultisigData) BasicCheck(tx *Transaction, context *state.CheckState) *Response {
+func (data EditMultisigData) BasicCheck(tx *Transaction, context *state.CheckState) *Response {
+	sender, _ := tx.Sender()
+
+	if !context.Accounts().GetAccount(sender).IsMultisig() {
+		return &Response{
+			Code: code.MultisigNotExists,
+			Log:  "Multisig does not exists",
+			Info: EncodeError(code.NewMultisigNotExists(sender.String())),
+		}
+	}
+
 	lenWeights := len(data.Weights)
 	if lenWeights > 32 {
 		return &Response{
 			Code: code.TooLargeOwnersList,
 			Log:  "Owners list is limited to 32 items",
-			Info: EncodeError(code.NewTooLargeOwnersList(strconv.Itoa(lenWeights), "32"))}
+			Info: EncodeError(code.NewTooLargeOwnersList(strconv.Itoa(lenWeights), "32")),
+		}
 	}
 
 	lenAddresses := len(data.Addresses)
@@ -62,18 +72,30 @@ func (data CreateMultisigData) BasicCheck(tx *Transaction, context *state.CheckS
 		usedAddresses[address] = true
 	}
 
+	var totalWeight uint32
+	for _, weight := range data.Weights {
+		totalWeight += weight
+	}
+	if data.Threshold > totalWeight {
+		return &Response{
+			Code: code.IncorrectTotalWeights,
+			Log:  "Incorrect multisig weights",
+			Info: EncodeError(code.NewIncorrectTotalWeights(fmt.Sprintf("%d", totalWeight), fmt.Sprintf("%d", data.Threshold))),
+		}
+	}
+
 	return nil
 }
 
-func (data CreateMultisigData) String() string {
-	return "CREATE MULTISIG"
+func (data EditMultisigData) String() string {
+	return "EDIT MULTISIG OWNERS"
 }
 
-func (data CreateMultisigData) Gas() int64 {
-	return commissions.CreateMultisig
+func (data EditMultisigData) Gas() int64 {
+	return commissions.EditMultisigData
 }
 
-func (data CreateMultisigData) Run(tx *Transaction, context state.Interface, rewardPool *big.Int, currentBlock uint64) Response {
+func (data EditMultisigData) Run(tx *Transaction, context state.Interface, rewardPool *big.Int, currentBlock uint64) Response {
 	sender, _ := tx.Sender()
 
 	var checkState *state.CheckState
@@ -104,18 +126,8 @@ func (data CreateMultisigData) Run(tx *Transaction, context state.Interface, rew
 	if checkState.Accounts().GetBalance(sender, tx.GasCoin).Cmp(commission) < 0 {
 		return Response{
 			Code: code.InsufficientFunds,
-			Log:  fmt.Sprintf("Insufficient funds for sender account: %s. Wanted %s %s", sender.String(), commission, gasCoin.GetFullSymbol()),
+			Log:  fmt.Sprintf("Insufficient funds for sender account: %s. Wanted %s %s", sender.String(), commission.String(), gasCoin.GetFullSymbol()),
 			Info: EncodeError(code.NewInsufficientFunds(sender.String(), commission.String(), gasCoin.GetFullSymbol(), gasCoin.ID().String())),
-		}
-	}
-
-	msigAddress := accounts.CreateMultisigAddress(sender, tx.Nonce)
-
-	if checkState.Accounts().ExistsMultisig(msigAddress) {
-		return Response{
-			Code: code.MultisigExists,
-			Log:  fmt.Sprintf("Multisig %s already exists", msigAddress.String()),
-			Info: EncodeError(code.NewMultisigExists(msigAddress.String())),
 		}
 	}
 
@@ -128,19 +140,19 @@ func (data CreateMultisigData) Run(tx *Transaction, context state.Interface, rew
 		deliverState.Accounts.SubBalance(sender, tx.GasCoin, commission)
 		deliverState.Accounts.SetNonce(sender, tx.Nonce)
 
-		deliverState.Accounts.CreateMultisig(data.Weights, data.Addresses, data.Threshold, msigAddress)
+		deliverState.Accounts.EditMultisig(data.Threshold, data.Weights, data.Addresses, sender)
 	}
 
+	address := []byte(hex.EncodeToString(sender[:]))
 	tags := kv.Pairs{
-		kv.Pair{Key: []byte("tx.type"), Value: []byte(hex.EncodeToString([]byte{byte(TypeCreateMultisig)}))},
-		kv.Pair{Key: []byte("tx.from"), Value: []byte(hex.EncodeToString(sender[:]))},
-		kv.Pair{Key: []byte("tx.created_multisig"), Value: []byte(hex.EncodeToString(msigAddress[:]))},
+		kv.Pair{Key: []byte("tx.type"), Value: []byte(hex.EncodeToString([]byte{byte(TypeEditMultisig)}))},
+		kv.Pair{Key: []byte("tx.from"), Value: address},
 	}
 
 	return Response{
 		Code:      code.OK,
-		Tags:      tags,
 		GasUsed:   tx.Gas(),
 		GasWanted: tx.Gas(),
+		Tags:      tags,
 	}
 }
