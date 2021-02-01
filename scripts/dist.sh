@@ -23,12 +23,6 @@ mkdir -p build/pkg
 GIT_COMMIT="$(git rev-parse --short=8 HEAD)"
 GIT_IMPORT="github.com/noah-blockchain/noah-go-node/version"
 
-# Make sure build tools are available.
-make get_tools
-
-# Get VENDORED dependencies
-make get_vendor_deps
-
 #packr
 
 # Build!
@@ -38,7 +32,7 @@ echo "==> Building for mac os..."
 CGO_ENABLED=1 go build -tags "noah gcc" -ldflags "-s -w -X ${GIT_IMPORT}.GitCommit=${GIT_COMMIT}" -o "build/pkg/darwin_amd64/noah" ./cmd/noah
 
 echo "==> Building for linux in docker"
-docker run -t -v ${PWD}:/go/src/github.com/noah-blockchain/noah-go-node/ -i noah-builder-1:latest sh -c 'CGO_ENABLED=1 go build -tags "noah gcc" -ldflags "-s -w -X ${GIT_IMPORT}.GitCommit=${GIT_COMMIT}" -o "build/pkg/linux_amd64/noah" ./cmd/noah/'
+docker run -t -v ${PWD}:/go/src/github.com/noah-blockchain/noah-go-node/ -i noah-builder-1:latest sh -c "CGO_ENABLED=1 go build -tags 'noah gcc' -ldflags '-s -w -X ${GIT_IMPORT}.GitCommit=${GIT_COMMIT}' -o 'build/pkg/linux_amd64/noah' ./cmd/noah/"
 
 # Zip all the files.
 echo "==> Packaging..."
@@ -51,17 +45,17 @@ for PLATFORM in $(find ./build/pkg -mindepth 1 -maxdepth 1 -type d); do
 	popd >/dev/null 2>&1
 done
 
-# Add "noah" and $VERSION prefix to package name.
+# Add "noah" and $VERSION, $GIT_COMMIT prefix to package name.
 rm -rf ./build/dist
 mkdir -p ./build/dist
 for FILENAME in $(find ./build/pkg -mindepth 1 -maxdepth 1 -type f); do
   FILENAME=$(basename "$FILENAME")
-	cp "./build/pkg/${FILENAME}" "./build/dist/noah_${VERSION}_${FILENAME}"
+	cp "./build/pkg/${FILENAME}" "./build/dist/noah${VERSION}_${GIT_COMMIT}_${FILENAME}"
 done
 
 # Make the checksums.
 pushd ./build/dist
-shasum -a256 ./* > "./noah_${VERSION}_SHA256SUMS"
+shasum -a256 ./* > "./noah${VERSION}_${GIT_COMMIT}_SHA256SUMS"
 popd
 
 # Done
