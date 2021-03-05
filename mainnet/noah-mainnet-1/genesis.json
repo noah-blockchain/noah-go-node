@@ -1,5 +1,5 @@
 {
-  "genesis_time": "2020-04-18T00:00:01Z",
+  "genesis_time": "2021-03-09T00:00:01Z",
   "chain_id": "noah-mainnet-1",
   "consensus_params": {
     "block": {
