@@ -10,7 +10,7 @@ RUN set -x \
     && make create_vendor \
     && make build
 
-FROM debian:buster
+FROM debian:buster-slim
 COPY --from=builder /home/noah/build/noah /usr/local/bin/noah
 EXPOSE 3000 26656 8841 26657 26660
 CMD ["noah", "node"]
