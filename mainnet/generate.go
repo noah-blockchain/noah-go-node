@@ -6,7 +6,7 @@ import (
 )
 
 func GenerateStatic(genesisFile string) error {
-	box := packr.NewBox("./noah-mainnet-1")
+	box := packr.NewBox("./noah-mainnet-2")
 	bytes, err := box.Find("/genesis.json")
 	if err != nil {
 		panic(err)

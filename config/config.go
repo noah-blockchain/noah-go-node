@@ -26,7 +26,7 @@ const (
 
 var (
 	NetworkId        string
-	DefaultNetworkId = "noah-mainnet-1"
+	DefaultNetworkId = "noah-mainnet-2"
 
 	ChainId        string
 	DefaultChainId = "mainnet"

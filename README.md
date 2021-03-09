@@ -26,7 +26,7 @@ docker pull noahblockchain/node
 docker run -p 26656:26656 -p 26657:26657 -p 26660:26660 -p 8841:8841 -p 3000:3000 -v ~/node:/root/noah/ noahblockchain/node noah node --network-id=noah-mainnet-1 --chain-id=mainnet --validator-mode
 ```
 
---network-id=X, where X its choose network (noah-mainnet-1 or noah-testnet-1)
+--network-id=X, where X its choose network (noah-mainnet-2 or noah-testnet-1)
 
 --chain-id=Y, where Y its choose chain (mainnet or testnet)
 
@@ -56,7 +56,7 @@ After this command compiled node will be in folder build and node configuration 
 ###### 4. Run node
 For running validator use command 
 ```
-./build/noah node --network-id=noah-mainnet-1 --chain-id=mainnet --validator-mode
+./build/noah node --network-id=noah-mainnet-2 --chain-id=mainnet --validator-mode
 ```
 We recommend using our official node docker.
 ###### 5. Use GUI
